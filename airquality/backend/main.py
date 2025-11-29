@@ -112,42 +112,40 @@ def get_all_daily():
 @app.get("/stations/today")
 def get_all_today():
     with conn.cursor() as cur:
-        cur.execute("SELECT MAX(time::date) FROM aqi;")
-        latest_date = cur.fetchone()[0]
-        if latest_date is None:
-            return []  
-
         cur.execute("""
-            SELECT station, time, aqi, pm25, latitude, longitude, sourceid,
-                   time::date AS date
-            FROM aqi
-            WHERE time::date = %s
-            ORDER BY station, time;
-        """, (latest_date,))
+            SELECT 
+                station, 
+                time, 
+                aqi
+            FROM 
+                aqi
+            WHERE 
+                time::date = (SELECT MAX(time::date) FROM aqi)
+                AND aqi IS NOT NULL
+                AND aqi <> 'NaN'
+            ORDER BY station, time ASC; -- Order by time ASC within the day
+        """)
         rows = cur.fetchall()
-        columns = [desc[0] for desc in cur.description]
 
-        # Group by station
-        from collections import defaultdict
-        station_data = defaultdict(list)
-        for r in rows:
-            row_dict = dict(zip(columns, r))
+    grouped_results = {}
 
-            for col in ["aqi", "pm25", "latitude", "longitude"]:
-                if row_dict[col] is not None:
-                    row_dict[col] = float(row_dict[col])
-                    
-            station_data[row_dict["station"]].append(row_dict)
+    for station_name, time_obj, aqi_val in rows:
+        data_point = {
+            "time": time_obj.isoformat(),
+            "aqi": float(aqi_val)
+        }
+        
+        if station_name not in grouped_results:
+            grouped_results[station_name] = {
+                "station": station_name,
+                "today": [] 
+            }
+        
+        grouped_results[station_name]["today"].append(data_point)
 
-        today_data = []
-        for station, data_list in station_data.items():
-            today_data.append({
-                "station": station,
-                "date": latest_date.isoformat(),
-                "data": data_list
-            })
-
-    return today_data
+    result = list(grouped_results.values())
+    
+    return result
 
 
 
