@@ -88,8 +88,10 @@ def get_all_daily():
     result = [
         {
             "station": station,
-            "date": date.isoformat(),  
-            "aqi": float(aqi)          
+            "daily": {
+                "date": date.isoformat(),
+                "aqi": float(aqi)
+            }
         }
         for station, date, aqi in rows
     ]
