@@ -77,7 +77,7 @@ def get_all_daily():
             FROM aqi
             WHERE time::date <= (SELECT MAX(time::date) FROM aqi)
               AND time::date >= (SELECT MAX(time::date) FROM aqi) - INTERVAL '6 days'
-              AND aqi IS NOT NULL
+              AND ROUND(AVG(aqi)::numeric, 2) IS NOT NULL
             GROUP BY station, date
             ORDER BY station, date DESC;
         """)
