@@ -49,9 +49,23 @@ def get_stations():
 def get_all_latest():
     with conn.cursor() as cur:
         cur.execute("""
-            SELECT DISTINCT ON (station) *
+            SELECT DISTINCT ON (aqi.station)
+                   aqi.station,
+                   aqi.time,
+                   aqi.aqi,
+                   aqi.pm25,
+                   aqi.latitude,
+                   aqi.longitude,
+                   aqi.sourceid
             FROM aqi
-            ORDER BY station, time DESC;
+            JOIN (
+                SELECT station, MAX(time) AS max_time
+                FROM aqi
+                GROUP BY station
+            ) AS latest
+            ON aqi.station = latest.station
+            WHERE aqi.time >= latest.max_time - INTERVAL '3 hours'
+            ORDER BY aqi.station, aqi.time DESC;
         """)
         rows = cur.fetchall()
         columns = [desc[0] for desc in cur.description]
@@ -63,7 +77,7 @@ def get_all_daily():
     with conn.cursor() as cur:
         cur.execute("""
             SELECT station, date,
-                   ROUND(AVG(aqi)::numeric, 2) AS aqi,
+                   ROUND(AVG(aqi)::numeric, 2) AS aqi
             FROM aqi
             GROUP BY station, date
             ORDER BY station, date DESC
