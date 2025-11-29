@@ -45,62 +45,71 @@ def get_stations():
     return stations
 
 
-@app.get("/stations/{station}/latest")
-def get_latest(station: str):
+@app.get("/stations/latest")
+def get_all_latest():
     with conn.cursor() as cur:
         cur.execute("""
-            SELECT *
+            SELECT DISTINCT ON (station) *
             FROM aqi
-            WHERE station = %s
-            ORDER BY time DESC
-            LIMIT 1;
-        """, (station,))
-        row = cur.fetchone()
-        if not row:
-            raise HTTPException(status_code=404, detail="Station not found")
+            ORDER BY station, time DESC;
+        """)
+        rows = cur.fetchall()
         columns = [desc[0] for desc in cur.description]
-        return dict(zip(columns, row))
+        return [dict(zip(columns, row)) for row in rows]
 
 
-@app.get("/stations/{station}/daily")
-def get_daily(station: str):
+@app.get("/stations/daily")
+def get_all_daily():
     with conn.cursor() as cur:
         cur.execute("""
-            SELECT date,
+            SELECT station, date,
                    ROUND(AVG(aqi)::numeric, 2) AS aqi,
-                   ROUND(AVG("pm25")::numeric, 2) AS "pm25"
             FROM aqi
-            WHERE station = %s
-            GROUP BY date
-            ORDER BY date DESC
+            GROUP BY station, date
+            ORDER BY station, date DESC
             LIMIT 7;
-        """, (station,))
+        """)
         rows = cur.fetchall()
-        return [{"date": r[0].isoformat(), "aqi": r[1], "pm25": r[2]} for r in reversed(rows)]
+
+    # Group by station
+    from collections import defaultdict
+    daily_data = defaultdict(list)
+    for station, date, aqi, pm25 in rows:
+        daily_data[station].append({
+            "date": date.isoformat(),
+            "aqi": aqi,
+        })
+
+    return [{"station": s, "daily": daily_data[s]} for s in daily_data]
 
 
-@app.get("/stations/{station}/today")
-def get_today(station: str):
+@app.get("/stations/today")
+def get_all_today():
     with conn.cursor() as cur:
         cur.execute("""
-            SELECT MAX(date)
+            SELECT station, MAX(date) as latest_date
             FROM aqi
-            WHERE station = %s;
-        """, (station,))
-        latest_date = cur.fetchone()[0]
-        if not latest_date:
-            raise HTTPException(status_code=404, detail="Station not found")
+            GROUP BY station;
+        """)
+        latest_dates = cur.fetchall()
 
+        today_data = []
+        for station, latest_date in latest_dates:
+            cur.execute("""
+                SELECT *
+                FROM aqi
+                WHERE station = %s AND date = %s
+                ORDER BY time;
+            """, (station, latest_date))
+            rows = cur.fetchall()
+            columns = [desc[0] for desc in cur.description]
+            today_data.append({
+                "station": station,
+                "date": latest_date.isoformat(),
+                "data": [dict(zip(columns, r)) for r in rows]
+            })
 
-        cur.execute("""
-            SELECT *
-            FROM aqi
-            WHERE station = %s AND date = %s
-            ORDER BY time;
-        """, (station, latest_date))
-        rows = cur.fetchall()
-        columns = [desc[0] for desc in cur.description]
-        return [dict(zip(columns, r)) for r in rows]
+    return today_data
 
 
 @app.get("/download")
