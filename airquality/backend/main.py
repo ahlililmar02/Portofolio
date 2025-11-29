@@ -73,13 +73,15 @@ def get_all_daily():
     with conn.cursor() as cur:
         cur.execute("""
             SELECT station, time::date AS date,
-                   ROUND(AVG(aqi)::numeric, 2) AS aqi
+                ROUND(AVG(aqi::numeric), 2) AS aqi
             FROM aqi
             WHERE time::date <= (SELECT MAX(time::date) FROM aqi)
-              AND time::date >= (SELECT MAX(time::date) FROM aqi) - INTERVAL '6 days'
-              AND ROUND(AVG(aqi)::numeric, 2) IS NOT NULL
+            AND time::date >= (SELECT MAX(time::date) FROM aqi) - INTERVAL '6 days'
+            AND aqi IS NOT NULL
+            AND aqi <> 'NaN' 
             GROUP BY station, date
             ORDER BY station, date DESC;
+
         """)
         rows = cur.fetchall()
 
