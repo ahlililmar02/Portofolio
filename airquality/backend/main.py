@@ -72,23 +72,34 @@ from collections import defaultdict
 @app.get("/stations/daily")
 def get_all_daily():
     with conn.cursor() as cur:
+        # Get global max date
+        cur.execute("SELECT MAX(time::date) FROM aqi;")
+        max_date = cur.fetchone()[0]
+        if max_date is None:
+            return []
+
+        # Select average AQI per station and date for the last 7 days
         cur.execute("""
             SELECT station, time::date AS date,
                    ROUND(AVG(aqi)::numeric, 2) AS aqi
             FROM aqi
-            GROUP BY station, time::date
-            ORDER BY station, date DESC;
-        """)
+            WHERE time::date <= %s
+            GROUP BY station, date
+            ORDER BY station, date DESC
+            LIMIT 7;
+        """, (max_date,))
         rows = cur.fetchall()
 
-    daily_data = defaultdict(list)
+    # Convert to JSON-friendly format
+    daily_data = []
     for station, date, aqi in rows:
-        daily_data[station].append({
+        daily_data.append({
+            "station": station,
             "date": date.isoformat(),
-            "aqi": float(aqi) if aqi is not None else None  
+            "aqi": float(aqi) if aqi is not None else None
         })
 
-    return [{"station": s, "daily": daily_data[s]} for s in daily_data]
+    return daily_data
 
 
 
