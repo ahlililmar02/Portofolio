@@ -78,12 +78,13 @@ def get_all_daily():
 
         cur.execute("""
             SELECT station, time::date AS date,
-                   AVG(aqi) AS aqi
+                   ROUND(AVG(aqi), 2) AS aqi
             FROM aqi
-            WHERE time::date <= %s and aqi IS NOT NULL
+            WHERE time::date BETWEEN %s - INTERVAL '6 days' AND %s
+              AND aqi IS NOT NULL
             GROUP BY station, date
             ORDER BY station, date DESC;
-        """, (max_date,))
+        """, (max_date, max_date))
         rows = cur.fetchall()
 
     stations = defaultdict(list)
@@ -93,7 +94,7 @@ def get_all_daily():
             "aqi": aqi
         })
 
-    result = [{"station": s, "daily": stations[s][:7]} for s in stations]
+    result = [{"station": s, "daily": stations[s]} for s in stations]
     return result
 
 
