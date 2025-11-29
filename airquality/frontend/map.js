@@ -1,4 +1,4 @@
-const API = "http://10.128.0.13:8000";
+const API = "http://35.208.207.194:8000";
 
 let map = L.map("map", {
     zoomControl: false
