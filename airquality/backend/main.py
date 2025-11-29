@@ -90,8 +90,7 @@ def get_all_daily():
             "aqi": float(aqi)
         })
 
-    result = [{"station": s, "daily": stations[s]} for s in stations]
-    return result
+    return stations
 
 
 
