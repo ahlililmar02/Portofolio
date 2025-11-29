@@ -80,7 +80,7 @@ def get_all_daily():
             SELECT station, time::date AS date,
                    AVG(aqi) AS aqi
             FROM aqi
-            WHERE time::date <= %s
+            WHERE time::date <= %s and aqi IS NOT NULL
             GROUP BY station, date
             ORDER BY station, date DESC;
         """, (max_date,))
