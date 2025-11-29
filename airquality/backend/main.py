@@ -50,23 +50,18 @@ def get_all_latest():
     with conn.cursor() as cur:
         cur.execute("""
             SELECT DISTINCT ON (aqi.station)
-                   aqi.station,
-                   aqi.time,
-                   aqi.aqi,
-                   aqi.pm25,
-                   aqi.latitude,
-                   aqi.longitude,
-                   aqi.sourceid
-            FROM aqi
-            JOIN (
-                SELECT station, MAX(time) AS max_time
-                FROM aqi
-                GROUP BY station
-            ) AS latest
-            ON aqi.station = latest.station
+                aqi.station,
+                aqi.time,
+                aqi.aqi,
+                aqi.pm25,
+                aqi.latitude,
+                aqi.longitude,
+                aqi.sourceid
+            FROM aqi,
+                (SELECT MAX(time) AS max_time FROM aqi) AS latest
             WHERE aqi.time >= latest.max_time - INTERVAL '3 hours'
             ORDER BY aqi.station, aqi.time DESC;
-        """)
+                    """)
         rows = cur.fetchall()
         columns = [desc[0] for desc in cur.description]
         return [dict(zip(columns, row)) for row in rows]
@@ -80,12 +75,10 @@ def get_all_daily():
                    ROUND(AVG(aqi)::numeric, 2) AS aqi
             FROM aqi
             GROUP BY station, date
-            ORDER BY station, date DESC
-            LIMIT 7;
+            ORDER BY station, date DESC;
         """)
         rows = cur.fetchall()
 
-    # Group by station
     from collections import defaultdict
     daily_data = defaultdict(list)
     for station, date, aqi, pm25 in rows:
