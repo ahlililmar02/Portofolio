@@ -91,7 +91,13 @@ body {
   gap: 15px; 
 }
 
+.check-title{
+    border-radius: 6px;
+}
 
+.check-title :hover{
+    background-color: #aeaaa0;
+}
 
 .charts-wrapper {
     display: table-row;
