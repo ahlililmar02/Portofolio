@@ -71,11 +71,11 @@ def get_all_latest():
 def get_all_daily():
     with conn.cursor() as cur:
         cur.execute("""
-            SELECT station, date,
+            SELECT station, time::date AS date,  -- compute date from timestamp
                    ROUND(AVG(aqi)::numeric, 2) AS aqi
             FROM aqi
-            GROUP BY station, date
-            ORDER BY station, date DESC;
+            GROUP BY station, time::date
+            ORDER BY station, time::date DESC;
         """)
         rows = cur.fetchall()
 
@@ -90,33 +90,43 @@ def get_all_daily():
     return [{"station": s, "daily": daily_data[s]} for s in daily_data]
 
 
+
 @app.get("/stations/today")
 def get_all_today():
     with conn.cursor() as cur:
-        cur.execute("""
-            SELECT station, MAX(date) as latest_date
-            FROM aqi
-            GROUP BY station;
-        """)
-        latest_dates = cur.fetchall()
+        cur.execute("SELECT MAX(time::date) FROM aqi;")
+        latest_date = cur.fetchone()[0]
+        if latest_date is None:
+            return []  
 
+        cur.execute("""
+            SELECT station, time, aqi, pm25, latitude, longitude, sourceid,
+                   time::date AS date
+            FROM aqi
+            WHERE time::date = %s
+            ORDER BY station, time;
+        """, (latest_date,))
+        rows = cur.fetchall()
+        columns = [desc[0] for desc in cur.description]
+
+        # Group by station
+        from collections import defaultdict
+        station_data = defaultdict(list)
+        for r in rows:
+            row_dict = dict(zip(columns, r))
+            station_data[row_dict["station"]].append(row_dict)
+
+        # Build final list
         today_data = []
-        for station, latest_date in latest_dates:
-            cur.execute("""
-                SELECT *
-                FROM aqi
-                WHERE station = %s AND date = %s
-                ORDER BY time;
-            """, (station, latest_date))
-            rows = cur.fetchall()
-            columns = [desc[0] for desc in cur.description]
+        for station, data_list in station_data.items():
             today_data.append({
                 "station": station,
                 "date": latest_date.isoformat(),
-                "data": [dict(zip(columns, r)) for r in rows]
+                "data": data_list
             })
 
     return today_data
+
 
 
 @app.get("/download")
