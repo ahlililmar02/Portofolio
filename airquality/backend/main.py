@@ -78,7 +78,7 @@ def get_all_daily():
 
         cur.execute("""
             SELECT station, time::date AS date,
-                   ROUND(AVG(aqi), 2) AS aqi
+                   ROUND(AVG(aqi)::numeric, 2) AS aqi
             FROM aqi
             WHERE time::date BETWEEN %s - INTERVAL '6 days' AND %s
               AND aqi IS NOT NULL
