@@ -66,40 +66,35 @@ def get_all_latest():
         columns = [desc[0] for desc in cur.description]
         return [dict(zip(columns, row)) for row in rows]
 
-
 from collections import defaultdict
 
 @app.get("/stations/daily")
 def get_all_daily():
     with conn.cursor() as cur:
-        # Get global max date
         cur.execute("SELECT MAX(time::date) FROM aqi;")
         max_date = cur.fetchone()[0]
         if max_date is None:
             return []
 
-        # Select average AQI per station and date for the last 7 days
         cur.execute("""
             SELECT station, time::date AS date,
                    ROUND(AVG(aqi)::numeric, 2) AS aqi
             FROM aqi
             WHERE time::date <= %s
             GROUP BY station, date
-            ORDER BY station, date DESC
-            LIMIT 7;
+            ORDER BY station, date DESC;
         """, (max_date,))
         rows = cur.fetchall()
 
-    # Convert to JSON-friendly format
-    daily_data = []
+    stations = defaultdict(list)
     for station, date, aqi in rows:
-        daily_data.append({
-            "station": station,
+        stations[station].append({
             "date": date.isoformat(),
             "aqi": float(aqi) if aqi is not None else None
         })
 
-    return daily_data
+    result = [{"station": s, "daily": stations[s][:7]} for s in stations]
+    return result
 
 
 
