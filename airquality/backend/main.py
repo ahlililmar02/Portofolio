@@ -67,27 +67,29 @@ def get_all_latest():
         return [dict(zip(columns, row)) for row in rows]
 
 
+from collections import defaultdict
+
 @app.get("/stations/daily")
 def get_all_daily():
     with conn.cursor() as cur:
         cur.execute("""
-            SELECT station, time::date AS date,  -- compute date from timestamp
+            SELECT station, time::date AS date,
                    ROUND(AVG(aqi)::numeric, 2) AS aqi
             FROM aqi
             GROUP BY station, time::date
-            ORDER BY station, time::date DESC;
+            ORDER BY station, date DESC;
         """)
         rows = cur.fetchall()
 
-    from collections import defaultdict
     daily_data = defaultdict(list)
     for station, date, aqi in rows:
         daily_data[station].append({
             "date": date.isoformat(),
-            "aqi": aqi,
+            "aqi": float(aqi) if aqi is not None else None  
         })
 
     return [{"station": s, "daily": daily_data[s]} for s in daily_data]
+
 
 
 
@@ -114,9 +116,13 @@ def get_all_today():
         station_data = defaultdict(list)
         for r in rows:
             row_dict = dict(zip(columns, r))
+
+            for col in ["aqi", "pm25", "latitude", "longitude"]:
+                if row_dict[col] is not None:
+                    row_dict[col] = float(row_dict[col])
+                    
             station_data[row_dict["station"]].append(row_dict)
 
-        # Build final list
         today_data = []
         for station, data_list in station_data.items():
             today_data.append({
