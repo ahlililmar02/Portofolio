@@ -5,9 +5,7 @@ let map = L.map("map", {
 }).setView([-6.2, 107], 10);
 let markers = [];      
 
-document.querySelectorAll(".filter-box input").forEach(cb => {
-  cb.addEventListener("change", loadStations);
-});
+
 
 L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
     attribution: '&copy; <a href="https://www.carto.com/">CARTO</a> &copy; OpenStreetMap contributors',
@@ -158,6 +156,9 @@ async function loadGlobalAQIBox() {
 
 loadGlobalAQIBox();
 
+document.querySelectorAll(".filter-box input").forEach(cb => {
+  cb.addEventListener("change", loadStations);
+});
 
 async function loadStations() {
     markers.forEach(m => map.removeLayer(m));

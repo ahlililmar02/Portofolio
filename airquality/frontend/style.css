@@ -74,19 +74,23 @@ body {
 
 
 .filter-box {
-position: absolute;
-bottom: 50px;
-display: grid;
-left: 10px;
-align-items: center;
-background: #faf7f1;
-padding: 10px;
-font-size: 12px;
-border-radius: 6px;
-opacity: 0.9;
-box-shadow: 0 0 6px rgba(0,0,0,0.3);
-z-index: 1000;
+  position: absolute;
+  bottom: 50px;
+  display: grid;
+  grid-auto-flow: column; 
+  
+  left: 10px;
+  align-items: center; 
+  background: #faf7f1;
+  padding: 10px;
+  font-size: 12px;
+  border-radius: 6px;
+  opacity: 0.9;
+  box-shadow: 0 0 6px rgba(0,0,0,0.3);
+  z-index: 1000;
+  gap: 15px; 
 }
+
 
 
 .charts-wrapper {
