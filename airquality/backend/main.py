@@ -78,7 +78,7 @@ def get_all_daily():
 
         cur.execute("""
             SELECT station, time::date AS date,
-                   ROUND(AVG(aqi)::numeric, 2) AS aqi
+                   AVG(aqi) AS aqi
             FROM aqi
             WHERE time::date <= %s
             GROUP BY station, date
@@ -90,7 +90,7 @@ def get_all_daily():
     for station, date, aqi in rows:
         stations[station].append({
             "date": date.isoformat(),
-            "aqi": float(aqi) if aqi is not None else None
+            "aqi": aqi
         })
 
     result = [{"station": s, "daily": stations[s][:7]} for s in stations]
