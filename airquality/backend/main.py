@@ -1,11 +1,9 @@
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, Query, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from dotenv import load_dotenv
 import os
-import pandas as pd
 import psycopg2
-from datetime import date
 from io import StringIO
 
 app = FastAPI()
@@ -28,76 +26,106 @@ conn = psycopg2.connect(
     password=os.getenv("DB_PASS"),
 )
 
-query = """
-SELECT *
-FROM aqi
-WHERE time > '2025-01-01'
-ORDER BY time desc;
-"""
-df = pd.read_sql(query, conn)
-   
-df["time"] = pd.to_datetime(df["time"])
-
-df["date"] = df["time"].dt.date
-
 @app.get("/stations")
 def get_stations():
-    stations = df.groupby("station").agg({
-        "latitude": "first",
-        "longitude": "first",
-        "sourceid": "first",
-        "date":"first"
-    }).reset_index()
-    return stations.to_dict(orient="records")
+    with conn.cursor() as cur:
+        cur.execute("""
+            SELECT DISTINCT ON (station) station, latitude, longitude, sourceid, date
+            FROM aqi
+            ORDER BY station, time DESC;
+        """)
+        rows = cur.fetchall()
+        stations = []
+        for row in rows:
+            stations.append({
+                "station": row[0],
+                "latitude": row[1],
+                "longitude": row[2],
+                "sourceid": row[3],
+                "date": row[4].isoformat() if row[4] else None
+            })
+    return stations
 
 
 @app.get("/stations/{station}/latest")
 def get_latest(station: str):
-    d = df[df["station"] == station].sort_values("time", ascending=False).iloc[0]
-    return d.to_dict()
+    with conn.cursor() as cur:
+        cur.execute("""
+            SELECT *
+            FROM aqi
+            WHERE station = %s
+            ORDER BY time DESC
+            LIMIT 1;
+        """, (station,))
+        row = cur.fetchone()
+        if not row:
+            raise HTTPException(status_code=404, detail="Station not found")
+        columns = [desc[0] for desc in cur.description]
+        return dict(zip(columns, row))
 
 
 @app.get("/stations/{station}/daily")
 def get_daily(station: str):
-    d = df[df["station"] == station].copy()
-
-    daily = (
-        d.groupby("date")
-         .agg({"aqi": "mean", "pm2.5": "mean"})
-         .reset_index()
-         .sort_values("date")
-    )
-
-    return daily.tail(7).to_dict(orient="records")
+    with conn.cursor() as cur:
+        cur.execute("""
+            SELECT date,
+                   ROUND(AVG(aqi)::numeric, 2) AS aqi,
+                   ROUND(AVG("pm2.5")::numeric, 2) AS "pm2.5"
+            FROM aqi
+            WHERE station = %s
+            GROUP BY date
+            ORDER BY date DESC
+            LIMIT 7;
+        """, (station,))
+        rows = cur.fetchall()
+        return [{"date": r[0].isoformat(), "aqi": r[1], "pm2.5": r[2]} for r in reversed(rows)]
 
 
 @app.get("/stations/{station}/today")
 def get_today(station: str):
-    d = df[df["station"] == station].copy()
+    with conn.cursor() as cur:
+        cur.execute("""
+            SELECT MAX(date)
+            FROM aqi
+            WHERE station = %s;
+        """, (station,))
+        latest_date = cur.fetchone()[0]
+        if not latest_date:
+            raise HTTPException(status_code=404, detail="Station not found")
 
-    latest_date = d["date"].max()
 
-    d_latest = d[d["date"] == latest_date].sort_values("time")
+        cur.execute("""
+            SELECT *
+            FROM aqi
+            WHERE station = %s AND date = %s
+            ORDER BY time;
+        """, (station, latest_date))
+        rows = cur.fetchall()
+        columns = [desc[0] for desc in cur.description]
+        return [dict(zip(columns, r)) for r in rows]
 
-    return d_latest.to_dict(orient="records")
 
 @app.get("/download")
 def download_data(start: str = Query(...), end: str = Query(...)):
-    start = pd.to_datetime(start)
-    end = pd.to_datetime(end)
+    with conn.cursor() as cur:
+        cur.execute("""
+            SELECT *
+            FROM aqi
+            WHERE time >= %s AND time <= %s
+            ORDER BY time;
+        """, (start, end))
+        rows = cur.fetchall()
+        columns = [desc[0] for desc in cur.description]
 
-    filtered = df[(df["time"] >= start) & (df["time"] <= end)].copy()
+        # CSV buffer
+        stream = StringIO()
+        stream.write(",".join(columns) + "\n")
+        for r in rows:
+            stream.write(",".join([str(c) for c in r]) + "\n")
+        stream.seek(0)
 
-    # ✅ Sort by time
-    filtered = filtered.sort_values("time")
-
-    # CSV buffer
-    stream = StringIO()
-    filtered.to_csv(stream, index=False)
-    stream.seek(0)
-
-    return StreamingResponse(
-        stream,
-        media_type="text/csv",
-        headers={"Content-Disposition": "attachment; filename=data.csv"},
-    )
+        return StreamingResponse(
+            stream,
+            media_type="text/csv",
+            headers={"Content-Disposition": "attachment; filename=data.csv"},
+        )
