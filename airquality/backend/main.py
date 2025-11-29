@@ -84,18 +84,25 @@ def get_all_daily():
 
         """)
         rows = cur.fetchall()
+        
+    grouped_results = {}
 
-    result = [
-        {
-            "station": station,
-            "daily": {
-                "date": date.isoformat(),
-                "aqi": float(aqi)
-            }
+    for station, date, aqi in rows:
+        daily_data = {
+            "date": date.isoformat(),
+            "aqi": float(aqi)
         }
-        for station, date, aqi in rows
-    ]
+        
+        if station not in grouped_results:
+            grouped_results[station] = {
+                "station": station,
+                "daily": []
+            }
+        
+        grouped_results[station]["daily"].append(daily_data)
 
+    result = list(grouped_results.values())
+    
     return result
 
 
