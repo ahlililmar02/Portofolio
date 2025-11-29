@@ -72,7 +72,7 @@ function updateAnalysisBox(aqi, boxId, iconId, textId) {
 
 
 
-function showAQICard(stations, latest) {
+function showAQICard(station, latest) {
     
     const overlay = document.getElementById("aqiOverlay");
 
@@ -88,7 +88,7 @@ function showAQICard(stations, latest) {
         <div class="aqi-row">
             <div>
                 <div class="aqi-value">${aqi}</div>
-                <div class="aqi-sub">AQI at <b>${stations.station}</b></div>
+                <div class="aqi-sub">AQI at <b>${station.station}</b></div>
             </div>
             <div class="aqi-icon">${icon}</div>
         </div>
