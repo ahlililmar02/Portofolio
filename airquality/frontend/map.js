@@ -72,7 +72,7 @@ function updateAnalysisBox(aqi, boxId, iconId, textId) {
 
 
 
-function showAQICard(station, latest) {
+function showAQICard(stations, latest) {
     
     const overlay = document.getElementById("aqiOverlay");
 
@@ -88,7 +88,7 @@ function showAQICard(station, latest) {
         <div class="aqi-row">
             <div>
                 <div class="aqi-value">${aqi}</div>
-                <div class="aqi-sub">AQI at <b>${station.station_name}</b></div>
+                <div class="aqi-sub">AQI at <b>${stations.station}</b></div>
             </div>
             <div class="aqi-icon">${icon}</div>
         </div>
@@ -114,7 +114,7 @@ async function loadGlobalAQIBox() {
 
     // get all latest data
     const allLatest = await Promise.all(stations.map(async (s) => {
-        const res = await fetch(`${API}/stations/${encodeURIComponent(s.station_name)}/latest`);
+        const res = await fetch(`${API}/stations/${encodeURIComponent(s.station)}/latest`);
         return res.ok ? await res.json() : null;
     }));
 
@@ -178,14 +178,14 @@ async function loadStations() {
     for (const s of filtered) {
         let latest = null;
         try {
-            const res = await fetch(`${API}/stations/${encodeURIComponent(s.station_name)}/latest`);
+            const res = await fetch(`${API}/stations/${encodeURIComponent(s.station)}/latest`);
             if (!res.ok) {
-                console.warn(`No latest data for station: ${s.station_name}`);
+                console.warn(`No latest data for station: ${s.station}`);
                 continue; // skip this station
             }
             latest = await res.json();
         } catch (err) {
-            console.error(`Error fetching latest for ${s.station_name}:`, err);
+            console.error(`Error fetching latest for ${s.station}:`, err);
             continue;
         }
 
@@ -202,7 +202,7 @@ async function loadStations() {
         }).addTo(map);
 
         marker.bindPopup(`
-            <b>${s.station_name}</b><br>
+            <b>${s.station}</b><br>
             AQI: ${latest.aqi}<br>
             PM2.5: ${latest["pm2.5"]}<br>
             Source: ${s.sourceid}<br>
@@ -214,7 +214,7 @@ async function loadStations() {
             document.querySelector(".detail-wrapper").classList.remove("hidden");
 
             showAQICard(s, latest);
-            loadChart(s.station_name);
+            loadChart(s.station);
         });
 
 
@@ -348,12 +348,12 @@ async function loadTop5AQIToday() {
         const stations = await resStations.json();
 
         const allLatest = await Promise.all(stations.map(async (s) => {
-            const resToday = await fetch(`${API}/stations/${encodeURIComponent(s.station_name)}/today`);
+            const resToday = await fetch(`${API}/stations/${encodeURIComponent(s.station)}/today`);
             if (!resToday.ok) return null;
             const todayData = await resToday.json();
             if (!todayData || todayData.length === 0) return null;
             const latest = todayData[todayData.length - 1];
-            return { station_name: s.station_name, aqi: latest.aqi};
+            return { station: s.station, aqi: latest.aqi};
         }));
 
         const validData = allLatest.filter(d => d !== null);
@@ -371,7 +371,7 @@ async function loadTop5AQIToday() {
         top5Highest.forEach((d, i) => {
             containerHigh.innerHTML += `
                 <div>${i + 1}</div>
-                <div>${d.station_name}</div>
+                <div>${d.station}</div>
                 <div><span class="aqi-box" style="background:${aqiColor(d.aqi)};color:white;padding:2px 6px;border-radius:4px">${d.aqi}</span></div>
             `;
         });
@@ -385,7 +385,7 @@ async function loadTop5AQIToday() {
         top5Lowest.forEach((d, i) => {
             containerLow.innerHTML += `
                 <div>${i + 1}</div>
-                <div>${d.station_name}</div>
+                <div>${d.station}</div>
                 <div><span class="aqi-box" style="background:${aqiColor(d.aqi)};color:white;padding:2px 6px;border-radius:4px">${d.aqi}</span></div>
             `;
         });

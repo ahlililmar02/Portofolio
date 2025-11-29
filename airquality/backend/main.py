@@ -42,7 +42,7 @@ df["date"] = df["time"].dt.date
 
 @app.get("/stations")
 def get_stations():
-    stations = df.groupby("station_name").agg({
+    stations = df.groupby("station").agg({
         "latitude": "first",
         "longitude": "first",
         "sourceid": "first",
@@ -53,13 +53,13 @@ def get_stations():
 
 @app.get("/stations/{station}/latest")
 def get_latest(station: str):
-    d = df[df["station_name"] == station].sort_values("time", ascending=False).iloc[0]
+    d = df[df["station"] == station].sort_values("time", ascending=False).iloc[0]
     return d.to_dict()
 
 
 @app.get("/stations/{station}/daily")
 def get_daily(station: str):
-    d = df[df["station_name"] == station].copy()
+    d = df[df["station"] == station].copy()
 
     daily = (
         d.groupby("date")
@@ -73,7 +73,7 @@ def get_daily(station: str):
 
 @app.get("/stations/{station}/today")
 def get_today(station: str):
-    d = df[df["station_name"] == station].copy()
+    d = df[df["station"] == station].copy()
 
     latest_date = d["date"].max()
 
