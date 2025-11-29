@@ -30,7 +30,7 @@ conn = psycopg2.connect(
 def get_stations():
     with conn.cursor() as cur:
         cur.execute("""
-            SELECT DISTINCT ON (station) station, latitude, longitude, sourceid, date
+            SELECT DISTINCT ON (station) station, latitude, longitude, sourceid
             FROM aqi
             ORDER BY station, time DESC;
         """)
@@ -42,7 +42,6 @@ def get_stations():
                 "latitude": row[1],
                 "longitude": row[2],
                 "sourceid": row[3],
-                "date": row[4].isoformat() if row[4] else None
             })
     return stations
 
