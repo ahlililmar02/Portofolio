@@ -69,6 +69,13 @@ def get_all_latest():
 from collections import defaultdict
 
 @app.get("/stations/daily")
+from fastapi import FastAPI
+from psycopg2 import connect
+
+app = FastAPI()
+conn = connect("your_connection_string_here")
+
+@app.get("/stations/daily")
 def get_all_daily():
     with conn.cursor() as cur:
         cur.execute("""
@@ -83,14 +90,17 @@ def get_all_daily():
         """)
         rows = cur.fetchall()
 
-    stations = defaultdict(list)
-    for station, date, aqi in rows:
-        stations[station].append({
-            "date": date.isoformat(),
-            "aqi": float(aqi)
-        })
+    result = [
+        {
+            "station": station,
+            "date": date.isoformat(),  
+            "aqi": float(aqi)          
+        }
+        for station, date, aqi in rows
+    ]
 
-    return stations
+    return result
+
 
 
 
