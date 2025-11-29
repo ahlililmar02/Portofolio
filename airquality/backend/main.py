@@ -81,7 +81,7 @@ def get_all_daily():
 
     from collections import defaultdict
     daily_data = defaultdict(list)
-    for station, date, aqi, pm25 in rows:
+    for station, date, aqi in rows:
         daily_data[station].append({
             "date": date.isoformat(),
             "aqi": aqi,
