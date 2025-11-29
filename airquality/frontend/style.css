@@ -93,6 +93,7 @@ body {
 
 .check-title{
     border-radius: 6px;
+    margin: auto;
 }
 
 .check-title :hover{
