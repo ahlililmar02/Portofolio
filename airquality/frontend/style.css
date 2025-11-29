@@ -83,7 +83,7 @@ body {
   align-items: center; 
   background: #faf7f1;
   padding: 10px;
-  font-size: 12px;
+  font-size: 10px;
   border-radius: 6px;
   opacity: 0.9;
   box-shadow: 0 0 6px rgba(0,0,0,0.3);
@@ -93,7 +93,6 @@ body {
 
 .check-title{
     border-radius: 6px;
-    background-color:#fcf1db; 
 }
 
 .check-title :hover{
