@@ -109,29 +109,31 @@ function showAQICard(station, latest) {
 
 
 async function loadGlobalAQIBox() {
-    const resStations = await fetch(`${API}/stations`);
-    const stations = await resStations.json();
 
-    // get all latest data
-    const allLatest = await Promise.all(stations.map(async (s) => {
-        const res = await fetch(`${API}/stations/${encodeURIComponent(s.station)}/latest`);
-        return res.ok ? await res.json() : null;
-    }));
+    const res = await fetch(`${API}/stations/latest`);
 
-    const valid = allLatest.filter(x => x !== null);
+    if (!res.ok) {
+        console.error("Failed to fetch latest station data.");
+        return;
+    }
 
-    // compute stats
+    const valid = await res.json();
+
+    if (valid.length === 0) {
+        console.log("No valid data points found.");
+        return;
+    }
+
     const avgAQI = Math.round(valid.reduce((sum, s) => sum + s.aqi, 0) / valid.length);
     const avgPM25 = Math.round(valid.reduce((sum, s) => sum + s["pm25"], 0) / valid.length);
 
-    // pick latest timestamp across stations
     const latestTime = valid
         .map(s => s.time)
-        .sort()
-        .reverse()[0];
+        .sort() 
+        .reverse()[0]; 
+
     const timeHHMM = latestTime.substring(11, 16);
 
-    // render
     const box = document.getElementById("globalAQIBox");
     box.innerHTML = `
         <div class="aqi-row">
@@ -156,41 +158,47 @@ async function loadGlobalAQIBox() {
 
 loadGlobalAQIBox();
 
+
 async function loadStations() {
     markers.forEach(m => map.removeLayer(m));
     markers = [];
 
-    const selected = [...document.querySelectorAll(".filter-box input:checked")]
+    const selectedSources = [...document.querySelectorAll(".filter-box input:checked")]
                         .map(cb => cb.value);
 
-    const res = await fetch(`${API}/stations`);
-    const stations = await res.json();
+    const [resStations, resLatest] = await Promise.all([
+        fetch(`${API}/stations`),
+        fetch(`${API}/stations/latest`) 
+    ]);
 
-    console.log("Selected sources:", selected);
-    console.log("Stations from API:", stations);
+    if (!resStations.ok || !resLatest.ok) {
+        console.error("Error fetching station or latest data.");
+        return;
+    }
 
-    // filter stations by sourceid
-    const filtered = stations.filter(s => selected.includes(s.sourceid));
+    const stationsList = await resStations.json(); 
+    const latestDataList = await resLatest.json();
 
-    console.log("Filtered stations:", filtered);
+    const latestDataMap = new Map();
+    latestDataList.forEach(data => {
+        latestDataMap.set(data.station, data);
+    });
 
-    // now continue to add markers as usual
-    for (const s of filtered) {
-        let latest = null;
-        try {
-            const res = await fetch(`${API}/stations/${encodeURIComponent(s.station)}/latest`);
-            if (!res.ok) {
-                console.warn(`No latest data for station: ${s.station}`);
-                continue; // skip this station
-            }
-            latest = await res.json();
-        } catch (err) {
-            console.error(`Error fetching latest for ${s.station}:`, err);
+    const filteredStations = stationsList.filter(s => selectedSources.includes(s.sourceid));
+
+    console.log("Filtered stations:", filteredStations);
+
+    for (const s of filteredStations) {
+        const latest = latestDataMap.get(s.station);
+
+        if (!latest || latest.aqi === null || latest.aqi === undefined) {
+             console.warn(`Missing or invalid latest data for station: ${s.station}`);
             continue;
         }
+        
 
         const color = aqiColor(latest.aqi);
-        const timeHHMM = latest.time.substring(11,16);
+        const timeHHMM = latest.time.substring(11, 16);
 
         const marker = L.marker([s.latitude, s.longitude], {
             icon: L.divIcon({
@@ -213,14 +221,12 @@ async function loadStations() {
             document.querySelector(".global-wrapper").classList.add("hidden");
             document.querySelector(".detail-wrapper").classList.remove("hidden");
 
-            showAQICard(s, latest);
+            showAQICard(s, latest); 
             loadChart(s.station);
         });
 
-
         markers.push(marker);
     }
-
 }
 
 document.getElementById("closeDetail").addEventListener("click", () => {
@@ -233,26 +239,44 @@ let lineChart = null;
 let barChart = null;
 let currentStation = null;
 
-async function loadChart(station) {
-    currentStation = station;
+async function loadChart(stationName) {
+    currentStation = stationName;
 
     const variable = "aqi";   
 
-    const dailyRes = await fetch(`${API}/stations/${station}/daily`);
-    const daily = await dailyRes.json();
+    const dailyRes = await fetch(`${API}/stations/daily`);
+    const allDailyData = await dailyRes.json();
+    
+    const stationDailyData = allDailyData.find(s => s.station === stationName);
 
-    const dailyLabels = daily.map(d => d.date);
-    const dailyValues = daily.map(d => d[variable]);
+    let dailyLabels = [];
+    let dailyValues = [];
+
+    if (stationDailyData) {
+        dailyLabels = stationDailyData.daily.map(d => d.date);
+        dailyValues = stationDailyData.daily.map(d => d[variable]);
+    } else {
+        console.warn(`No daily data found for station: ${stationName}`);
+    }
 
 
-    const todayRes = await fetch(`${API}/stations/${station}/today`);
-    const today = await todayRes.json();
+    const todayRes = await fetch(`${API}/stations/today`);
+    const allTodayData = await todayRes.json();
 
-    const todayLabels = today.map(d => {
-        const date = new Date(d.time);
-        return date.getHours().toString().padStart(2, "0") + ":00";
-    });
-    const todayValues = today.map(d => d[variable]);
+    const stationTodayData = allTodayData.find(s => s.station === stationName);
+
+    let todayLabels = [];
+    let todayValues = [];
+
+    if (stationTodayData) {
+        todayLabels = stationTodayData.today.map(d => {
+            const date = new Date(d.time);
+            return date.getHours().toString().padStart(2, "0") + ":00";
+        });
+        todayValues = stationTodayData.today.map(d => d[variable]);
+    } else {
+         console.warn(`No today data found for station: ${stationName}`);
+    }
 
 
     if (lineChart) lineChart.destroy();
@@ -260,81 +284,52 @@ async function loadChart(station) {
 
     const ctxLine = document.getElementById("lineChart").getContext("2d");
     lineChart = new Chart(ctxLine, {
-    type: "line",
-    data: {
-        labels: dailyLabels,
-        datasets: [{
-        label: `${variable.toUpperCase()} (Daily Avg) - ${station}`,
-        data: dailyValues,
-        borderWidth: 2,
-        tension: 0.3,
-        borderColor: dailyValues.map(v => aqiColor(v)),
-        pointBackgroundColor: dailyValues.map(v => aqiColor(v)),
-        pointBorderColor: "#fff",
-        pointRadius: 4
-        }]
-    },
-    options: {
-        responsive: true,
-        plugins: {
-            legend: {
-                display: false
-            }
+        type: "line",
+        data: {
+            labels: dailyLabels,
+            datasets: [{
+                label: `${variable.toUpperCase()} (Daily Avg) - ${stationName}`,
+                data: dailyValues,
+                borderWidth: 2,
+                tension: 0.3,
+                borderColor: dailyValues.map(v => aqiColor(v)),
+                pointBackgroundColor: dailyValues.map(v => aqiColor(v)),
+                pointBorderColor: "#fff",
+                pointRadius: 4
+            }]
         },
-        scales: {
-            x: {
-                ticks: { 
-                    display: false 
-                },
-                grid: {
-                    display: false 
-                }
-            },
-            y: {
-                grid: {
-                    display: false 
-                }
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { ticks: { display: false }, grid: { display: false } },
+                y: { grid: { display: false } }
             }
         }
-    }
     });
 
     const ctxBar = document.getElementById("barChart").getContext("2d");
     barChart = new Chart(ctxBar, {
-    type: "bar",
-    data: {
-        labels: todayLabels,
-        datasets: [{
-            label: `${variable.toUpperCase()} (Today Hourly) - ${station}`,
-            data: todayValues,
-            backgroundColor: todayValues.map(v => aqiColor(v)),
-            borderColor: todayValues.map(v => aqiColor(v)),
-            borderRadius: 3,
-            borderWidth: 1
+        type: "bar",
+        data: {
+            labels: todayLabels,
+            datasets: [{
+                label: `${variable.toUpperCase()} (Today Hourly) - ${stationName}`,
+                data: todayValues,
+                backgroundColor: todayValues.map(v => aqiColor(v)),
+                borderColor: todayValues.map(v => aqiColor(v)),
+                borderRadius: 3,
+                borderWidth: 1
             }]
         },
-    options: {
-        responsive: true,
-        plugins: {
-            legend: {
-                display: false
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { ticks: { display: false }, grid: { display: false } },
+                y: { grid: { display: false } }
             }
-        },
-        scales: {
-            x: {
-                ticks: { 
-                    display: false 
-                },
-                grid: {
-                    display: false 
-                },
-            },
-            y: {
-                grid: {
-                    display: false 
-                }
-            }
-        }}
+        }
     });
 }
 
@@ -344,19 +339,15 @@ loadStations();
 
 async function loadTop5AQIToday() {
     try {
-        const resStations = await fetch(`${API}/stations`);
-        const stations = await resStations.json();
+        const resLatest = await fetch(`${API}/stations/latest`);
+        
+        if (!resLatest.ok) {
+            throw new Error("Failed to fetch latest data from the API.");
+        }
 
-        const allLatest = await Promise.all(stations.map(async (s) => {
-            const resToday = await fetch(`${API}/stations/${encodeURIComponent(s.station)}/today`);
-            if (!resToday.ok) return null;
-            const todayData = await resToday.json();
-            if (!todayData || todayData.length === 0) return null;
-            const latest = todayData[todayData.length - 1];
-            return { station: s.station, aqi: latest.aqi};
-        }));
+        let validData = await resLatest.json();
 
-        const validData = allLatest.filter(d => d !== null);
+        validData = validData.filter(d => typeof d.aqi === 'number' && !isNaN(d.aqi));
 
         const top5Highest = [...validData].sort((a, b) => b.aqi - a.aqi).slice(0, 5);
 
@@ -392,10 +383,13 @@ async function loadTop5AQIToday() {
 
     } catch (err) {
         console.error("Error loading AQI today:", err);
+        document.getElementById("top5Table").innerHTML = "<div>Error loading rankings.</div>";
+        document.getElementById("top5LowestTable").innerHTML = "<div>Error loading rankings.</div>";
     }
 }
 
 loadTop5AQIToday();
+
 
 
 document.querySelector(".side-panel-toggle").addEventListener("click", () => {

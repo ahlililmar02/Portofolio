@@ -66,7 +66,6 @@ def get_all_latest():
         columns = [desc[0] for desc in cur.description]
         return [dict(zip(columns, row)) for row in rows]
 
-from collections import defaultdict
 
 @app.get("/stations/daily")
 def get_all_daily():
@@ -161,7 +160,6 @@ def download_data(start: str = Query(...), end: str = Query(...)):
         rows = cur.fetchall()
         columns = [desc[0] for desc in cur.description]
 
-        # CSV buffer
         stream = StringIO()
         stream.write(",".join(columns) + "\n")
         for r in rows:
