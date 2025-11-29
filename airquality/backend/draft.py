@@ -28,17 +28,13 @@ conn = psycopg2.connect(
     password=os.getenv("DB_PASS"),
 )
 
-query = """
-SELECT *
-FROM aqi
-WHERE time > '2025-01-01'
-ORDER BY time desc;
-"""
-df = pd.read_sql(query, conn)
+df = pd.read_sql("SELECT * FROM aqi", conn)
    
 df["time"] = pd.to_datetime(df["time"])
 
+# Precompute date column for efficiency
 df["date"] = df["time"].dt.date
+
 
 @app.get("/stations")
 def get_stations():
