@@ -96,7 +96,7 @@ function showAQICard(station, latest) {
 
         <div class="aqi-footer">
             <div>${timeHHMM}</div>
-            <div>${latest["pm2.5"]} µg/m³</div>
+            <div>${latest["pm25"]} µg/m³</div>
         </div>
     `;
 
@@ -122,7 +122,7 @@ async function loadGlobalAQIBox() {
 
     // compute stats
     const avgAQI = Math.round(valid.reduce((sum, s) => sum + s.aqi, 0) / valid.length);
-    const avgPM25 = Math.round(valid.reduce((sum, s) => sum + s["pm2.5"], 0) / valid.length);
+    const avgPM25 = Math.round(valid.reduce((sum, s) => sum + s["pm25"], 0) / valid.length);
 
     // pick latest timestamp across stations
     const latestTime = valid
@@ -204,7 +204,7 @@ async function loadStations() {
         marker.bindPopup(`
             <b>${s.station}</b><br>
             AQI: ${latest.aqi}<br>
-            PM2.5: ${latest["pm2.5"]}<br>
+            PM2.5: ${latest["pm25"]}<br>
             Source: ${s.sourceid}<br>
             Time: ${timeHHMM}
         `);

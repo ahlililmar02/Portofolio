@@ -68,7 +68,7 @@ def get_daily(station: str):
         cur.execute("""
             SELECT date,
                    ROUND(AVG(aqi)::numeric, 2) AS aqi,
-                   ROUND(AVG("pm2.5")::numeric, 2) AS "pm2.5"
+                   ROUND(AVG("pm25")::numeric, 2) AS "pm25"
             FROM aqi
             WHERE station = %s
             GROUP BY date
@@ -76,7 +76,7 @@ def get_daily(station: str):
             LIMIT 7;
         """, (station,))
         rows = cur.fetchall()
-        return [{"date": r[0].isoformat(), "aqi": r[1], "pm2.5": r[2]} for r in reversed(rows)]
+        return [{"date": r[0].isoformat(), "aqi": r[1], "pm25": r[2]} for r in reversed(rows)]
 
 
 @app.get("/stations/{station}/today")
