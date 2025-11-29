@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<html>
+	
+<head>
+	<title>Air Quality Dashboard Prototype</title>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+	<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+	<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />	
+	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+	<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+	<link rel="stylesheet" href="style.css?v=1">
+
+
+	<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+</head>
+<body>
+<div id="navbar">
+		<div class="nav-title">Portfolio</div>
+
+		<div class="nav-center">
+			<a href="index.html">Home</a>
+			<a href="map.html">Air Quality</a>
+		</div>
+
+		<div class="nav-right">
+			<span class="material-symbols-outlined profile-icon">
+				account_circle
+			</span>
+		</div>
+</div>
+<div class="page-wrapper">
+    
+
+	<div class="map-wrapper ">
+		
+		<div id="map"></div>
+		
+		<div class="download-wrapper">
+			<div class="panel-wrapper">
+				<div class="side-panel">
+					<div class="basic-title">Download Data</div>
+
+					<div class="filter-group">
+						<label for="startDateFilter">Start Date:</label>
+						<input type="text" id="startDateFilter" placeholder="Select start date">
+					</div>
+
+					<div class="filter-group">
+						<label for="endDateFilter">End Date:</label>
+						<input type="text" id="endDateFilter" placeholder="Select end date">
+					</div>
+
+					<div class="filter-group">
+					<button id="downloadBtn">Download CSV</button>
+					</div>
+					
+				</div>
+				<button class="side-panel-toggle" type="button">
+					
+					<span class="material-icons sp-icon-open">keyboard_double_arrow_right</span>
+					<span class="material-icons sp-icon-close">keyboard_double_arrow_left</span>
+				</button>
+
+				
+
+			</div>
+		</div>
+
+		<div class="charts-wrapper global-wrapper">
+			<div id="globalAQIBox" class="aqi-overlay"></div>
+
+			<div id="globalAnalysisBox" class="analysis-box hidden">
+				<span id="globalAnalysisIcon" class="material-symbols-outlined"></span>
+				<span id="globalAnalysisText"></span>
+			</div>
+
+			<div class="switcher">
+				<div class="card-wrapper">
+					<div class="switch-card" id="card1a">
+						<h4>Highest AQI Today</h4>
+						<div id="top5Table" class="aqi-table"></div>
+					</div>
+
+					<div class="switch-card hidden" id="card1b">
+						<h4>Lowest AQI Today</h4>
+						<div id="top5LowestTable" class="aqi-table"></div>
+					</div>
+				</div>
+				<button id="prevBtn1" class="switch-btn hidden" type="button">
+					<span class="material-icons">keyboard_double_arrow_left</span>
+					<span class="switch-label">Highest</span>
+				</button>
+
+				<button id="nextBtn1" class="switch-btn" type="button">
+					<span class="switch-label">Lowest</span>
+					<span class="material-icons">keyboard_double_arrow_right</span>
+				</button>
+			</div>
+		</div>
+
+		<div class="charts-wrapper detail-wrapper hidden">
+
+			<!-- CLOSE BUTTON -->
+			<div class="close-btn" id="closeDetail">✖</div>
+
+			<div id="aqiOverlay" class="aqi-overlay"></div>
+
+			<div id="detailAnalysisBox" class="analysis-box hidden">
+				<span id="detailAnalysisIcon" class="material-symbols-outlined"></span>
+				<span id="detailAnalysisText"></span>
+			</div>
+
+			<div class="switcher">
+				<div class="card-wrapper">
+					<div class="switch-card chart1" id="card2a">
+						<h4>Today</h4>
+						<canvas id="barChart"></canvas>
+					</div>
+
+					<div class="switch-card chart2 hidden" id="card2b">
+						<h4>Last 7 Days</h4>
+						<canvas id="lineChart"></canvas>
+					</div>
+				</div>
+
+				<button id="prevBtn2" class="switch-btn hidden" type="button">
+					<span class="material-icons">keyboard_double_arrow_left</span>
+					<span class="switch-label">Today</span>
+				</button>
+
+				<button id="nextBtn2" class="switch-btn" type="button">
+					<span class="switch-label">Last 7 Days</span>
+					<span class="material-icons">keyboard_double_arrow_right</span>
+				</button>
+			</div>
+		</div>
+
+			
+		</div>
+
+		
+		<div class="legend">
+			<span class="leg-item good"></span> Good (0-50)
+			<span class="leg-item moderate"></span> Moderate (51-100)
+			<span class="leg-item usg"></span> Unhealthy for SG (101-150)
+			<span class="leg-item unhealthy"></span> Unhealthy (151-200)
+			<span class="leg-item vunhealthy"></span> Very Unhealthy (201-300)
+			<span class="leg-item haz"></span> Hazardous (301+)
+		</div>
+
+		<div class="filter-box">
+			<label><input type="checkbox" value="IQAir" checked /> IQAir</label>
+			<label><input type="checkbox" value="KLHK" checked /> KLHK</label>
+			<label><input type="checkbox" value="UdaraJakarta" checked /> UdaraJakarta</label>
+		</div>
+
+	</div>
+	
+			
+<script src="map.js?v=3" defer></script>
+</body>
+</html>
