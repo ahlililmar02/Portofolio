@@ -71,20 +71,16 @@ from collections import defaultdict
 @app.get("/stations/daily")
 def get_all_daily():
     with conn.cursor() as cur:
-        cur.execute("SELECT MAX(time::date) FROM aqi;")
-        max_date = cur.fetchone()[0]
-        if max_date is None:
-            return []
-
         cur.execute("""
             SELECT station, time::date AS date,
                    ROUND(AVG(aqi)::numeric, 2) AS aqi
             FROM aqi
-            WHERE time::date BETWEEN %s - INTERVAL '6 days' AND %s
+            WHERE time::date <= (SELECT MAX(time::date) FROM aqi)
+              AND time::date >= (SELECT MAX(time::date) FROM aqi) - INTERVAL '6 days'
               AND aqi IS NOT NULL
             GROUP BY station, date
             ORDER BY station, date DESC;
-        """, (max_date, max_date))
+        """)
         rows = cur.fetchall()
 
     stations = defaultdict(list)
