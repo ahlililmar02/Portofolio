@@ -91,7 +91,7 @@ def get_all_daily():
     for station, date, aqi in rows:
         stations[station].append({
             "date": date.isoformat(),
-            "aqi": aqi
+            "aqi": float(aqi)
         })
 
     result = [{"station": s, "daily": stations[s]} for s in stations]
