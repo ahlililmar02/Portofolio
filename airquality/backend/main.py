@@ -8,10 +8,9 @@ from io import StringIO
 
 app = FastAPI()
 
-# Allow frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["35.208.207.194"],  
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
