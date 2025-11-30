@@ -1,67 +1,89 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <title>PM2.5 Dashboard Jakarta</title>
+
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&family=Material+Symbols+Outlined" rel="stylesheet">
 
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <!-- Custom CSS -->
     <link rel="stylesheet" href="style.css?v=5" />
 </head>
 <body>
 
+    <!-- Navbar -->
     <div id="navbar">
-		<div class="nav-title">Portfolio</div>
+        <div class="nav-title">Portfolio</div>
+        <div class="nav-center">
+            <a href="index.html">Home</a>
+            <a href="map.html">Dashboard</a>
+            <a href="prediction.html">Estimated PM2.5</a>
+        </div>
+        <div class="nav-right">
+            <span class="material-symbols-outlined profile-icon">account_circle</span>
+        </div>
+    </div>
 
-		<div class="nav-center">
-			<a href="index.html">Home</a>
-			<a href="map.html">Dashboard</a>
-			<a href="prediction.html">Estimated PM2.5</a>
-		</div>
-
-		<div class="nav-right">
-			<span class="material-symbols-outlined profile-icon">
-				account_circle
-			</span>
-		</div>
-	</div>
-
+    <!-- Main Wrapper -->
     <div class="wrapper">
-		<div class="hero-prediction"></div>
-			<h2>Estimated PM2.5 1x1 km Map in Jakarta</h2>
-			<div style="font-size:14px; font-weight:300; margin-bottom:10px; text-align:justify;">
+        <div class="hero-prediction"></div>
+        <h2>Estimated PM2.5 1x1 km Map in Jakarta</h2>
+        <div style="font-size:14px; font-weight:300; margin-bottom:10px; text-align:justify;">
+            One of the fine airborne pollutant is <b>PM2.5</b> with a diameter less than 2.5 µm, meaning it <b>efficiently penetrates the human respiratory system</b>. 
+            Despite continuous PM2.5 monitoring by government and international agencies, <b>Jakarta’s unevenly distributed stations</b> limit spatially consistent mapping of PM2.5. 
+            Several studies have utilized machine learning models such as <b>Random Forest (RF), XGBoost, and LightGBM</b> to predict PM2.5 concentrations.
+        </div>
 
-				One of the fine airborne pollutant is **PM2.5** with a diameter less than 2.5 µm, means they **efficiently penetrate the human respiratory system**. 
-				Despite continuous PM2.5 monitoring by government and international agencies, **Jakarta’s unevenly distributed stations** limit spatially consistent mapping of PM2.5. 
-				Several studies have utilized machine learning models such as **Random Forest (RF), XGBoost, and LightGBM** to predict PM2.5 concentrations. 
-			
-			</div>
-		</div>
-		<div class="selector-wrapper">
-			<div class="selector">
-				<label>Select Model:</label>
-				<select></select>
-			</div>
+        <!-- Model & Date Selector -->
+        <div class="selector-wrapper">
+            <div class="selector">
+                <label>Select Model:</label>
+                <select></select>
+            </div>
+            <input type="text" id="SelectDate" placeholder="Select date">
+            <datalist id="dateOptions"></datalist>
+        </div>
 
-			<input type="text" id="SelectDate" placeholder="Select date">
-			<datalist id="dateOptions"></datalist>
-		</div>
-		<div class="plot-wrapper">
-			<div class="heatmap-wrapper">
-			</div>
-			<div class="linear-wrapper">
-			</div>
-		</div>
-		<div class="analysis-wrapper">
-			<div class="analysis">
-			<h2>Analysis here</h2>
-			Analysis here
-			</div>
-		</div>
-	</div>
+        <!-- Heatmap & Regression Plot -->
+        <div class="plot-wrapper">
+            <div class="heatmap-wrapper" id="map"></div>
+            <div class="linear-wrapper"></div>
+        </div>
 
-<script src="https://unpkg.com/geotiff"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/shapefile/0.6.6/shp.min.js"></script>
-<script src="config.js"></script>
-<script src="script.js"></script>
+        <!-- Analysis Section -->
+        <div class="analysis-wrapper">
+            <div class="analysis">
+                <h2>Analysis here</h2>
+                Analysis here
+            </div>
+        </div>
+    </div>
+
+    <!-- Libraries -->
+    <script src="https://unpkg.com/geotiff"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/shapefile/0.6.6/shp.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- Config and Script -->
+    <script src="config.js"></script>
+    <script src="script.js"></script>
+
+    <!-- Ensure DOM loaded before initializing map -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            if (typeof initMap === "function") {
+                initMap();
+            }
+            if (typeof loadBoundary === "function") loadBoundary();
+            if (typeof loadTifList === "function") loadTifList();
+            if (typeof loadCSV === "function") loadCSV();
+        });
+    </script>
+
 </body>
 </html>
