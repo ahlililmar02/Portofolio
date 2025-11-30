@@ -8,9 +8,11 @@ from io import StringIO
 
 app = FastAPI()
 
+FRONTEND_URL = os.getenv("FRONTEND_URL")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://35.208.207.194:8080"],  
+    allow_origins=["FRONTEND_URL"],  
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -60,8 +62,12 @@ def get_all_latest():
             FROM aqi,
                 (SELECT MAX(time) AS max_time FROM aqi) AS latest
             WHERE aqi.time >= latest.max_time - INTERVAL '3 hours'
+            AND aqi.aqi IS NOT NULL
+            AND aqi.aqi NOT IN ('NaN', 'nan', 'NAN')
+            AND aqi.aqi <> 0
+            AND aqi.aqi::text <> 'NaN'   
             ORDER BY aqi.station, aqi.time DESC;
-                    """)
+        """)
         rows = cur.fetchall()
         columns = [desc[0] for desc in cur.description]
         return [dict(zip(columns, row)) for row in rows]
@@ -77,7 +83,8 @@ def get_all_daily():
             WHERE time::date <= (SELECT MAX(time::date) FROM aqi)
             AND time::date >= (SELECT MAX(time::date) FROM aqi) - INTERVAL '6 days'
             AND aqi IS NOT NULL
-            AND aqi <> 'NaN' 
+            AND aqi <> 'NaN'
+            AND aqi <> 0 
             GROUP BY station, date
             ORDER BY station, date DESC;
 
@@ -106,8 +113,6 @@ def get_all_daily():
 
 
 
-
-
 @app.get("/stations/today")
 def get_all_today():
     with conn.cursor() as cur:
@@ -122,7 +127,8 @@ def get_all_today():
                 time::date = (SELECT MAX(time::date) FROM aqi)
                 AND aqi IS NOT NULL
                 AND aqi <> 'NaN'
-            ORDER BY station, time ASC; -- Order by time ASC within the day
+                AND aqi <> 0
+            ORDER BY station, time ASC; 
         """)
         rows = cur.fetchall()
 

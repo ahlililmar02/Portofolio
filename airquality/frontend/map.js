@@ -1,4 +1,6 @@
-const API = "http://35.208.207.194:8000";
+const API = import.meta.env.API_URL;
+
+export default API;
 
 let map = L.map("map", {
     zoomControl: false
