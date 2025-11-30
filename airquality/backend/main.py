@@ -271,33 +271,48 @@ def extract_tif(model: str, date: str):
     from PIL import Image
     import io
 
-    def aqi_color(value):
-        # Returns (R, G, B)
-        if value <= 12:
-            return (0, 228, 0)       # green
-        elif value <= 35:
-            return (255, 255, 0)     # yellow
-        elif value <= 55:
-            return (255, 126, 0)     # orange
-        elif value <= 150:
-            return (255, 0, 0)       # red
-        elif value <= 250:
-            return (153, 0, 76)      # purple
-        else:
-            return (126, 0, 35)      # maroon
+    def turbo_color(value):
+        """
+        Returns (R, G, B) using Turbo colormap.
+        Input range: 0–100
+        """
 
-    # Replace NaN with 0 so they become green (or choose white later)
+        # clamp value to 0–100
+        t = max(0, min(100, value)) / 100
+
+        # polynomial approximation of Turbo colormap (Google)
+        r = 0.13572138 + 4.61539260*t - 42.66032258*(t**2) + 132.13108234*(t**3) \
+            - 152.94239396*(t**4) + 59.28637943*(t**5)
+
+        g = 0.09140261 + 2.19418839*t + 4.84296658*(t**2) - 27.59243256*(t**3) \
+            + 58.86923689*(t**4) - 39.55808415*(t**5)
+
+        b = 0.10667330 + 12.64194608*t - 60.58204836*(t**2) + 110.36276717*(t**3) \
+            - 89.90310912*(t**4) + 27.34824973*(t**5)
+
+        # convert 0–1 to 0–255 integer
+        R = int(max(0, min(1, r)) * 255)
+        G = int(max(0, min(1, g)) * 255)
+        B = int(max(0, min(1, b)) * 255)
+
+        return (R, G, B)
+
+
     clean = np.nan_to_num(final_img, nan=0)
 
-    # Generate colored image
-    h, w = clean.shape
+    # Normalize to 0–100 (Turbo range)
+    norm = (clean - np.nanmin(clean)) / (np.nanmax(clean) - np.nanmin(clean) + 1e-9)
+    scaled = (norm * 100).astype(float)
+
+    # Prepare RGB output
+    h, w = scaled.shape
     rgb = np.zeros((h, w, 3), dtype=np.uint8)
 
-    for r in range(h):
-        for c in range(w):
-            rgb[r, c] = aqi_color(clean[r, c])
+    for i in range(h):
+        for j in range(w):
+            rgb[i, j] = turbo_color(scaled[i, j])
 
-    # Create PNG in memory
+    # Convert to PNG
     pil_img = Image.fromarray(rgb, mode="RGB")
     png_buffer = io.BytesIO()
     pil_img.save(png_buffer, format="PNG")
