@@ -446,6 +446,9 @@ function setupSwitcher(cardA, cardB, prevBtn, nextBtn) {
         B.classList.remove("hidden");
         next.classList.add("hidden");
         prev.classList.remove("hidden");
+        if (currentStation) {
+            loadChart(currentStation);
+        }
     });
 
     prev.addEventListener("click", () => {
@@ -453,6 +456,9 @@ function setupSwitcher(cardA, cardB, prevBtn, nextBtn) {
         A.classList.remove("hidden");
         prev.classList.add("hidden");
         next.classList.remove("hidden");
+        if (currentStation) {
+            loadChart(currentStation);
+        }
     });
 }
 
