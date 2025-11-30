@@ -153,79 +153,43 @@ function handleAllDatesChange(event) {
     }
 }
 
-function clearPreviousLayers() {
-    if (tifLayer) {
-        map.removeLayer(tifLayer);
-        tifLayer = null;
-    }
-}
-
-function visualizeJsonData(data, displayName) {
-    clearPreviousLayers();
-    
-    if (data.length === 0) {
-        console.warn(`No data points to visualize for ${displayName}.`);
-        return;
-    }
-
-    const markers = [];
-    let bounds = null;
-
-    data.forEach(point => {
-        const color = aqiColor(point.pm25);
-        
-        const marker = L.circleMarker([point.latitude, point.longitude], {
-            radius: 4,
-            fillColor: color,
-            color: '#000',
-            weight: 0.5,
-            opacity: 0.8,
-            fillOpacity: 0.7
-        }).bindPopup(`PM2.5: ${point.pm25} µg/m³`);
-        
-        markers.push(marker);
-
-        const latLng = L.latLng(point.latitude, point.longitude);
-        if (bounds) {
-            bounds.extend(latLng);
-        } else {
-            bounds = L.latLngBounds(latLng, latLng);
-        }
-    });
-
-    currentLayer = L.featureGroup(markers).addTo(map);
-
-    if (bounds) {
-        map.fitBounds(bounds, { padding: [20, 20] });
-    }
-    
-    console.log(`Visualization complete for ${displayName}. Added ${data.length} points.`);
-}
-
-
-
-async function fetchAndVisualizeJson(model, selectedDate, displayName) {
-    clearPreviousLayers();
-
-    const url = `${BACKEND_BASE_URL}/get-pm25-data/${model}/${selectedDate}`;
-    
+async function fetchAndVisualizeJson(modelShort, selectedDate, displayName) {
     try {
-        console.log(`Fetching data from: ${url}`);
-        const response = await fetch(url);
-        
+        const response = await fetch(`${BACKEND_BASE_URL}/extract-tif?model=${modelShort}&date=${selectedDate}`);
         if (!response.ok) {
-            const errorBody = await response.json();
-            throw new Error(`Server Error (${response.status}): ${errorBody.detail || 'Unknown error'}`);
+            throw new Error("Failed to fetch raster data");
         }
 
         const data = await response.json();
-        
-        visualizeJsonData(data, displayName);
+
+        console.log("Raster data received:", data);
+
+        visualizeRaster(data, displayName);
 
     } catch (error) {
-        console.error(`Error fetching or visualizing data for ${displayName}:`, error.message);
-        clearPreviousLayers();
+        console.error("Error fetching raster:", error);
     }
+}
+
+function visualizeRaster(data, label) {
+    if (tifLayer) {
+        map.removeLayer(tifLayer);
+    }
+
+    const imageBounds = [
+        [data.bounds.bottom, data.bounds.left],
+        [data.bounds.top, data.bounds.right]
+    ];
+
+    tifLayer = L.imageOverlay(
+        `data:image/png;base64,${data.image}`,
+        imageBounds,
+        { opacity: 0.75 }
+    );
+
+    tifLayer.addTo(map);
+
+    console.log(`Raster layer updated: ${label}`);
 }
 
 

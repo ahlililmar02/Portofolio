@@ -7,12 +7,14 @@ from dotenv import load_dotenv
 import os
 import psycopg2
 from io import StringIO
-from io import BytesIO
-import re
 import numpy as np
 import rasterio
+from rasterio.warp import Resampling
+from typing import List
 from rasterio.warp import reproject, Resampling
-from typing import List, Dict, Any
+from rasterio.io import MemoryFile
+import base64
+
 
 
 app = FastAPI()
@@ -187,146 +189,98 @@ def download_data(start: str = Query(...), end: str = Query(...)):
         )
 
 app.mount("/tif", StaticFiles(directory="tif"), name="tif_files")
+
+TIF_DIR = "tif"
+
 @app.get("/list-files", response_model=List[str])
 def list_all_files():
     """Lists all TIF files in the 'tif' directory."""
-    folder = "tif"
     try:
-        all_files = [f for f in os.listdir(folder) if f.endswith(".tif")]
-        return all_files
+        return [f for f in os.listdir(TIF_DIR) if f.endswith(".tif")]
     except FileNotFoundError:
-        raise HTTPException(status_code=404, detail="TIF data directory ('tif/') not found.")
+        raise HTTPException(status_code=404, detail="TIF data directory not found.")
 
+@app.get("/extract-tif")
+def extract_tif(model: str, date: str):
+    tif_dir = "tif"
+    files = os.listdir(tif_dir)
 
-def _get_matching_files(model_short: str) -> List[str]:
-    tif_folder = "tif"
-    pattern = re.compile(rf"^pm25_{re.escape(model_short)}_(\d{{4}}-\d{{2}}-\d{{2}})\.tif$")
-    return [f for f in os.listdir(tif_folder) if pattern.match(f)]
+    # filter by model
+    matched = [f for f in files if f"pm25_{model}_" in f]
 
+    if len(matched) == 0:
+        raise HTTPException(404, f"No files found for model: {model}")
 
-def _process_rasters(model_short: str, selected_date: str = "All Dates") -> Dict[str, Any]:
-    """
-    Core function to read, align, and average (if necessary) rasters.
-    Returns the processed numpy array (image) and metadata (meta).
-    """
-    tif_folder = "tif"
-    matching_files = _get_matching_files(model_short)
+    if date == "All Dates":
+        raster_stack = []
+        reference_meta = None
+        reference_shape = None
 
-    if not matching_files:
-        raise HTTPException(status_code=404, detail=f"No TIF files found for model: {model_short}")
+        for i, tif_file in enumerate(matched):
+            with rasterio.open(os.path.join(tif_dir, tif_file)) as src:
 
-    if selected_date != "All Dates":
-        file_name = f"pm25_{model_short}_{selected_date}.tif"
-        if file_name not in matching_files:
-            raise HTTPException(status_code=404, detail=f"File not found for date: {selected_date}")
-
-        tif_path = os.path.join(tif_folder, file_name)
-        try:
-            with rasterio.open(tif_path) as src:
-                img = src.read(1).astype(np.float32)
+                arr = src.read(1).astype(float)
                 if src.nodata is not None:
-                    img = np.where(img == src.nodata, np.nan, img)
-                meta = src.meta.copy()
-                meta.update(dtype=rasterio.float32, count=1)
-                
-                if 'shape' not in meta or 'transform' not in meta:
-                    raise ValueError("TIF file metadata is missing 'shape' or 'transform'.")
-                    
-                return {"image": img, "meta": meta}
-        except rasterio.RasterioIOError as rio_err:
-            raise HTTPException(status_code=500, detail=f"Error reading TIF file {file_name}: {rio_err}")
+                    arr[arr == src.nodata] = np.nan
 
-
-    
-    reference_meta = None
-    for filename in matching_files:
-        try:
-            tif_path = os.path.join(tif_folder, filename)
-            with rasterio.open(tif_path) as src:
-                reference_meta = src.meta.copy()
-                reference_meta.update(dtype=rasterio.float32, count=1)
-                
-                if 'shape' in reference_meta and 'transform' in reference_meta:
-                    break 
+                if i == 0:
+                    reference_meta = src.meta.copy()
+                    reference_shape = arr.shape
+                    bounds = src.bounds
+                    raster_stack.append(arr)
                 else:
-                    print(f"WARNING: Skipping file {filename}. Missing 'shape' or 'transform' in metadata.")
-                    reference_meta = None
-        except rasterio.RasterioIOError:
-             print(f"WARNING: Skipping unreadable file {filename} while establishing reference grid.")
-             continue
-    
-    if reference_meta is None:
-        raise HTTPException(status_code=500, detail="Failed to establish a valid reference grid from any TIF file.")
+                    arr_resampled = np.empty(reference_shape, dtype=float)
+                    reproject(
+                        arr,
+                        arr_resampled,
+                        src_transform=src.transform,
+                        src_crs=src.crs,
+                        dst_transform=reference_meta["transform"],
+                        dst_crs=reference_meta["crs"],
+                        resampling=Resampling.bilinear
+                    )
+                    raster_stack.append(arr_resampled)
 
-    raster_stack = []
-    for tif_file in matching_files:
-        tif_path = os.path.join(tif_folder, tif_file)
-        try:
-            with rasterio.open(tif_path) as src_temp:
-                if 'transform' not in src_temp.meta or src_temp.shape is None:
-                    print(f"WARNING: Skipping TIF file {tif_file}. Source metadata is incomplete.")
-                    continue
-                    
-                img_temp = src_temp.read(1).astype(np.float32)
-                if src_temp.nodata is not None:
-                    img_temp = np.where(img_temp == src_temp.nodata, np.nan, img_temp)
+        final_img = np.nanmean(raster_stack, axis=0)
 
-                img_resampled = np.empty(reference_meta['shape'], dtype=np.float32)
-                reproject(
-                    source=img_temp,
-                    destination=img_resampled,
-                    src_transform=src_temp.transform,
-                    src_crs=src_temp.crs,
-                    dst_transform=reference_meta["transform"],
-                    dst_crs=reference_meta["crs"],
-                    resampling=Resampling.bilinear,
-                )
-                raster_stack.append(img_resampled)
+    else:
+        # pick exact date file
+        selected = [f for f in matched if date in f]
+        if len(selected) == 0:
+            raise HTTPException(404, f"No file found for that date: {date}")
 
-        except rasterio.RasterioIOError as rio_err:
-            print(f"WARNING: Skipping corrupted TIF file {tif_file} during stacking: {rio_err}")
-            continue
+        file_path = os.path.join(tif_dir, selected[0])
 
-    if not raster_stack:
-        raise HTTPException(status_code=500, detail="Failed to read any valid raster data for averaging.")
-        
-    average_array = np.nanmean(raster_stack, axis=0)
-    
-    return {"image": average_array, "meta": reference_meta}
-        
-     
+        with rasterio.open(file_path) as src:
+            final_img = src.read(1).astype(float)
+            bounds = src.bounds
+            nodata = src.nodata
+            if nodata is not None:
+                final_img[final_img == nodata] = np.nan
 
-@app.get("/get-pm25-data/{model_short}/{selected_date}", response_model=List[Dict[str, float]])
-def get_pm25_data(model_short: str, selected_date: str):
+    # convert ndarray → PNG → base64
+    final_img = np.nan_to_num(final_img, nan=0)
 
-    try:
-        result = _process_rasters(model_short, selected_date)
-        image = result["image"]
-        meta = result["meta"]
-        
-        transform = meta['transform']
-        rows, cols = image.shape
-        data = []
-        
-        for row in range(rows):
-            for col in range(cols):
-                pm25_value = image[row, col]
-                
-                if np.isnan(pm25_value):
-                    continue
-                
-                lon, lat = rasterio.transform.xy(transform, row, col)
-                
-                data.append({
-                    "latitude": round(lat, 5),
-                    "longitude": round(lon, 5),
-                    "pm25": round(float(pm25_value), 3)
-                })
-        
-        return data
+    with MemoryFile() as memfile:
+        with memfile.open(
+            driver="PNG",
+            width=final_img.shape[1],
+            height=final_img.shape[0],
+            count=1,
+            dtype=final_img.dtype
+        ) as dataset:
+            dataset.write(final_img, 1)
 
-    except HTTPException:
-        raise
-    except Exception as e:
-        print(f"Error generating JSON data: {e}")
-        raise HTTPException(status_code=500, detail=f"Server error generating JSON: {str(e)}")
+        png_bytes = memfile.read()
+
+    b64 = base64.b64encode(png_bytes).decode("utf-8")
+
+    return {
+        "image": b64,
+        "bounds": {
+            "left": bounds.left,
+            "right": bounds.right,
+            "top": bounds.top,
+            "bottom": bounds.bottom
+        }
+    }
