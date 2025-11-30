@@ -62,11 +62,21 @@
                     <div class="selector-group">
                         <label>Select Date:</label>
                         <input 
-                            type="date" 
-                            id="date-input"
-                            class="custom-input"
-                            value="2024-11-30"
-                        />
+							type="date" 
+							id="date-input"
+							class="custom-input date-input-field date-input-disabled"
+							value="2024-11-30"
+							disabled
+						/>
+						<label for="all-dates-checkbox" class="checkbox-label">
+							<input 
+								type="checkbox" 
+								id="all-dates-checkbox"
+								class="custom-checkbox"
+								checked
+							/>
+							<span class="text-gray-700 text-sm">All Date</span>
+						</label>
                     </div>
                     <button class="update-btn">
                         Update Prediction
@@ -106,6 +116,20 @@
                             <div class="text-center text-gray-400">
                                 <p>Time Series</p>
                                 <p class="text-sm">(7-day forecast)</p>
+                            </div>
+                        </div>
+						<div class="metrics-cards-container">
+                            <div class="metric-card">
+                                <div class="metric-label">Mean Absolute Error</div>
+                                <div class="metric-value">8.3 µg/m³</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-label">R²</div>
+                                <div class="metric-value">0.942</div>
+                            </div>
+                            <div class="metric-card">
+                                <div class="metric-label">Bias</div>
+                                <div class="metric-value">-1.2 µg/m³</div>
                             </div>
                         </div>
                     </div>
