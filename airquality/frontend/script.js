@@ -173,6 +173,10 @@ async function fetchAndVisualize(fileName, modelShort, allDates) {
         const height = image.getHeight();
         const tiePoint = image.getTiePoints()[0];
         
+        if (!tiePoint || !tiePoint.ModelTiepoint || tiePoint.ModelTiepoint.length < 6) {
+            console.error(`GeoTIFF tie point data is missing or incomplete for ${fileName}. Cannot georeference image. Check if the file is a valid GeoTIFF.`);
+            return; 
+        }
         const assumedResolution = 0.01;
 
         const pixelScale = [assumedResolution, assumedResolution, 0];
