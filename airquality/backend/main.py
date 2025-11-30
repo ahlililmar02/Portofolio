@@ -270,8 +270,17 @@ def extract_tif(model: str, date: str):
 
     from PIL import Image
     import io
+    import numpy as np
 
-    pil_img = Image.open(io.BytesIO(tiff_bytes))
+    # Normalize to 0-255 for PNG
+    scaled = final_img - final_img.min()
+    if scaled.max() > 0:
+        scaled = scaled / scaled.max()
+
+    scaled = (scaled * 255).astype(np.uint8)
+
+    pil_img = Image.fromarray(scaled, mode="L")
+
     png_buffer = io.BytesIO()
     pil_img.save(png_buffer, format="PNG")
 
