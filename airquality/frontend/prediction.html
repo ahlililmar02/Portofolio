@@ -60,24 +60,26 @@
                         </select>
                     </div>
                     <div class="selector-group">
-                        <label>Select Date:</label>
-                        <input 
-							type="date" 
-							id="date-input"
-							class="custom-input date-input-field date-input-disabled"
-							value="2024-11-30"
-							disabled
-						/>
-                    </div>
-					<label for="all-dates-checkbox" class="checkbox-label">
+						<label>Select Date:</label>
+						<div class="date-selector-flex">
 							<input 
-								type="checkbox" 
-								id="all-dates-checkbox"
-								class="custom-checkbox"
-								checked
+								type="date" 
+								id="date-input"
+								class="custom-input date-input-field date-input-disabled"
+								value="2024-11-30"
+								disabled
 							/>
-							<span class="text-gray-700 text-sm">All Date</span>
-					</label>
+							<label for="all-dates-checkbox" class="checkbox-label">
+								<input 
+									type="checkbox" 
+									id="all-dates-checkbox"
+									class="custom-checkbox"
+									checked
+								/>
+								<span class="text-gray-700 text-sm">All Date</span>
+							</label>
+						</div>
+					</div>
                     <button class="update-btn">
                         Update Prediction
                     </button>

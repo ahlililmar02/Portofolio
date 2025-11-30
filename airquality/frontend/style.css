@@ -655,7 +655,6 @@ body {
 }
 .selector-group {
     flex: 1 1 200px; 
-    flex-direction: row;
 }
 .selector-group label {
     display: block;
