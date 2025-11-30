@@ -10,6 +10,7 @@ const modelMap = {
 let tifFiles = [];
 let map;
 let currentModelShort = 'rf';
+let tifLayer = null;
 
 function aqiColor(value) {
     if (value <= 50) return "#00e400";
@@ -23,7 +24,7 @@ function aqiColor(value) {
 function initMap() {
     const mapElement = document.getElementById("heatmap");
     if (!mapElement) {
-        console.error("Map element with ID 'heatmap' not found.");
+        console.error("Map element with ID 'heatmap' not throw found.");
         return;
     }
 
@@ -57,6 +58,7 @@ async function loadTifList() {
         console.log("Loaded TIF files:", tifFiles);
         
         populateModelDropdown();
+        handleUpdate(true); 
     } catch (error) {
         console.error("Error loading TIF files:", error);
         document.getElementById('model-select').innerHTML = '<option disabled>Error loading data</option>';
@@ -148,6 +150,131 @@ function handleAllDatesChange(event) {
     }
 }
 
+function clearPreviousLayers() {
+    if (tifLayer) {
+        map.removeLayer(tifLayer);
+        tifLayer = null;
+    }
+}
+
+async function fetchAndVisualize(fileName, modelShort, allDates) {
+    clearPreviousLayers();
+
+    if (allDates) {
+        console.error("Averaging data across all dates requires complex backend processing. Displaying the latest prediction instead.");
+    }
+
+    try {
+        const tiff = await GeoTIFF.fromUrl(`${BACKEND_BASE_URL}/tif/${fileName}`);
+        const image = await tiff.getImage();
+        const rasters = await image.readRasters({ interleave: true });
+        
+        const width = image.getWidth();
+        const height = image.getHeight();
+        const tiePoint = image.getTiePoints()[0];
+        
+        const assumedResolution = 0.01;
+
+        const pixelScale = [assumedResolution, assumedResolution, 0];
+        
+        const geoTransform = [
+            tiePoint.ModelTiepoint[3] - pixelScale[0] / 2, 
+            pixelScale[0], 
+            0,
+            tiePoint.ModelTiepoint[4] + pixelScale[1] / 2, 
+            0,
+            -pixelScale[1] 
+        ];
+
+        visualizeRaster(rasters, width, height, geoTransform, fileName);
+    } catch (error) {
+        console.error("Error fetching or visualizing TIF data:", error);
+    }
+}
+
+function visualizeRaster(rasters, width, height, geoTransform, fileName) {
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    const imageData = ctx.createImageData(width, height);
+    const data = imageData.data;
+    const pm25Data = rasters;
+
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+            const i = (y * width + x);
+            const value = pm25Data[i];
+            const color = aqiColor(value);
+
+            const r = parseInt(color.substring(1, 3), 16);
+            const g = parseInt(color.substring(3, 5), 16);
+            const b = parseInt(color.substring(5, 7), 16);
+
+            const alpha = 128; 
+
+            data[i * 4 + 0] = r;
+            data[i * 4 + 1] = g;
+            data[i * 4 + 2] = b;
+            data[i * 4 + 3] = alpha; 
+        }
+    }
+    
+    ctx.putImageData(imageData, 0, 0);
+
+    const minLon = geoTransform[0];
+    const maxLat = geoTransform[3];
+    const pixelSizeLon = geoTransform[1];
+    const pixelSizeLat = geoTransform[5];
+
+    const bounds = L.latLngBounds(
+        [maxLat + height * pixelSizeLat, minLon],
+        [maxLat, minLon + width * pixelSizeLon]
+    );
+
+    tifLayer = L.imageOverlay(canvas.toDataURL(), bounds, { 
+        opacity: 0.8,
+        attribution: `Prediction from ${fileName}` 
+    }).addTo(map);
+
+    map.fitBounds(bounds);
+    
+    console.log(`Raster overlay complete. Bounds: ${bounds.toBBoxString()}`);
+}
+
+function handleUpdate(initialLoad = false) {
+    const model = document.getElementById('model-select').value;
+    const dateInput = document.getElementById('date-input');
+    const allDates = document.getElementById('all-dates-checkbox').checked;
+
+    let selectedDate = null;
+    let fileName = null;
+
+    if (allDates) {
+        const latestDate = getDatesForModel(model).pop();
+        if (latestDate) {
+            fileName = `pm25_${model}_${latestDate}.tif`;
+            console.log("All Dates selected. Using latest available file:", fileName);
+        }
+    } else {
+        selectedDate = dateInput.value;
+        if (!selectedDate) {
+            console.error("Please select a date.");
+            return;
+        }
+        fileName = `pm25_${model}_${selectedDate}.tif`;
+    }
+
+    if (fileName) {
+        fetchAndVisualize(fileName, model, allDates);
+    } else {
+        clearPreviousLayers();
+        if (!initialLoad) {
+             console.warn("No file found matching criteria.");
+        }
+    }
+}
+
 function initialize() {
     initMap();
 
@@ -163,9 +290,7 @@ function initialize() {
 
     const updateBtn = document.querySelector('.update-btn');
     if (updateBtn) {
-        updateBtn.addEventListener('click', () => {
-            console.log("Update Prediction button clicked.");
-        });
+        updateBtn.addEventListener('click', handleUpdate);
     }
 
     console.log("Dashboard initialization complete.");
