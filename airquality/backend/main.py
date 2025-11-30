@@ -227,10 +227,16 @@ def _process_rasters(model_short: str, selected_date: str = "All Dates") -> Dict
                 if src.nodata is not None:
                     img = np.where(img == src.nodata, np.nan, img)
                 meta = src.meta.copy()
-                meta.update(dtype=rasterio.float32, count=1) 
+                meta.update(dtype=rasterio.float32, count=1)
+                
+                if 'shape' not in meta or 'transform' not in meta:
+                    raise ValueError("TIF file metadata is missing 'shape' or 'transform'.")
+                    
                 return {"image": img, "meta": meta}
         except rasterio.RasterioIOError as rio_err:
             raise HTTPException(status_code=500, detail=f"Error reading TIF file {file_name}: {rio_err}")
+
+
     
     reference_meta = None
     for filename in matching_files:
@@ -239,19 +245,28 @@ def _process_rasters(model_short: str, selected_date: str = "All Dates") -> Dict
             with rasterio.open(tif_path) as src:
                 reference_meta = src.meta.copy()
                 reference_meta.update(dtype=rasterio.float32, count=1)
-                break 
+                
+                if 'shape' in reference_meta and 'transform' in reference_meta:
+                    break 
+                else:
+                    print(f"WARNING: Skipping file {filename}. Missing 'shape' or 'transform' in metadata.")
+                    reference_meta = None
         except rasterio.RasterioIOError:
              print(f"WARNING: Skipping unreadable file {filename} while establishing reference grid.")
              continue
     
     if reference_meta is None:
-        raise HTTPException(status_code=500, detail="Failed to establish a valid reference grid.")
+        raise HTTPException(status_code=500, detail="Failed to establish a valid reference grid from any TIF file.")
 
     raster_stack = []
     for tif_file in matching_files:
         tif_path = os.path.join(tif_folder, tif_file)
         try:
             with rasterio.open(tif_path) as src_temp:
+                if 'transform' not in src_temp.meta or src_temp.shape is None:
+                    print(f"WARNING: Skipping TIF file {tif_file}. Source metadata is incomplete.")
+                    continue
+                    
                 img_temp = src_temp.read(1).astype(np.float32)
                 if src_temp.nodata is not None:
                     img_temp = np.where(img_temp == src_temp.nodata, np.nan, img_temp)
@@ -279,6 +294,7 @@ def _process_rasters(model_short: str, selected_date: str = "All Dates") -> Dict
     
     return {"image": average_array, "meta": reference_meta}
         
+     
 
 @app.get("/get-pm25-data/{model_short}/{selected_date}", response_model=List[Dict[str, float]])
 def get_pm25_data(model_short: str, selected_date: str):
