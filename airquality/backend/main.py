@@ -294,12 +294,16 @@ def extract_tif(model: str, date: str):
         [189, 225, 52], [181, 231, 50], [173, 236, 49],
     ], dtype=np.uint8)
 
-    # Scale to 0–255 index
     idx = (scaled * (len(INFERNO) - 1)).astype(np.int32)
-    rgb = INFERNO[idx]
+    rgb = INFERNO[idx]     
 
-    # Convert to image
-    pil_img = Image.fromarray(rgb, mode="RGB")
+    h, w = clean.shape
+    rgba = np.zeros((h, w, 4), dtype=np.uint8)
+
+    rgba[..., :3] = rgb
+    rgba[..., 3] = np.where(clean == 0, 0, 255)
+
+    pil_img = Image.fromarray(rgba, mode="RGBA")
     buffer = io.BytesIO()
     pil_img.save(buffer, format="PNG")
 

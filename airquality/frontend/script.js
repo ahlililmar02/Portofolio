@@ -184,7 +184,7 @@ function visualizeRaster(data, label) {
     tifLayer = L.imageOverlay(
         `data:image/png;base64,${data.image}`,
         imageBounds,
-        { opacity: 0.75 }
+        { opacity: 0.9 }
     );
 
     tifLayer.addTo(map);
