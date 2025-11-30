@@ -271,54 +271,39 @@ def extract_tif(model: str, date: str):
     from PIL import Image
     import io
 
-    def turbo_color(value):
-        """
-        Returns (R, G, B) using Turbo colormap.
-        Input range: 0–100
-        """
-
-        # clamp value to 0–100
-        t = max(0, min(100, value)) / 100
-
-        # polynomial approximation of Turbo colormap (Google)
-        r = 0.13572138 + 4.61539260*t - 42.66032258*(t**2) + 132.13108234*(t**3) \
-            - 152.94239396*(t**4) + 59.28637943*(t**5)
-
-        g = 0.09140261 + 2.19418839*t + 4.84296658*(t**2) - 27.59243256*(t**3) \
-            + 58.86923689*(t**4) - 39.55808415*(t**5)
-
-        b = 0.10667330 + 12.64194608*t - 60.58204836*(t**2) + 110.36276717*(t**3) \
-            - 89.90310912*(t**4) + 27.34824973*(t**5)
-
-        # convert 0–1 to 0–255 integer
-        R = int(max(0, min(1, r)) * 255)
-        G = int(max(0, min(1, g)) * 255)
-        B = int(max(0, min(1, b)) * 255)
-
-        return (R, G, B)
-
-
     clean = np.nan_to_num(final_img, nan=0)
+    scaled = np.clip(clean / 100, 0, 1)
 
-    # Normalize to 0–100 (Turbo range)
-    norm = (clean - np.nanmin(clean)) / (np.nanmax(clean) - np.nanmin(clean) + 1e-9)
-    scaled = (norm * 100).astype(float)
+    # Inferno 256-color colormap (compressed as array)
+    INFERNO = np.array([
+        [0, 0, 4], [1, 0, 5], [1, 1, 6], [2, 1, 8], [4, 2, 11],
+        [7, 3, 14], [10, 5, 18], [15, 7, 23], [20, 9, 28],
+        [26, 12, 34], [33, 15, 41], [41, 18, 48], [49, 22, 55],
+        [58, 25, 63], [67, 29, 71], [77, 33, 79], [87, 38, 87],
+        [98, 42, 95], [108, 47, 103], [119, 52, 111],
+        [130, 57, 118], [140, 62, 124], [150, 67, 130],
+        [160, 72, 134], [170, 77, 138], [179, 82, 141],
+        [188, 87, 142], [197, 92, 142], [205, 96, 142],
+        [213, 101, 140], [221, 106, 137], [228, 111, 133],
+        [235, 116, 129], [241, 121, 123], [247, 126, 118],
+        [252, 131, 111], [255, 137, 105], [255, 143, 98],
+        [254, 149, 92], [252, 156, 86], [249, 163, 81],
+        [245, 169, 76], [241, 176, 72], [236, 183, 68],
+        [230, 189, 65], [224, 196, 62], [218, 202, 60],
+        [211, 208, 57], [204, 214, 55], [196, 220, 53],
+        [189, 225, 52], [181, 231, 50], [173, 236, 49],
+    ], dtype=np.uint8)
 
-    # Prepare RGB output
-    h, w = scaled.shape
-    rgb = np.zeros((h, w, 3), dtype=np.uint8)
+    # Scale to 0–255 index
+    idx = (scaled * (len(INFERNO) - 1)).astype(np.int32)
+    rgb = INFERNO[idx]
 
-    for i in range(h):
-        for j in range(w):
-            rgb[i, j] = turbo_color(scaled[i, j])
-
-    # Convert to PNG
+    # Convert to image
     pil_img = Image.fromarray(rgb, mode="RGB")
-    png_buffer = io.BytesIO()
-    pil_img.save(png_buffer, format="PNG")
+    buffer = io.BytesIO()
+    pil_img.save(buffer, format="PNG")
 
-    b64 = base64.b64encode(png_buffer.getvalue()).decode("utf-8")
-
+    b64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
 
     return {
         "image": b64,
