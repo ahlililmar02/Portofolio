@@ -3,19 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <title>PM2.5 Dashboard Jakarta</title>
-
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&family=Material+Symbols+Outlined" rel="stylesheet">
-
-    <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-
-    <!-- Custom CSS -->
     <link rel="stylesheet" href="style.css?v=5" />
 </head>
 <body>
 
-    <!-- Navbar -->
     <div id="navbar">
         <div class="nav-title">Portfolio</div>
         <div class="nav-center">
@@ -28,7 +21,6 @@
         </div>
     </div>
 
-    <!-- Main Wrapper -->
     <div class="wrapper">
         <div class="hero-prediction"></div>
         <h2>Estimated PM2.5 1x1 km Map in Jakarta</h2>
@@ -38,7 +30,6 @@
             Several studies have utilized machine learning models such as <b>Random Forest (RF), XGBoost, and LightGBM</b> to predict PM2.5 concentrations.
         </div>
 
-        <!-- Model & Date Selector -->
         <div class="selector-wrapper">
             <div class="selector">
                 <label>Select Model:</label>
@@ -48,13 +39,11 @@
             <datalist id="dateOptions"></datalist>
         </div>
 
-        <!-- Heatmap & Regression Plot -->
         <div class="plot-wrapper">
             <div class="heatmap-wrapper" id="map"></div>
             <div class="linear-wrapper"></div>
         </div>
 
-        <!-- Analysis Section -->
         <div class="analysis-wrapper">
             <div class="analysis">
                 <h2>Analysis here</h2>
@@ -63,27 +52,12 @@
         </div>
     </div>
 
-    <!-- Libraries -->
     <script src="https://unpkg.com/geotiff"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shapefile/0.6.6/shp.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-    <!-- Config and Script -->
     <script src="config.js"></script>
     <script src="script.js"></script>
-
-    <!-- Ensure DOM loaded before initializing map -->
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            if (typeof initMap === "function") {
-                initMap();
-            }
-            if (typeof loadBoundary === "function") loadBoundary();
-            if (typeof loadTifList === "function") loadTifList();
-            if (typeof loadCSV === "function") loadCSV();
-        });
-    </script>
 
 </body>
 </html>
