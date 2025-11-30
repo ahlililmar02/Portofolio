@@ -706,65 +706,68 @@ body {
 
 .heatmap-card, .chart-card {
     background-color: white;
-    border-radius: 0.5rem; 
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    padding: 1.5rem; 
+    border-radius: 0.5rem; /* rounded-lg */
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
+    padding: 1.5rem; /* p-6 */
 }
 .card-title {
-    color: #111827; 
-    margin-bottom: 1rem; 
+    color: #111827; /* text-gray-900 */
+    margin-bottom: 1rem; /* mb-4 */
     font-size: 1.25rem;
     font-weight: 600;
 }
 
 .map-placeholder, .chart-placeholder {
-    background-color: #f3f4f6; 
-    border-radius: 0.5rem; 
+    background-color: #f3f4f6; /* bg-gray-100 */
+    border-radius: 0.5rem; /* rounded-lg */
     display: flex;
     align-items: center;
     justify-content: center;
 }
 .map-placeholder {
-    aspect-ratio: 1 / 1; 
+    aspect-ratio: 4 / 3; /* aspect-[4/3] */
 }
 .chart-placeholder {
-    aspect-ratio: 1 / 1; 
+    aspect-ratio: 1 / 1; /* aspect-square */
 }
 .map-placeholder .text-center p,
 .chart-placeholder .text-center p {
-    color: #9ca3af;
+    color: #9ca3af; /* text-gray-400 */
 }
 .map-placeholder .text-center .text-sm,
 .chart-placeholder .text-center .text-sm {
     font-size: 0.875rem;
 }
 
+/* Legend Styling */
 .legend-bar {
-    margin-top: 1rem; 
+    margin-top: 1rem; /* mt-4 */
     display: flex;
     align-items: center;
-    gap: 0.5rem; 
+    gap: 0.5rem; /* gap-2 */
 }
 .legend-label {
-    font-size: 0.875rem; 
-    color: #4b5563; 
+    font-size: 0.875rem; /* text-sm */
+    color: #4b5563; /* text-gray-600 */
     flex-shrink: 0;
 }
 .legend-gradient {
-    flex: 1; 
-    height: 1rem; 
-    border-radius: 0.25rem; 
+    flex: 1; /* flex-1 */
+    height: 1rem; /* h-4 */
+    border-radius: 0.25rem; /* rounded */
+    /* Background Gradient: #22c55e (green) to #7f1d1d (dark red) */
     background: linear-gradient(to right, #22c55e, #eab308, #f97316, #ef4444, #7f1d1d);
 }
 .legend-values {
     display: flex;
-    gap: 1rem;
-    font-size: 0.75rem; 
-    color: #4b5563; 
+    gap: 1rem; /* gap-4 */
+    font-size: 0.75rem; /* text-xs */
+    color: #4b5563; /* text-gray-600 */
     flex-shrink: 0;
     justify-content: space-between;
-    width: 7rem; 
+    width: 7rem; /* adjust width as needed to align with gradient */
 }
+
 
 
 .analysis-section {
@@ -807,25 +810,3 @@ body {
     min-height: 300px; 
 }
 
-.metrics-cards-container {
-    margin-top: 1.5rem; 
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem; 
-}
-.metric-card {
-    background-color: #fffbeb; 
-    border: 1px solid #fde68a; 
-    border-radius: 0.25rem;
-    padding: 0.75rem; 
-}
-.metric-label {
-    color: #b45309; 
-    font-size: 0.75rem;
-    line-height: 1;
-}
-.metric-value {
-    color: #78350f; 
-    font-size: 1rem;
-    font-weight: 600;
-}
