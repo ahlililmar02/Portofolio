@@ -24,11 +24,11 @@ function aqiColor(value) {
 function initMap() {
     const mapElement = document.getElementById("heatmap");
     if (!mapElement) {
-        console.error("Map element with ID 'heatmap' not throw found.");
+        console.error("Map element not found. Check if the ID is 'map' or 'heatmap'.");
         return;
     }
 
-    map = L.map("heatmap", { 
+    map = L.map(mapElement.id, { 
         zoomControl: true,
         minZoom: 9, 
         maxZoom: 14 
@@ -61,7 +61,10 @@ async function loadTifList() {
         handleUpdate(true); 
     } catch (error) {
         console.error("Error loading TIF files:", error);
-        document.getElementById('model-select').innerHTML = '<option disabled>Error loading data</option>';
+        const modelSelect = document.getElementById('model-select');
+        if (modelSelect) {
+             modelSelect.innerHTML = '<option disabled>Error loading data</option>';
+        }
     }
 }
 
@@ -157,15 +160,16 @@ function clearPreviousLayers() {
     }
 }
 
-async function fetchAndVisualize(fileName, modelShort, allDates) {
+/**
+ * Fetches and visualizes TIF data from a given URL (either a static file or the average endpoint).
+ * @param {string} url The URL of the GeoTIFF resource.
+ * @param {string} displayName The name to display in the console/attribution.
+ */
+async function fetchAndVisualize(url, displayName) {
     clearPreviousLayers();
 
-    if (allDates) {
-        console.error("Averaging data across all dates requires complex backend processing. Displaying the latest prediction instead.");
-    }
-
     try {
-        const tiff = await GeoTIFF.fromUrl(`${BACKEND_BASE_URL}/tif/${fileName}`);
+        const tiff = await GeoTIFF.fromUrl(url);
         const image = await tiff.getImage();
         const rasters = await image.readRasters({ interleave: true });
         
@@ -174,11 +178,11 @@ async function fetchAndVisualize(fileName, modelShort, allDates) {
         const tiePoint = image.getTiePoints()[0];
         
         if (!tiePoint || !tiePoint.ModelTiepoint || tiePoint.ModelTiepoint.length < 6) {
-            console.error(`GeoTIFF tie point data is missing or incomplete for ${fileName}. Cannot georeference image. Check if the file is a valid GeoTIFF.`);
+            console.error(`GeoTIFF tie point data is missing or incomplete for ${displayName}. Cannot georeference image. Check if the file is a valid GeoTIFF.`);
             return; 
         }
-        const assumedResolution = 0.01;
 
+        const assumedResolution = 0.01;
         const pixelScale = [assumedResolution, assumedResolution, 0];
         
         const geoTransform = [
@@ -190,9 +194,9 @@ async function fetchAndVisualize(fileName, modelShort, allDates) {
             -pixelScale[1] 
         ];
 
-        visualizeRaster(rasters, width, height, geoTransform, fileName);
+        visualizeRaster(rasters, width, height, geoTransform, displayName);
     } catch (error) {
-        console.error("Error fetching or visualizing TIF data:", error);
+        console.error(`Error fetching or visualizing TIF data from ${displayName}:`, error);
     }
 }
 
@@ -208,14 +212,19 @@ function visualizeRaster(rasters, width, height, geoTransform, fileName) {
     for (let y = 0; y < height; y++) {
         for (let x = 0; x < width; x++) {
             const i = (y * width + x);
-            const value = pm25Data[i];
+            const value = pm25Data[i]; 
+            
+            if (value === undefined || value === null || value < 0) { 
+                continue; 
+            }
+            
             const color = aqiColor(value);
 
             const r = parseInt(color.substring(1, 3), 16);
             const g = parseInt(color.substring(3, 5), 16);
             const b = parseInt(color.substring(5, 7), 16);
 
-            const alpha = 128; 
+            const alpha = 128; // 
 
             data[i * 4 + 0] = r;
             data[i * 4 + 1] = g;
@@ -251,32 +260,26 @@ function handleUpdate(initialLoad = false) {
     const dateInput = document.getElementById('date-input');
     const allDates = document.getElementById('all-dates-checkbox').checked;
 
-    let selectedDate = null;
-    let fileName = null;
+    let url;
+    let displayName;
 
     if (allDates) {
-        const latestDate = getDatesForModel(model).pop();
-        if (latestDate) {
-            fileName = `pm25_${model}_${latestDate}.tif`;
-            console.log("All Dates selected. Using latest available file:", fileName);
-        }
+        // Backend handles file selection and averaging
+        url = `${BACKEND_BASE_URL}/average-pm25-data/${model}`;
+        displayName = `All Dates Averaged (${model.toUpperCase()})`;
     } else {
-        selectedDate = dateInput.value;
+        const selectedDate = dateInput.value;
         if (!selectedDate) {
-            console.error("Please select a date.");
+            if (!initialLoad) console.error("Please select a date.");
+            clearPreviousLayers();
             return;
         }
-        fileName = `pm25_${model}_${selectedDate}.tif`;
+        const fileName = `pm25_${model}_${selectedDate}.tif`;
+        url = `${BACKEND_BASE_URL}/tif/${fileName}`;
+        displayName = fileName;
     }
 
-    if (fileName) {
-        fetchAndVisualize(fileName, model, allDates);
-    } else {
-        clearPreviousLayers();
-        if (!initialLoad) {
-             console.warn("No file found matching criteria.");
-        }
-    }
+    fetchAndVisualize(url, displayName);
 }
 
 function initialize() {
@@ -287,9 +290,10 @@ function initialize() {
     const allDatesCheckbox = document.getElementById('all-dates-checkbox');
     if (allDatesCheckbox) {
         allDatesCheckbox.addEventListener('change', handleAllDatesChange);
+        // Trigger initial handle to set date input state
         handleAllDatesChange({ target: allDatesCheckbox });
     } else {
-        console.error("Checkbox with ID 'all-dates-checkbox' not found.");
+        console.error("Checkbox with ID 'all-dates-checkbox' not found. Ensure your HTML includes this element in prediction.html.");
     }
 
     const updateBtn = document.querySelector('.update-btn');
