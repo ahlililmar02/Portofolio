@@ -63,7 +63,6 @@ def get_all_latest():
                 (SELECT MAX(time) AS max_time FROM aqi) AS latest
             WHERE aqi.time >= latest.max_time - INTERVAL '3 hours'
             AND aqi.aqi IS NOT NULL
-            AND aqi.aqi NOT IN ('NaN', 'nan', 'NAN')
             AND aqi.aqi <> 0
             AND aqi.aqi::text <> 'NaN'   
             ORDER BY aqi.station, aqi.time DESC;
