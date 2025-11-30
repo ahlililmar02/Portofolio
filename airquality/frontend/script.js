@@ -108,7 +108,7 @@ function populateDatePicker(modelShort) {
 
 async function loadTiff(modelShort, dateStr) {
     const fileName = `pm25_${modelShort}_${dateStr}.tif`;
-    const url = `${BACKEND}/tif/${fileName}`;
+    const url = `${BACKEND}/list-files/${fileName}`;
 
     const tiff = await GeoTIFF.fromUrl(url);
     const image = await tiff.getImage();
