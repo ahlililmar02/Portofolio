@@ -725,7 +725,7 @@ body {
     justify-content: center;
 }
 .map-placeholder {
-    aspect-ratio: 16 / 9; 
+    aspect-ratio: 3 / 2; 
 }
 .chart-placeholder {
     aspect-ratio: 1 / 1; 
