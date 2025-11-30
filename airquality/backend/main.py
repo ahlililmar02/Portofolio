@@ -270,12 +270,12 @@ def extract_tif(model: str, date: str):
 
     from PIL import Image
     import io
-    import numpy as np
 
     # Normalize to 0-255 for PNG
-    scaled = final_img - final_img.min()
-    if scaled.max() > 0:
-        scaled = scaled / scaled.max()
+    scaled = final_img - np.nanmin(final_img)
+
+    if np.nanmax(scaled) > 0:
+        scaled = scaled / np.nanmax(scaled)
 
     scaled = (scaled * 255).astype(np.uint8)
 
