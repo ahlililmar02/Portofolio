@@ -5,7 +5,6 @@ from fastapi import FastAPI, HTTPException, Response
 from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 import os
-import io
 import psycopg2
 from io import StringIO
 import numpy as np
@@ -15,8 +14,6 @@ from typing import List
 from rasterio.warp import reproject, Resampling
 from rasterio.io import MemoryFile
 import base64
-from matplotlib import cm, colors
-from PIL import Image
 
 app = FastAPI()
 
@@ -203,11 +200,11 @@ def list_all_files():
 
 @app.get("/extract-tif")
 def extract_tif(model: str, date: str):
-
     tif_dir = "tif"
     files = os.listdir(tif_dir)
 
     matched = [f for f in files if f"pm25_{model}_" in f]
+
     if len(matched) == 0:
         raise HTTPException(404, f"No files found for model: {model}")
 
@@ -218,6 +215,7 @@ def extract_tif(model: str, date: str):
 
         for i, tif_file in enumerate(matched):
             with rasterio.open(os.path.join(tif_dir, tif_file)) as src:
+
                 arr = src.read(1).astype(float)
                 if src.nodata is not None:
                     arr[arr == src.nodata] = np.nan
@@ -228,7 +226,6 @@ def extract_tif(model: str, date: str):
                     bounds = src.bounds
                     raster_stack.append(arr)
                 else:
-                    # Resample to match reference grid
                     arr_resampled = np.empty(reference_shape, dtype=float)
                     reproject(
                         arr,
@@ -244,7 +241,6 @@ def extract_tif(model: str, date: str):
         final_img = np.nanmean(raster_stack, axis=0)
 
     else:
-        # Pick exact date file
         selected = [f for f in matched if date in f]
         if len(selected) == 0:
             raise HTTPException(404, f"No file found for that date: {date}")
@@ -258,27 +254,68 @@ def extract_tif(model: str, date: str):
             if nodata is not None:
                 final_img[final_img == nodata] = np.nan
 
+    final_img = np.nan_to_num(final_img, nan=0).astype("float32")
 
-    cleaned = final_img.copy()
+    from PIL import Image
+    import io
 
-    # Turbo colormap between 0–80
-    vmin, vmax = 0, 80
-    norm = colors.Normalize(vmin=vmin, vmax=vmax)
-    cmap = cm.turbo
+    clean = np.nan_to_num(final_img, nan=0)
+    scaled = np.clip(clean / 100, 0, 1)
 
-    # Map values → RGBA
-    rgba = (cmap(norm(cleaned)) * 255).astype(np.uint8)  
-    transparency_mask = np.isnan(cleaned) | (cleaned == 0)
-    rgba[..., 3] = np.where(transparency_mask, 0, 255)
+    # Inferno 256-color colormap (compressed as array)
+    TURBO = np.array([
+        [48,18,59],[50,21,67],[51,25,74],[52,29,82],[53,33,89],[54,37,97],[55,41,105],[56,45,113],
+        [57,49,122],[57,53,130],[58,57,138],[58,61,147],[59,65,155],[59,69,163],[58,73,171],[58,77,179],
+        [58,81,187],[57,85,195],[56,89,202],[55,93,209],[53,96,216],[51,100,223],[49,104,229],[46,108,235],
+        [43,111,240],[40,115,245],[36,118,249],[32,121,252],[28,125,255],[23,128,255],[18,131,255],[11,134,254],
+        [5,137,252],[0,140,249],[0,143,245],[0,146,242],[0,149,238],[0,152,234],[0,155,229],[0,158,225],
+        [0,161,220],[0,163,215],[0,166,210],[0,169,206],[0,171,201],[0,174,197],[0,177,192],[0,179,188],
+        [0,182,184],[0,184,180],[0,187,176],[0,189,172],[0,192,168],[0,194,165],[1,197,161],[5,199,158],
+        [10,201,154],[15,203,151],[20,206,147],[25,208,144],[31,210,141],[36,212,138],[42,214,135],
+        [48,216,132],[54,218,129],[60,220,126],[66,221,123],[72,223,121],[78,224,118],[84,226,115],
+        [90,227,113],[96,229,110],[102,230,108],[108,231,106],[114,233,103],[121,234,101],[127,235,99],
+        [133,236,97],[139,237,95],[145,238,93],[151,239,91],[157,240,89],[163,241,87],[168,242,85],
+        [174,243,83],[180,244,81],[185,245,79],[191,245,77],[196,246,75],[202,247,73],[207,248,70],
+        [212,248,68],[217,249,66],[222,249,64],[227,250,61],[232,250,59],[236,251,56],[241,251,54],
+        [245,252,51],[249,252,48],[253,253,45],[255,252,42],[255,250,40],[255,248,38],[255,246,36],
+        [255,244,34],[255,242,32],[255,240,30],[255,237,28],[255,235,26],[255,232,23],[255,229,21],
+        [255,226,19],[255,223,17],[255,220,15],[255,216,13],[255,213,11],[255,209,9],[255,206,7],
+        [255,202,5],[255,198,4],[255,194,3],[255,190,2],[255,185,1],[255,181,1],[255,176,1],
+        [254,172,1],[254,167,1],[253,162,1],[252,157,1],[251,152,1],[250,147,1],[248,142,1],
+        [247,137,1],[245,132,1],[243,127,1],[241,121,1],[239,116,1],[237,110,1],[234,105,1],
+        [232,99,1],[229,93,1],[226,87,1],[223,81,1],[220,75,1],[216,69,1],[213,63,1],
+        [209,56,1],[205,50,1],[201,43,1],[197,37,1],[192,30,1],[188,23,1],[183,16,1],[178,9,1],
+        [173,2,1],[168,0,2],[162,0,6],[156,0,10],[151,0,14],[145,0,18],[139,0,22],[133,0,26],
+        [127,0,30],[121,0,34],[115,0,38],[109,0,41],[103,0,45],[97,0,48],[91,0,52],[85,0,55],
+        [79,0,59],[73,0,62],[67,0,65],[61,0,68],[55,0,71],[49,0,74],[43,0,77],[37,0,80],
+        [32,0,83],[26,0,85],[20,0,88],[15,0,91],[9,0,93],[4,0,96],[0,0,98],[0,0,101],
+        [0,0,103],[0,0,105],[0,0,108],[0,0,110],[0,0,112],[0,1,114],[0,3,116],[0,5,118],
+        [1,7,120],[2,9,121],[4,11,123],[6,13,125],[9,15,126],[12,17,128],[15,19,129],[18,21,131],
+        [21,23,132],[25,25,134],[29,27,135],[33,29,137],[38,31,138],[42,33,139],[47,35,141],
+        [52,37,142],[57,39,143],[62,41,145],[67,43,146],[72,45,147],[78,47,149],[83,50,150],
+        [89,52,151],[95,54,153],[100,56,154],[106,58,155],[112,60,156],[118,62,158],[124,64,159],
+        [130,66,160],[136,68,162],[142,70,163],[148,72,164],[154,74,165],[160,76,167],[166,78,168],
+        [171,80,169],[177,82,170],[183,84,171],[188,86,173],[194,88,174],[199,90,175],[205,92,176],
+        [210,94,177],[216,95,178],[221,97,179],[226,99,180],[232,101,181],[237,103,182],[242,104,183],
+        [247,106,184],[251,108,185],[255,110,186]
+    ], dtype=np.uint8)
 
-    # Convert RGBA array → PNG
+
+    idx = (scaled * (len(TURBO) - 1)).astype(np.int32)
+    rgb = TURBO[idx]     
+
+    h, w = clean.shape
+    rgba = np.zeros((h, w, 4), dtype=np.uint8)
+
+    rgba[..., :3] = rgb
+    rgba[..., 3] = np.where(clean == 0, 0, 255)
+
     pil_img = Image.fromarray(rgba, mode="RGBA")
+    pil_img = pil_img.resize((w, h), resample=Image.NEAREST)  
     buffer = io.BytesIO()
     pil_img.save(buffer, format="PNG")
 
     b64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
-
-    # ---------------------------------------------------------------------
 
     return {
         "image": b64,
@@ -289,4 +326,3 @@ def extract_tif(model: str, date: str):
             "bottom": bounds.bottom
         }
     }
-
