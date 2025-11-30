@@ -12,7 +12,7 @@
         const cacheBuster = new Date().getTime(); 
         const scriptElement = document.createElement('script');
         // Append the timestamp as a query parameter (e.g., map.js?v=1700000000000)
-        scriptElement.src = 'map.js?v=' + cacheBuster; 
+        scriptElement.src = 'script.js?v=' + cacheBuster; 
         document.head.appendChild(scriptElement);
     </script>
 </head>
