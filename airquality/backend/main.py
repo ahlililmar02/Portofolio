@@ -176,3 +176,9 @@ def download_data(start: str = Query(...), end: str = Query(...)):
             media_type="text/csv",
             headers={"Content-Disposition": "attachment; filename=data.csv"},
         )
+
+@app.get("/list-files")
+def list_all_files():
+    folder = "tif"
+    all_files = os.listdir(folder)
+    return all_files

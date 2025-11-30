@@ -13,7 +13,9 @@
 
 		<div class="nav-center">
 			<a href="index.html">Home</a>
-			<a href="map.html">Air Quality</a>
+			<a href="map.html">Dashboard</a>
+			<a href="prediction.html">Estimated PM2.5</a>
+
 		</div>
 
 		<div class="nav-right">
@@ -23,11 +25,44 @@
 		</div>
 	</div>
 
-    <!-- HERO SECTION -->
-    <section class="hero">
-        <h1>Welcome to My Portfolio</h1>
-        <p>Air Quality, Meteorology, and Data Science Projects</p>
-    </section>
+    <div class="wrapper">
+		<div class="hero-prediction"></div>
+			<h2>Estimated PM2.5 1x1 km Map in Jakarta</h2>
+			<div style="font-size:14px; font-weight:300; margin-bottom:10px; text-align:justify;">
 
+				One of the fine airborne pollutant is **PM2.5** with a diameter less than 2.5 µm, means they **efficiently penetrate the human respiratory system**. 
+				Despite continuous PM2.5 monitoring by government and international agencies, **Jakarta’s unevenly distributed stations** limit spatially consistent mapping of PM2.5. 
+				Several studies have utilized machine learning models such as **Random Forest (RF), XGBoost, and LightGBM** to predict PM2.5 concentrations. 
+			
+			</div>
+		</div>
+		<div class="selector-wrapper">
+			<div class="selector">
+				<label>Select Model:</label>
+				<select></select>
+			</div>
+
+			<input type="text" id="SelectDate" placeholder="Select date">
+			<datalist id="dateOptions"></datalist>
+		</div>
+		<div class="plot-wrapper">
+			<div class="heatmap-wrapper">
+			</div>
+			<div class="linear-wrapper">
+			</div>
+		</div>
+		<div class="analysis-wrapper">
+			<div class="analysis">
+			<h2>Analysis here</h2>
+			Analysis here
+			</div>
+		</div>
+	</div>
+
+<script src="https://unpkg.com/geotiff"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/shapefile/0.6.6/shp.min.js"></script>
+<script src="config.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
