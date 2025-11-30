@@ -8,6 +8,8 @@ from io import StringIO
 
 app = FastAPI()
 
+load_dotenv()
+
 FRONTEND_URL = os.getenv("FRONTEND_URL")
 
 app.add_middleware(
@@ -17,8 +19,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-load_dotenv()
 
 conn = psycopg2.connect(
     host=os.getenv("DB_HOST"),
