@@ -855,6 +855,7 @@ body {
 .custom-checkbox {
     width: 1rem; /* w-4 */
     height: 1rem; /* h-4 */
+    vertical-align: middle;
     color: #d97706; /* text-amber-600 */
     border: 1px solid #d1d5db; /* border-gray-300 */
     border-radius: 0.25rem; /* rounded */
