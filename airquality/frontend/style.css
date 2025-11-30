@@ -578,3 +578,234 @@ body {
     font-weight: 500;
     margin-left: 14px;
 }
+
+.pm25-prediction-container {
+    padding-top: 4rem; 
+}
+.content-wrapper {
+    max-width: 80rem; 
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem; 
+    padding-right: 1rem;
+}
+@media (min-width: 640px) { 
+    .content-wrapper {
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+    }
+}
+@media (min-width: 1024px) { 
+    .content-wrapper {
+        padding-left: 2rem;
+        padding-right: 2rem;
+    }
+}
+
+.hero-section {
+    position: relative;
+    height: 400px;
+}
+.hero-image-fallback {
+    position: absolute;
+    inset: 0;
+}
+.hero-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.hero-overlay {
+    position: absolute;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.4); 
+}
+.hero-content {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+}
+.text-block {
+    max-width: 56rem; 
+}
+.hero-content h1 {
+    color: white;
+    font-size: 2.25rem;
+    margin-bottom: 1.5rem; 
+}
+.hero-content p {
+    color: rgba(255, 255, 255, 0.9); 
+    font-size: 0.875rem; 
+    line-height: 1.625; 
+}
+.hero-content strong {
+    font-weight: 700;
+}
+
+.selectors-bar {
+    background-color: white;
+    border-bottom: 1px solid #e5e7eb; 
+}
+.selectors-bar .content-wrapper {
+    padding-top: 1.5rem; 
+    padding-bottom: 1.5rem;
+}
+.selectors-flex {
+    display: flex;
+    flex-wrap: wrap; 
+    gap: 1.5rem; 
+    align-items: flex-end; 
+}
+.selector-group {
+    flex: 1 1 200px; 
+}
+.selector-group label {
+    display: block;
+    color: #374151; 
+    margin-bottom: 0.5rem; 
+}
+.custom-select, .custom-input {
+    width: 100%;
+    padding: 0.5rem 1rem; 
+    border: 1px solid #d1d5db; 
+    border-radius: 0.5rem; 
+    transition: all 0.2s;
+}
+.custom-select:focus, .custom-input:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.5);
+    border-color: #f59e0b;
+}
+.update-btn {
+    padding: 0.5rem 1.5rem;
+    background-color: #d97706; 
+    color: white;
+    border-radius: 0.5rem; 
+    transition: background-color 0.2s;
+    flex-shrink: 0;
+}
+.update-btn:hover {
+    background-color: #b45309; 
+}
+
+.visualizations-section {
+    background-color: #f9fafb;
+    padding-top: 3rem; 
+    padding-bottom: 3rem;
+}
+.viz-grid {
+    display: grid;
+    gap: 2rem; 
+}
+@media (min-width: 1024px) { 
+    .viz-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    .heatmap-card {
+        grid-column: span 2 / span 2; 
+    }
+}
+
+.heatmap-card, .chart-card {
+    background-color: white;
+    border-radius: 0.5rem; 
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    padding: 1.5rem; 
+}
+.card-title {
+    color: #111827; 
+    margin-bottom: 1rem; 
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.map-placeholder, .chart-placeholder {
+    background-color: #f3f4f6; 
+    border-radius: 0.5rem; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.map-placeholder {
+    aspect-ratio: 4 / 3; 
+}
+.chart-placeholder {
+    aspect-ratio: 1 / 1; 
+}
+.map-placeholder .text-center p,
+.chart-placeholder .text-center p {
+    color: #9ca3af;
+}
+.map-placeholder .text-center .text-sm,
+.chart-placeholder .text-center .text-sm {
+    font-size: 0.875rem;
+}
+
+.legend-bar {
+    margin-top: 1rem; 
+    display: flex;
+    align-items: center;
+    gap: 0.5rem; 
+}
+.legend-label {
+    font-size: 0.875rem; 
+    color: #4b5563; 
+    flex-shrink: 0;
+}
+.legend-gradient {
+    flex: 1; 
+    height: 1rem; 
+    border-radius: 0.25rem; 
+    background: linear-gradient(to right, #22c55e, #eab308, #f97316, #ef4444, #7f1d1d);
+}
+.legend-values {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.75rem; 
+    color: #4b5563; 
+    flex-shrink: 0;
+    justify-content: space-between;
+    width: 7rem; 
+}
+
+
+.analysis-section {
+    background-color: white; 
+    padding-top: 3rem; 
+    padding-bottom: 3rem;
+}
+.section-title {
+    color: #111827; 
+    margin-bottom: 1.5rem; 
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+.analysis-summary {
+    background-color: #f9fafb; 
+    border: 1px solid #e5e7eb; 
+    border-radius: 0.5rem; 
+    padding: 1.5rem; 
+}
+.summary-title {
+    color: #111827; 
+    margin-bottom: 1rem; 
+    font-size: 1.125rem;
+    font-weight: 600;
+}
+.summary-text-block {
+    color: #374151; 
+    font-size: 0.875rem; 
+    line-height: 1.625; 
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem; 
+}
+.summary-text-block strong {
+    font-weight: 700;
+}
+
+#map {
+    height: 100%; 
+    min-height: 300px; 
+}
