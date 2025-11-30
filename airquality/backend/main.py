@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 import os
 import psycopg2
 from io import StringIO
+from fastapi.staticfiles import StaticFiles
 
 app = FastAPI()
 
@@ -177,6 +178,7 @@ def download_data(start: str = Query(...), end: str = Query(...)):
             headers={"Content-Disposition": "attachment; filename=data.csv"},
         )
 
+app.mount("/tif", StaticFiles(directory="tif"), name="tif_files")
 @app.get("/list-files")
 def list_all_files():
     folder = "tif"
