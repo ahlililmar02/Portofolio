@@ -187,7 +187,6 @@ def download_data(start: str = Query(...), end: str = Query(...)):
         )
 
 app.mount("/tif", StaticFiles(directory="tif"), name="tif_files")
-
 @app.get("/list-files", response_model=List[str])
 def list_all_files():
     """Lists all TIF files in the 'tif' directory."""
@@ -206,7 +205,10 @@ def _get_matching_files(model_short: str) -> List[str]:
 
 
 def _process_rasters(model_short: str, selected_date: str = "All Dates") -> Dict[str, Any]:
-
+    """
+    Core function to read, align, and average (if necessary) rasters.
+    Returns the processed numpy array (image) and metadata (meta).
+    """
     tif_folder = "tif"
     matching_files = _get_matching_files(model_short)
 
@@ -224,31 +226,26 @@ def _process_rasters(model_short: str, selected_date: str = "All Dates") -> Dict
                 img = src.read(1).astype(np.float32)
                 if src.nodata is not None:
                     img = np.where(img == src.nodata, np.nan, img)
-                
                 meta = src.meta.copy()
                 meta.update(dtype=rasterio.float32, count=1) 
-                
-                return {"image": img, "meta": meta, "bounds": src.bounds}
+                return {"image": img, "meta": meta}
         except rasterio.RasterioIOError as rio_err:
-            raise HTTPException(status_code=500, detail=f"Error reading single TIF file {file_name}: {rio_err}")
-
-
+            raise HTTPException(status_code=500, detail=f"Error reading TIF file {file_name}: {rio_err}")
+    
     reference_meta = None
-    bounds = None
     for filename in matching_files:
         try:
             tif_path = os.path.join(tif_folder, filename)
             with rasterio.open(tif_path) as src:
                 reference_meta = src.meta.copy()
                 reference_meta.update(dtype=rasterio.float32, count=1)
-                bounds = src.bounds
                 break 
         except rasterio.RasterioIOError:
              print(f"WARNING: Skipping unreadable file {filename} while establishing reference grid.")
              continue
     
     if reference_meta is None:
-        raise HTTPException(status_code=500, detail="Failed to establish a valid reference grid from any TIF file.")
+        raise HTTPException(status_code=500, detail="Failed to establish a valid reference grid.")
 
     raster_stack = []
     for tif_file in matching_files:
@@ -256,7 +253,6 @@ def _process_rasters(model_short: str, selected_date: str = "All Dates") -> Dict
         try:
             with rasterio.open(tif_path) as src_temp:
                 img_temp = src_temp.read(1).astype(np.float32)
-                
                 if src_temp.nodata is not None:
                     img_temp = np.where(img_temp == src_temp.nodata, np.nan, img_temp)
 
@@ -273,7 +269,7 @@ def _process_rasters(model_short: str, selected_date: str = "All Dates") -> Dict
                 raster_stack.append(img_resampled)
 
         except rasterio.RasterioIOError as rio_err:
-            print(f"WARNING: Skipping corrupted or unreadable TIF file {tif_file} during stacking: {rio_err}")
+            print(f"WARNING: Skipping corrupted TIF file {tif_file} during stacking: {rio_err}")
             continue
 
     if not raster_stack:
@@ -281,34 +277,12 @@ def _process_rasters(model_short: str, selected_date: str = "All Dates") -> Dict
         
     average_array = np.nanmean(raster_stack, axis=0)
     
-    return {"image": average_array, "meta": reference_meta, "bounds": bounds}
+    return {"image": average_array, "meta": reference_meta}
         
-
-@app.get("/average-pm25-data/{model_short}")
-def average_pm25_data(model_short: str):
-
-    try:
-        result = _process_rasters(model_short, selected_date="All Dates")
-        image = result["image"]
-        profile = result["meta"]
-        
-        memfile = BytesIO()
-        with rasterio.open(memfile, 'w', **profile) as dst:
-            dst.write(image, 1)
-
-        memfile.seek(0)
-        
-        return Response(content=memfile.read(), media_type="image/tiff")
-
-    except HTTPException:
-        raise
-    except Exception as e:
-        print(f"FATAL Error during TIF averaging for model {model_short}: {e}")
-        raise HTTPException(status_code=500, detail=f"Server error during TIF processing: {str(e)}")
-
 
 @app.get("/get-pm25-data/{model_short}/{selected_date}", response_model=List[Dict[str, float]])
 def get_pm25_data(model_short: str, selected_date: str):
+
     try:
         result = _process_rasters(model_short, selected_date)
         image = result["image"]

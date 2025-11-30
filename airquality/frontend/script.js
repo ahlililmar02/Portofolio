@@ -13,11 +13,11 @@ let currentModelShort = 'rf';
 let tifLayer = null;
 
 function aqiColor(value) {
-    if (value <= 50) return "#00e400";
-    else if (value <= 100) return "#ffff00";
-    else if (value <= 150) return "#ff7e00";
-    else if (value <= 200) return "#ff0000";
-    else if (value <= 300) return "#99004c";
+    if (value <= 12) return "#00e400";
+    else if (value <= 35) return "#ffff00";
+    else if (value <= 55) return "#ff7e00";
+    else if (value <= 150) return "#ff0000";
+    else if (value <= 250) return "#99004c";
     else return "#7e0023";
 }
 
@@ -160,126 +160,94 @@ function clearPreviousLayers() {
     }
 }
 
-/**
- * Fetches and visualizes TIF data from a given URL (either a static file or the average endpoint).
- * @param {string} url The URL of the GeoTIFF resource.
- * @param {string} displayName The name to display in the console/attribution.
- */
-async function fetchAndVisualize(url, displayName) {
+function visualizeJsonData(data, displayName) {
+    clearPreviousLayers();
+    
+    if (data.length === 0) {
+        console.warn(`No data points to visualize for ${displayName}.`);
+        return;
+    }
+
+    const markers = [];
+    let bounds = null;
+
+    data.forEach(point => {
+        const color = aqiColor(point.pm25);
+        
+        const marker = L.circleMarker([point.latitude, point.longitude], {
+            radius: 4,
+            fillColor: color,
+            color: '#000',
+            weight: 0.5,
+            opacity: 0.8,
+            fillOpacity: 0.7
+        }).bindPopup(`PM2.5: ${point.pm25} µg/m³`);
+        
+        markers.push(marker);
+
+        const latLng = L.latLng(point.latitude, point.longitude);
+        if (bounds) {
+            bounds.extend(latLng);
+        } else {
+            bounds = L.latLngBounds(latLng, latLng);
+        }
+    });
+
+    currentLayer = L.featureGroup(markers).addTo(map);
+
+    if (bounds) {
+        map.fitBounds(bounds, { padding: [20, 20] });
+    }
+    
+    console.log(`Visualization complete for ${displayName}. Added ${data.length} points.`);
+}
+
+
+
+async function fetchAndVisualizeJson(model, selectedDate, displayName) {
     clearPreviousLayers();
 
+    const url = `${BACKEND_BASE_URL}/get-pm25-data/${model}/${selectedDate}`;
+    
     try {
-        const tiff = await GeoTIFF.fromUrl(url);
-        const image = await tiff.getImage();
-        const rasters = await image.readRasters({ interleave: true });
+        console.log(`Fetching data from: ${url}`);
+        const response = await fetch(url);
         
-        const width = image.getWidth();
-        const height = image.getHeight();
-        const tiePoint = image.getTiePoints()[0];
-        
-        if (!tiePoint || !tiePoint.ModelTiepoint || tiePoint.ModelTiepoint.length < 6) {
-            console.error(`GeoTIFF tie point data is missing or incomplete for ${displayName}. Cannot georeference image. Check if the file is a valid GeoTIFF.`);
-            return; 
+        if (!response.ok) {
+            const errorBody = await response.json();
+            throw new Error(`Server Error (${response.status}): ${errorBody.detail || 'Unknown error'}`);
         }
 
-        const assumedResolution = 0.01;
-        const pixelScale = [assumedResolution, assumedResolution, 0];
+        const data = await response.json();
         
-        const geoTransform = [
-            tiePoint.ModelTiepoint[3] - pixelScale[0] / 2, 
-            pixelScale[0], 
-            0,
-            tiePoint.ModelTiepoint[4] + pixelScale[1] / 2, 
-            0,
-            -pixelScale[1] 
-        ];
+        visualizeJsonData(data, displayName);
 
-        visualizeRaster(rasters, width, height, geoTransform, displayName);
     } catch (error) {
-        console.error(`Error fetching or visualizing TIF data from ${displayName}:`, error);
+        console.error(`Error fetching or visualizing data for ${displayName}:`, error.message);
+        clearPreviousLayers();
     }
 }
 
-function visualizeRaster(rasters, width, height, geoTransform, fileName) {
-    const canvas = document.createElement('canvas');
-    canvas.width = width;
-    canvas.height = height;
-    const ctx = canvas.getContext('2d');
-    const imageData = ctx.createImageData(width, height);
-    const data = imageData.data;
-    const pm25Data = rasters;
-
-    for (let y = 0; y < height; y++) {
-        for (let x = 0; x < width; x++) {
-            const i = (y * width + x);
-            const value = pm25Data[i]; 
-            
-            if (value === undefined || value === null || value < 0) { 
-                continue; 
-            }
-            
-            const color = aqiColor(value);
-
-            const r = parseInt(color.substring(1, 3), 16);
-            const g = parseInt(color.substring(3, 5), 16);
-            const b = parseInt(color.substring(5, 7), 16);
-
-            const alpha = 128; // 
-
-            data[i * 4 + 0] = r;
-            data[i * 4 + 1] = g;
-            data[i * 4 + 2] = b;
-            data[i * 4 + 3] = alpha; 
-        }
-    }
-    
-    ctx.putImageData(imageData, 0, 0);
-
-    const minLon = geoTransform[0];
-    const maxLat = geoTransform[3];
-    const pixelSizeLon = geoTransform[1];
-    const pixelSizeLat = geoTransform[5];
-
-    const bounds = L.latLngBounds(
-        [maxLat + height * pixelSizeLat, minLon],
-        [maxLat, minLon + width * pixelSizeLon]
-    );
-
-    tifLayer = L.imageOverlay(canvas.toDataURL(), bounds, { 
-        opacity: 0.8,
-        attribution: `Prediction from ${fileName}` 
-    }).addTo(map);
-
-    map.fitBounds(bounds);
-    
-    console.log(`Raster overlay complete. Bounds: ${bounds.toBBoxString()}`);
-}
 
 function handleUpdate(initialLoad = false) {
     const model = document.getElementById('model-select').value;
     const dateInput = document.getElementById('date-input');
     const allDates = document.getElementById('all-dates-checkbox').checked;
 
-    let url;
-    let displayName;
+    let selectedDateParam = 'All Dates'; 
+    let displayName = `All Dates Averaged (${model.toUpperCase()})`;
 
-    if (allDates) {
-        // Backend handles file selection and averaging
-        url = `${BACKEND_BASE_URL}/average-pm25-data/${model}`;
-        displayName = `All Dates Averaged (${model.toUpperCase()})`;
-    } else {
-        const selectedDate = dateInput.value;
-        if (!selectedDate) {
+    if (!allDates) {
+        selectedDateParam = dateInput.value;
+        if (!selectedDateParam) {
             if (!initialLoad) console.error("Please select a date.");
             clearPreviousLayers();
             return;
         }
-        const fileName = `pm25_${model}_${selectedDate}.tif`;
-        url = `${BACKEND_BASE_URL}/tif/${fileName}`;
-        displayName = fileName;
+        displayName = `Single Date (${selectedDateParam})`;
     }
 
-    fetchAndVisualize(url, displayName);
+    fetchAndVisualizeJson(model, selectedDateParam, displayName);
 }
 
 function initialize() {
@@ -290,17 +258,14 @@ function initialize() {
     const allDatesCheckbox = document.getElementById('all-dates-checkbox');
     if (allDatesCheckbox) {
         allDatesCheckbox.addEventListener('change', handleAllDatesChange);
-        // Trigger initial handle to set date input state
         handleAllDatesChange({ target: allDatesCheckbox });
-    } else {
-        console.error("Checkbox with ID 'all-dates-checkbox' not found. Ensure your HTML includes this element in prediction.html.");
     }
 
     const updateBtn = document.querySelector('.update-btn');
     if (updateBtn) {
         updateBtn.addEventListener('click', handleUpdate);
     }
-
+    
     console.log("Dashboard initialization complete.");
 }
 
