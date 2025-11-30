@@ -200,6 +200,8 @@ def list_all_files():
 
 @app.get("/extract-tif")
 def extract_tif(model: str, date: str):
+    import io
+    from PIL import Image
     from matplotlib import cm, colors
 
     tif_dir = "tif"
