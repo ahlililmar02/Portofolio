@@ -15,8 +15,6 @@ from rasterio.warp import reproject, Resampling
 from rasterio.io import MemoryFile
 import base64
 
-
-
 app = FastAPI()
 
 load_dotenv()
@@ -205,7 +203,6 @@ def extract_tif(model: str, date: str):
     tif_dir = "tif"
     files = os.listdir(tif_dir)
 
-    # filter by model
     matched = [f for f in files if f"pm25_{model}_" in f]
 
     if len(matched) == 0:
@@ -244,7 +241,6 @@ def extract_tif(model: str, date: str):
         final_img = np.nanmean(raster_stack, axis=0)
 
     else:
-        # pick exact date file
         selected = [f for f in matched if date in f]
         if len(selected) == 0:
             raise HTTPException(404, f"No file found for that date: {date}")
@@ -258,22 +254,28 @@ def extract_tif(model: str, date: str):
             if nodata is not None:
                 final_img[final_img == nodata] = np.nan
 
-    # convert ndarray → PNG → base64
-    final_img = np.nan_to_num(final_img, nan=0)
+    final_img = np.nan_to_num(final_img, nan=0).astype("float32")
 
     with MemoryFile() as memfile:
         with memfile.open(
-            driver="PNG",
+            driver="GTiff",
             width=final_img.shape[1],
             height=final_img.shape[0],
             count=1,
-            dtype=final_img.dtype
+            dtype="float32"
         ) as dataset:
             dataset.write(final_img, 1)
 
-        png_bytes = memfile.read()
+        tiff_bytes = memfile.read()
 
-    b64 = base64.b64encode(png_bytes).decode("utf-8")
+    from PIL import Image
+    import io
+
+    pil_img = Image.open(io.BytesIO(tiff_bytes))
+    png_buffer = io.BytesIO()
+    pil_img.save(png_buffer, format="PNG")
+
+    b64 = base64.b64encode(png_buffer.getvalue()).decode("utf-8")
 
     return {
         "image": b64,
