@@ -271,20 +271,39 @@ def extract_tif(model: str, date: str):
     from PIL import Image
     import io
 
-    # Normalize to 0-255 for PNG
-    scaled = final_img - np.nanmin(final_img)
+    def aqi_color(value):
+        # Returns (R, G, B)
+        if value <= 12:
+            return (0, 228, 0)       # green
+        elif value <= 35:
+            return (255, 255, 0)     # yellow
+        elif value <= 55:
+            return (255, 126, 0)     # orange
+        elif value <= 150:
+            return (255, 0, 0)       # red
+        elif value <= 250:
+            return (153, 0, 76)      # purple
+        else:
+            return (126, 0, 35)      # maroon
 
-    if np.nanmax(scaled) > 0:
-        scaled = scaled / np.nanmax(scaled)
+    # Replace NaN with 0 so they become green (or choose white later)
+    clean = np.nan_to_num(final_img, nan=0)
 
-    scaled = (scaled * 255).astype(np.uint8)
+    # Generate colored image
+    h, w = clean.shape
+    rgb = np.zeros((h, w, 3), dtype=np.uint8)
 
-    pil_img = Image.fromarray(scaled, mode="L")
+    for r in range(h):
+        for c in range(w):
+            rgb[r, c] = aqi_color(clean[r, c])
 
+    # Create PNG in memory
+    pil_img = Image.fromarray(rgb, mode="RGB")
     png_buffer = io.BytesIO()
     pil_img.save(png_buffer, format="PNG")
 
     b64 = base64.b64encode(png_buffer.getvalue()).decode("utf-8")
+
 
     return {
         "image": b64,
