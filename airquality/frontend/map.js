@@ -3,7 +3,7 @@ const API = window.API_URL;
 
 let map = L.map("map", {
     zoomControl: false
-}).setView([-6.2, 107], 12);
+}).setView([-6.2, 106.85], 12);
 let markers = [];      
 
 
