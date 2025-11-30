@@ -1,6 +1,5 @@
-const API = import.meta.env.API_URL;
+const API = window.API_URL;
 
-export default API;
 
 let map = L.map("map", {
     zoomControl: false
