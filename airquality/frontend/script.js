@@ -340,15 +340,10 @@ async function getScatterData(selectedModel, selectedDate) {
     const data = await loadDailyCSV();
     const modelCol = "pm25_" + selectedModel;
 
-    console.log("👉 Selected model:", selectedModel);
-    console.log("👉 Using column:", modelCol);
-    console.log("👉 Selected date:", selectedDate);
-
     let rows = data;
 
     if (selectedDate !== "All Dates") {
         rows = rows.filter(d => d.date === selectedDate);
-        console.log("📌 Filtered rows for date:", selectedDate, rows);
     } else {
         console.log("📌 Using all dates:", rows.length, "rows");
     }
@@ -359,7 +354,6 @@ async function getScatterData(selectedModel, selectedDate) {
         pm25_pred: d[modelCol],
     }));
 
-    console.log("📌 Mapped raw scatter rows:", mapped);
 
     const cleaned = mapped.filter(d =>
         d.pm25_obs !== undefined &&
@@ -368,7 +362,6 @@ async function getScatterData(selectedModel, selectedDate) {
         !isNaN(d.pm25_pred)
     );
 
-    console.log("✅ Cleaned scatter data:", cleaned);
 
     return cleaned;
 }
@@ -443,11 +436,15 @@ async function updateScatterChart() {
     document.querySelector(".metric-card:nth-child(2) .metric-value").textContent = r2.toFixed(3);
     document.querySelector(".metric-card:nth-child(3) .metric-value").textContent = `${bias.toFixed(2)} µg/m³`;
 
-    // Destroy previous chart
+    // Destroy old chart
     if (scatterChart) scatterChart.destroy();
 
-    // Create new chart
     const ctx = document.getElementById("scatterChart").getContext("2d");
+
+    // Compute regression line
+    const regressionLine = computeLinearRegression(points);
+
+    // Create chart
     scatterChart = new Chart(ctx, {
         type: "scatter",
         data: {
@@ -456,16 +453,23 @@ async function updateScatterChart() {
                     label: selectedModel,
                     data: chartData,
                     pointBackgroundColor: densityColors,
-                    pointRadius: 6,
-                    trendlineLinear: {
-                        color: "white",
-                        width: 2,
-                        lineStyle: "solid",
-                    }
+                    pointRadius: 3,        // smaller points
+                    borderWidth: 0         // no border
+                },
+                {
+                    label: "Regression Line",
+                    data: regressionLine,
+                    type: "line",
+                    borderColor: "white",
+                    borderWidth: 2,
+                    fill: false,
+                    pointRadius: 0,        // no points on the line
+                    tension: 0             // straight line
                 }
             ]
         },
         options: {
+            maintainAspectRatio: false,
             scales: {
                 x: { title: { display: true, text: "Observed PM2.5" } },
                 y: { title: { display: true, text: "Predicted PM2.5" } }
@@ -476,6 +480,7 @@ async function updateScatterChart() {
         }
     });
 }
+
 
 function handleUpdate(initialLoad = false) {
     const model = document.getElementById('model-select').value;
