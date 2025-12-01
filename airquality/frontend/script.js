@@ -12,14 +12,51 @@ let map;
 let currentModelShort = 'rf';
 let tifLayer = null;
 
-function aqiColor(value) {
-    if (value <= 12) return "#00e400";
-    else if (value <= 35) return "#ffff00";
-    else if (value <= 55) return "#ff7e00";
-    else if (value <= 150) return "#ff0000";
-    else if (value <= 250) return "#99004c";
-    else return "#7e0023";
+
+function turboColormap(value, min = 0, max = 80) {
+    const t = Math.max(0, Math.min(1, (value - min) / (max - min)));
+
+    const r = 34.61 +
+        t * (1172.33 -
+        t * (10793.56 -
+        t * (33300.12 -
+        t * (38394.49 -
+        t * 14825.05))));
+
+    const g = 23.31 +
+        t * (557.33 +
+        t * (1225.33 -
+        t * (3574.96 -
+        t * (1073.77 +
+        t * 707.56))));
+
+    const b = 27.2 +
+        t * (3211.1 -
+        t * (15327.97 -
+        t * (27814 -
+        t * (22569.18 -
+        t * 6838.66))));
+
+    return rgbToHex(
+        clampColor(r),
+        clampColor(g),
+        clampColor(b)
+    );
 }
+
+function clampColor(v) {
+    return Math.max(0, Math.min(255, Math.round(v)));
+}
+
+function rgbToHex(r, g, b) {
+    return (
+        "#" +
+        r.toString(16).padStart(2, "0") +
+        g.toString(16).padStart(2, "0") +
+        b.toString(16).padStart(2, "0")
+    );
+}
+
 
 function initMap() {
     const mapElement = document.getElementById("heatmap");
@@ -268,7 +305,8 @@ function addMarkersToMap(stationData) {
         const marker = L.circleMarker([item.lat, item.lon], {
             radius: 6,
             weight: 1,
-            fillOpacity: 0.8
+            fillOpacity: 0.8,
+            fillColor: turboColormap(pm25)
         }).bindPopup(`
             <b>${item.station}</b><br>
             PM2.5: ${item.pm25.toFixed(2)}

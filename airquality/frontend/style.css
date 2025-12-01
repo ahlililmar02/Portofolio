@@ -753,7 +753,13 @@ body {
     flex: 1; 
     height: 1rem; 
     border-radius: 0.25rem; 
-    background: linear-gradient(to right, #22c55e, #eab308, #f97316, #ef4444, #7f1d1d);
+    background: linear-gradient(to right,
+        #30123b 0%,
+        #0096c7 25%,
+        #4cc936 50%,
+        #f8c627 75%,
+        #9e0000 100%
+    );
 }
 .legend-values {
     display: flex;

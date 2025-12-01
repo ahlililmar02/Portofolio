@@ -259,9 +259,6 @@ def extract_tif(model: str, date: str):
             if nodata is not None:
                 final_img[final_img == nodata] = np.nan
 
-    # ---------------------------------------------------------------------
-    # ----------------------- APPLY TURBO COLOR MAP ------------------------
-    # ---------------------------------------------------------------------
 
     # Keep NaN as NaN for transparency
     cleaned = final_img.copy()
