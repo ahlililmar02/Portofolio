@@ -402,7 +402,7 @@ function computeMetrics(points) {
 
 
 function computeDensityColors(points) {
-    return points.map((p, i) => {
+    const densityCounts = points.map(p => {
         let count = 0;
         for (let j = 0; j < points.length; j++) {
             if (Math.abs(points[j].pm25_obs - p.pm25_obs) < 3 &&
@@ -410,10 +410,18 @@ function computeDensityColors(points) {
                 count++;
             }
         }
-        const t = Math.min(count / 20, 1);
-        return turboColormap(t * 300); // using your Turbo function
+        return count;
+    });
+
+    const maxCount = Math.max(...densityCounts, 1); // avoid divide by zero
+
+    return densityCounts.map(count => {
+        // normalize and apply a non-linear stretch
+        const t = Math.pow(count / maxCount, 0.5); // sqrt stretch
+        return turboColormap(t * 200);
     });
 }
+
 
 function computeLinearRegression(points) {
     const xs = points.map(p => p.pm25_obs);
