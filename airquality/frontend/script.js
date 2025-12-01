@@ -415,9 +415,36 @@ function computeDensityColors(points) {
     });
 }
 
+function computeLinearRegression(points) {
+    const xs = points.map(p => p.pm25_obs);
+    const ys = points.map(p => p.pm25_pred);
+
+    const n = xs.length;
+    if (n < 2) return [];
+
+    const meanX = xs.reduce((a, b) => a + b, 0) / n;
+    const meanY = ys.reduce((a, b) => a + b, 0) / n;
+
+    let num = 0, den = 0;
+    for (let i = 0; i < n; i++) {
+        num += (xs[i] - meanX) * (ys[i] - meanY);
+        den += (xs[i] - meanX) ** 2;
+    }
+
+    const slope = num / den;
+    const intercept = meanY - slope * meanX;
+
+    const minX = Math.min(...xs);
+    const maxX = Math.max(...xs);
+
+    return [
+        { x: minX, y: slope * minX + intercept },
+        { x: maxX, y: slope * maxX + intercept }
+    ];
+}
+
 
 let scatterChart = null;
-let regressionLine = null;
 
 async function updateScatterChart() {
     const selectedModel = document.getElementById("model-select").value;
