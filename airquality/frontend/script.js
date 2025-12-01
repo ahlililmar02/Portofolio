@@ -336,7 +336,132 @@ async function updateMapFromCSV() {
     addMarkersToMap(data);
 }
 
+async function getScatterData(selectedModel, selectedDate) {
+    const data = await loadDailyCSV();
+    const modelCol = modelMap[selectedModel];
 
+    let rows = data;
+
+    if (selectedDate !== "All Dates") {
+        rows = rows.filter(d => d.date === selectedDate);
+    }
+
+    return rows.map(d => ({
+        date: d.date,
+        pm25_obs: d.pm25,
+        pm25_pred: d[modelCol],
+    })).filter(d =>
+        d.pm25_obs !== undefined &&
+        d.pm25_pred !== undefined &&
+        !isNaN(d.pm25_obs) &&
+        !isNaN(d.pm25_pred)
+    );
+}
+
+// ------------------------
+// METRICS
+// ------------------------
+function computeMetrics(points) {
+    const obs = points.map(d => d.pm25_obs);
+    const pred = points.map(d => d.pm25_pred);
+
+    const n = obs.length;
+    if (n === 0) return { mae: 0, r2: 0, bias: 0 };
+
+    let sumAbs = 0;
+    let sumBias = 0;
+
+    for (let i = 0; i < n; i++) {
+        sumAbs += Math.abs(pred[i] - obs[i]);
+        sumBias += (pred[i] - obs[i]);
+    }
+
+    const mae = sumAbs / n;
+    const bias = sumBias / n;
+
+    // R²
+    const meanObs = obs.reduce((a,b)=>a+b,0) / n;
+    let ssRes = 0, ssTot = 0;
+    for (let i = 0; i < n; i++) {
+        ssRes += Math.pow(pred[i] - obs[i], 2);
+        ssTot += Math.pow(obs[i] - meanObs, 2);
+    }
+    const r2 = 1 - (ssRes / ssTot);
+
+    return { mae, r2, bias };
+}
+
+// ------------------------
+// SCATTER DENSITY COLORS (k-NN approximate)
+// ------------------------
+function computeDensityColors(points) {
+    return points.map((p, i) => {
+        let count = 0;
+        for (let j = 0; j < points.length; j++) {
+            if (Math.abs(points[j].pm25_obs - p.pm25_obs) < 3 &&
+                Math.abs(points[j].pm25_pred - p.pm25_pred) < 3) {
+                count++;
+            }
+        }
+        const t = Math.min(count / 20, 1);
+        return turboColormap(t * 80); // using your Turbo function
+    });
+}
+
+// ------------------------
+// DRAW CHART
+// ------------------------
+async function updateScatterChart() {
+    const selectedModel = document.getElementById("model-select").value;
+    const allDates = document.getElementById("all-dates-checkbox").checked;
+    const selectedDate = allDates ? "All Dates" : document.getElementById("date-input").value;
+
+    if (!selectedDate && !allDates) return;
+
+    const points = await getScatterData(selectedModel, selectedDate);
+
+    const chartData = points.map(d => ({ x: d.pm25_obs, y: d.pm25_pred }));
+    const densityColors = computeDensityColors(points);
+
+    // Compute metrics
+    const { mae, r2, bias } = computeMetrics(points);
+    document.querySelector(".metric-card:nth-child(1) .metric-value").textContent = `${mae.toFixed(2)} µg/m³`;
+    document.querySelector(".metric-card:nth-child(2) .metric-value").textContent = r2.toFixed(3);
+    document.querySelector(".metric-card:nth-child(3) .metric-value").textContent = `${bias.toFixed(2)} µg/m³`;
+
+    // Destroy previous chart
+    if (scatterChart) scatterChart.destroy();
+
+    // Create new chart
+    const ctx = document.getElementById("scatterChart").getContext("2d");
+    scatterChart = new Chart(ctx, {
+        type: "scatter",
+        data: {
+            datasets: [
+                {
+                    label: selectedModel,
+                    data: chartData,
+                    pointBackgroundColor: densityColors,
+                    pointRadius: 6,
+                    trendlineLinear: {
+                        color: "white",
+                        width: 2,
+                        lineStyle: "solid",
+                    }
+                }
+            ]
+        },
+        options: {
+            scales: {
+                x: { title: { display: true, text: "Observed PM2.5" } },
+                y: { title: { display: true, text: "Predicted PM2.5" } }
+            },
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+}
 
 function handleUpdate(initialLoad = false) {
     const model = document.getElementById('model-select').value;
@@ -358,6 +483,7 @@ function handleUpdate(initialLoad = false) {
 
     fetchAndVisualizeJson(model, selectedDateParam, displayName);
     updateMapFromCSV();
+    updateScatterChart();
 
 }
 
