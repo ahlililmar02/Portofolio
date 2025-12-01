@@ -408,9 +408,9 @@ function computeDensityColors(points) {
     });
 }
 
-// ------------------------
-// DRAW CHART
-// ------------------------
+
+let scatterChart = null;
+
 async function updateScatterChart() {
     const selectedModel = document.getElementById("model-select").value;
     const allDates = document.getElementById("all-dates-checkbox").checked;
