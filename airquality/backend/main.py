@@ -308,7 +308,7 @@ except Exception as e:
 # Load the dataset once when the server starts
 try:
     # Adjust the path as necessary
-    DATA_PATH = "/tif/daily_complete.csv" 
+    DATA_PATH = "daily_complete.csv" 
     daily_df = pd.read_csv(DATA_PATH)
     daily_df['date'] = pd.to_datetime(daily_df['date']).dt.strftime('%Y-%m-%d')
 except Exception as e:
