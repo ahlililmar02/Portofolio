@@ -1,10 +1,7 @@
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
-from dotenv import load_dotenv
-import os
 import pandas as pd
-import psycopg2
 from datetime import date
 from io import StringIO
 
@@ -19,16 +16,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-load_dotenv()
-
-conn = psycopg2.connect(
-    host=os.getenv("DB_HOST"),
-    database=os.getenv("DB_NAME"),
-    user=os.getenv("DB_USER"),
-    password=os.getenv("DB_PASS"),
+# Load data
+df = pd.read_csv(
+    r"C:/Users/ahlil/Portofolio/airquality/backend/AQComplete.csv",
+    parse_dates=["time"]
 )
-
-df = pd.read_sql("SELECT * FROM aqi", conn)
    
 df["time"] = pd.to_datetime(df["time"])
 
