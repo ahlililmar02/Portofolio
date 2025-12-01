@@ -411,7 +411,7 @@ function computeDensityColors(points) {
             }
         }
         const t = Math.min(count / 20, 1);
-        return turboColormap(t * 80); // using your Turbo function
+        return turboColormap(t * 200); // using your Turbo function
     });
 }
 
