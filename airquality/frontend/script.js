@@ -340,23 +340,39 @@ async function getScatterData(selectedModel, selectedDate) {
     const data = await loadDailyCSV();
     const modelCol = "pm25_" + modelMap[selectedModel];
 
+    console.log("👉 Selected model:", selectedModel);
+    console.log("👉 Using column:", modelCol);
+    console.log("👉 Selected date:", selectedDate);
+
     let rows = data;
 
     if (selectedDate !== "All Dates") {
         rows = rows.filter(d => d.date === selectedDate);
+        console.log("📌 Filtered rows for date:", selectedDate, rows);
+    } else {
+        console.log("📌 Using all dates:", rows.length, "rows");
     }
 
-    return rows.map(d => ({
+    const mapped = rows.map(d => ({
         date: d.date,
         pm25_obs: d.pm25,
         pm25_pred: d[modelCol],
-    })).filter(d =>
+    }));
+
+    console.log("📌 Mapped raw scatter rows:", mapped);
+
+    const cleaned = mapped.filter(d =>
         d.pm25_obs !== undefined &&
         d.pm25_pred !== undefined &&
         !isNaN(d.pm25_obs) &&
         !isNaN(d.pm25_pred)
     );
+
+    console.log("✅ Cleaned scatter data:", cleaned);
+
+    return cleaned;
 }
+
 
 // ------------------------
 // METRICS
