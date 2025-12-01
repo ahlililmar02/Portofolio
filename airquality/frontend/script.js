@@ -192,19 +192,32 @@ function handleAllDatesChange(event) {
 
 async function fetchAndVisualizeJson(modelShort, selectedDate, displayName) {
     try {
-        const response = await fetch(`${BACKEND_BASE_URL}/extract-tif?model=${modelShort}&date=${selectedDate}`);
-        if (!response.ok) {
-            throw new Error("Failed to fetch raster data");
+        const tifResponse = await fetch(`${BACKEND_BASE_URL}/extract-tif?model=${modelShort}&date=${selectedDate}`);
+        
+        if (!tifResponse.ok) {
+            throw new Error(`Failed to fetch raster data: HTTP status ${tifResponse.status}`);
         }
 
-        const data = await response.json();
+        const tifData = await tifResponse.json();
+        console.log("Raster data received:", tifData);
+        visualizeRaster(tifData, displayName);
 
-        console.log("Raster data received:", data);
+        const apiUrl = `${BACKEND_BASE_URL}/analyze-pm25?date=${selectedDate}&model=${modelShort}`;
+        
+        const analysisResponse = await fetch(apiUrl);
 
-        visualizeRaster(data, displayName);
-
-    } catch (error) {
-        console.error("Error fetching raster:", error);
+        if (!analysisResponse.ok) {
+            throw new Error(`Failed to fetch analysis data: HTTP status ${analysisResponse.status}`);
+        }
+        
+        const analysisData = await analysisResponse.json();
+        
+        updateAnalysisSection(analysisData);
+        
+    }
+    catch (error) {
+        console.error("Error during data fetching or analysis:", error);
+        document.getElementById('analysis-summary').innerHTML = `<p style="color:red;">Analysis failed: ${error.message}</p>`;
     }
 }
 
@@ -367,9 +380,7 @@ async function getScatterData(selectedModel, selectedDate) {
 }
 
 
-// ------------------------
-// METRICS
-// ------------------------
+
 function computeMetrics(points) {
     const obs = points.map(d => d.pm25_obs);
     const pred = points.map(d => d.pm25_pred);
@@ -517,6 +528,36 @@ async function updateScatterChart() {
             }
         }
     });
+}
+
+
+function updateAnalysisSection(data) {
+    const analysisContainer = document.getElementById('analysis-summary');
+    
+    let metricsHtml = '<ul>';
+    for (const [key, value] of Object.entries(data.metrics)) {
+        metricsHtml += `<li><strong>${key}</strong>: ${value.toFixed(3)}</li>`;
+    }
+    metricsHtml += '</ul>';
+
+    const zoneSummaryHtml = `
+        <h4 class="summary-title">Zone Summary (Model vs. Station)</h4>
+        <pre>${data.zone_summary}</pre>
+    `;
+
+    // The AI analysis is the key part you wanted
+    const aiAnalysisHtml = `
+        <h3 class="summary-title">AI Environmental Analysis</h3>
+        <div class="summary-text-block">
+            <p><strong>Date:</strong> ${data.date}</p>
+            <p><strong>Model:</strong> ${data.model}</p>
+            <h4 class="summary-title">Evaluation Metrics</h4>
+            ${metricsHtml}
+            ${data.gemini_analysis}
+        </div>
+    `;
+
+    analysisContainer.innerHTML = aiAnalysisHtml + zoneSummaryHtml;
 }
 
 

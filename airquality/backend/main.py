@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 import os
 import psycopg2
 from io import StringIO
+import pandas as pd
 import numpy as np
 import rasterio
 from rasterio.warp import Resampling
@@ -14,6 +15,10 @@ from typing import List
 from rasterio.warp import reproject, Resampling
 from rasterio.io import MemoryFile
 import base64
+from pydantic import BaseModel
+from typing import Optional
+from sklearn.metrics import r2_score, mean_absolute_error, mean_squared_error
+from google import genai #
 
 app = FastAPI()
 
@@ -94,7 +99,7 @@ def get_all_daily():
             AND aqi <> 'NaN'
             AND aqi <> 0 
             GROUP BY station, date
-            ORDER BY station, date DESC;
+            ORDER BY station, date ASC;
 
         """)
         rows = cur.fetchall()
@@ -271,9 +276,6 @@ def extract_tif(model: str, date: str):
     # Map values → RGBA
     rgba = (cmap(norm(cleaned)) * 255).astype(np.uint8)  # H x W x 4
 
-    # TRANSPARENT RULE:
-    # NaN → fully transparent
-    # value == 0 → fully transparent
     transparency_mask = np.isnan(cleaned) | (cleaned == 0)
     rgba[..., 3] = np.where(transparency_mask, 0, 255)
 
@@ -284,7 +286,6 @@ def extract_tif(model: str, date: str):
 
     b64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
 
-    # ---------------------------------------------------------------------
 
     return {
         "image": b64,
@@ -295,3 +296,245 @@ def extract_tif(model: str, date: str):
             "bottom": bounds.bottom
         }
     }
+
+client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
+try:
+    client = genai.Client()
+except Exception as e:
+    print(f"Gemini Client Initialization Error: {e}")
+    # Handle the error, maybe by raising an exception or using a dummy client
+    client = None
+
+# Load the dataset once when the server starts
+try:
+    # Adjust the path as necessary
+    DATA_PATH = "/tif/daily_complete.csv" 
+    daily_df = pd.read_csv(DATA_PATH)
+    daily_df['date'] = pd.to_datetime(daily_df['date']).dt.strftime('%Y-%m-%d')
+except Exception as e:
+    print(f"Error loading daily_complete.csv: {e}")
+    daily_df = pd.DataFrame()
+
+
+# --- Data Processing and Evaluation Functions ---
+
+def calculate_metrics(df, model_col):
+    """Calculates evaluation metrics (R2, MAE, RMSE, Bias, RPE)."""
+    if df.empty or len(df) < 2:
+        return {'R2': np.nan, 'MAE': np.nan, 'RMSE': np.nan, 'Bias': np.nan, 'RPE': np.nan}
+    
+    y_true = df['pm25']
+    y_pred = df[model_col]
+
+    R2 = r2_score(y_true, y_pred)
+    MAE = mean_absolute_error(y_true, y_pred)
+    RMSE = np.sqrt(mean_squared_error(y_true, y_pred))
+    Bias = np.mean(y_pred - y_true)
+    RPE = (Bias / np.mean(y_true)) * 100 if np.mean(y_true) != 0 else np.nan
+
+    return {
+        'R2': R2, 
+        'MAE': MAE, 
+        'RMSE': RMSE, 
+        'Bias': Bias, 
+        'RPE': RPE
+    }
+
+
+def assign_zones(df):
+    """Assigns zones based on latitude and longitude boundaries."""
+    if df.empty:
+        return df
+
+    # Ensure latitude and longitude are float
+    df['latitude'] = pd.to_numeric(df['latitude'], errors='coerce')
+    df['longitude'] = pd.to_numeric(df['longitude'], errors='coerce')
+    
+    conditions = {
+        "North": df["latitude"] > -6.1,
+        "Central": (df["latitude"].between(-6.2, -6.1)) & (df["longitude"].between(106.78, 106.85)),
+        "West": df["longitude"] < 106.75,
+        "East": df["longitude"] > 106.9,
+        "South": df["latitude"] < -6.25
+    }
+
+    zone_col = []
+    for i in range(len(df)):
+        assigned = [z for z, cond in conditions.items() if cond.iloc[i]]
+        zone_col.append(assigned[0] if assigned else "Unknown")
+    
+    df["zone"] = zone_col
+    return df
+
+def get_zone_summary(df, model_col):
+    """Generates the zone-based error summary table."""
+    # Ensure columns for calculation exist and are numeric
+    df = df.rename(columns={'pm25': 'station_val', model_col: 'raster_val'})
+    
+    df['error'] = df['raster_val'] - df['station_val']
+    
+    # Filter out rows where zone is 'Unknown' if not needed
+    summary_df = df[df['zone'] != 'Unknown']
+
+    zone_summary = (
+        summary_df.groupby("zone")
+        .agg({
+            "station_val": "mean",
+            "raster_val": "mean",
+            "error": ["mean", "std"]
+        })
+        .round(3)
+    )
+    zone_summary.columns = ["Station Mean", "Model Mean", "Mean Error", "Error Std"]
+    
+    return zone_summary
+
+def get_gemini_analysis(df, selected_date, selected_model, metrics, zone_summary):
+    """Calls the Gemini API to generate the analysis."""
+    if client is None:
+        return "**Error:** Gemini client not initialized. Cannot perform analysis."
+        
+    R2 = metrics['R2']
+    MAE = metrics['MAE']
+    RMSE = metrics['RMSE']
+    Bias = metrics['Bias']
+    RPE = metrics['RPE']
+    
+    # Use a small sample for the model to analyze, focusing on key columns
+    sample_df = df.rename(columns={'pm25': 'station_val', f'pm25_{selected_model}': 'raster_val'})
+    sample_data = sample_df[['date', 'station', 'station_val', 'raster_val', 'latitude', 'longitude', 'zone', 'error']].head(50).to_csv(index=False)
+    
+    example_summary = """
+    - **Overall Model:** R² = 0.83 indicates good correlation, though underestimation occurs in the South.
+    - **Spatial Pattern:** Central and West zones show higher bias, possibly due to coarse urban emission estimates.
+    - **Notes:** High estimated PM2.5 in East Jakarta possibly due to Industrial activity near Bekasi and Karawang.
+    """
+    
+    prompt = f"""
+    You are an environmental data analyst. Analyze the spatiotemporal results for PM2.5 model performance in Jakarta, do not show the data directly.
+    **Background Theories for PM2.5 in Jakarta**
+
+    **1. Seasonal Behavior**
+    Jakarta has a tropical monsoon climate with two main seasons:
+    - **Wet Season (November–March):** Frequent rainfall and stronger winds lower PM2.5 through wet deposition and atmospheric cleansing.
+    - **Transition Periods (April–May, October):** Variable conditions can lead to fluctuating PM2.5 levels depending on rainfall frequency and local emissions.
+    - **Dry Season (June–September):** Reduced rainfall, calm winds, and frequent temperature inversions trap pollutants near the surface. Biomass burning and stagnant air often cause **higher PM2.5** concentrations.
+
+    ➡️ **In summary:**
+    - **June–September:** higher PM2.5 (dry, stagnant, and hazy conditions)
+    - **November–March:** lower PM25 (wet, cleaner air)
+    - **April–May and October:** transitional, moderate to fluctuating PM25
+
+    Use this knowledge to interpret whether the observed PM2.5 level on the selected date aligns with seasonal expectations.
+
+    ---
+
+    **2. Spatial Characteristics of Jakarta**
+    Jakarta’s PM2.5 levels vary spatially due to differences in land use, emission sources, and airflow patterns:
+    - **Central Jakarta:** Dense business and traffic areas (CBD) — high vehicle emissions, leading to consistently higher PM25 levels.  
+    - **West Jakarta:** Mixed residential and industrial zones, often with moderate PM2.5 influenced by local activities.  
+    - **East Jakarta:** Proximity to **industrial areas in Bekasi and Karawang**, frequently experiences **elevated PM2.5** levels, especially during calm conditions.  
+    - **North Jakarta:** Coastal and port-related activities (e.g., Tanjung Priok) contribute to emissions but can experience dilution from sea breezes.  
+    - **South Jakarta:** More greenery and open spaces (e.g., residential, parks) — tends to record **lower PM25**, though can still be affected by regional transport from north or east.  
+
+    Use this context when interpreting **zone-level biases and spatial variability** in model performance.
+
+    **Date**
+    {selected_date}
+
+    **Machine Learning model used**
+    {selected_model.upper()}
+
+    **Evaluation Metrics**
+    - R² = {R2:.3f}
+    - MAE = {MAE:.3f}
+    - RMSE = {RMSE:.3f}
+    - Bias = {Bias:.3f}
+    - RPE = {RPE:.2f}%
+
+    **Jakarta Zone Summary (Model vs. Station Values)**
+    {zone_summary.to_markdown()}
+
+    **Sample Data (First 50 Rows for Context):**
+    {sample_data}
+
+    **Example Format**
+    {example_summary}
+
+    **Tasks**
+    1. Provide a concise overall spatial and temporal(seasonality based on dates) and performance summary (under 150 words).
+    2. Identify which Jakarta city (zones) show high bias or variability and analyze the PM2.5 spatial pattern.
+    3. Explain model behavior possible environmental or model causes (topography, urban sources, etc.).
+    4. Output in **bullet points** with short paragraphs highlight with bold for important facts.
+    """
+    
+    try:
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",  # Use the powerful Flash model for fast analysis
+            contents=prompt
+        )
+        return response.text
+    except Exception as e:
+        return f"**Error calling Gemini API:** {e}"
+
+# --- FastAPI Endpoint Definition ---
+
+class AnalysisResult(BaseModel):
+    date: str
+    model: str
+    metrics: dict
+    zone_summary: str
+    gemini_analysis: str
+
+@app.get("/analyze-pm25", response_model=AnalysisResult)
+async def analyze_pm25(
+    date: str = Query(..., description="Date in YYYY-MM-DD format, or 'All Dates'"),
+    model: str = Query(..., description="Model abbreviation: 'xgb', 'rf', or 'lgbm'")
+):
+    if daily_df.empty:
+        return AnalysisResult(
+            date=date, model=model, metrics={}, zone_summary="Data Error", 
+            gemini_analysis="Data failed to load. Cannot proceed with analysis."
+        )
+
+    if date.lower() == 'all dates':
+        filtered_df = daily_df.copy()
+        selected_date = "All Dates (Averaged)"
+    else:
+        filtered_df = daily_df[daily_df['date'] == date].copy()
+        selected_date = date
+
+    if filtered_df.empty:
+        return AnalysisResult(
+            date=date, model=model, metrics={}, zone_summary="No Data", 
+            gemini_analysis=f"No data found for the date: {selected_date}"
+        )
+
+    model_col = f'pm25_{model.lower()}'
+    if model_col not in filtered_df.columns:
+        return AnalysisResult(
+            date=date, model=model, metrics={}, zone_summary="Model Error", 
+            gemini_analysis=f"Model column '{model_col}' not found in data."
+        )
+
+    metrics = calculate_metrics(filtered_df, model_col)
+
+    df_with_zones = assign_zones(filtered_df)
+    zone_summary = get_zone_summary(df_with_zones, model_col)
+    zone_summary_markdown = zone_summary.to_markdown()
+
+    gemini_analysis_text = get_gemini_analysis(
+        df_with_zones, 
+        selected_date, 
+        model, 
+        metrics, 
+        zone_summary
+    )
+
+    return AnalysisResult(
+        date=selected_date,
+        model=model.upper(),
+        metrics=metrics,
+        zone_summary=zone_summary_markdown,
+        gemini_analysis=gemini_analysis_text
+    )
