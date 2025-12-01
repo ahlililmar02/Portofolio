@@ -338,7 +338,7 @@ async function updateMapFromCSV() {
 
 async function getScatterData(selectedModel, selectedDate) {
     const data = await loadDailyCSV();
-    const modelCol = "pm25_" + modelMap[selectedModel];
+    const modelCol = "pm25_" + selectedModel;
 
     console.log("👉 Selected model:", selectedModel);
     console.log("👉 Using column:", modelCol);
