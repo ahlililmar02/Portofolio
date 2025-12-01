@@ -417,6 +417,7 @@ function computeDensityColors(points) {
 
 
 let scatterChart = null;
+let regressionLine = null;
 
 async function updateScatterChart() {
     const selectedModel = document.getElementById("model-select").value;
