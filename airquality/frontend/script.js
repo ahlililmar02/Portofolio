@@ -482,17 +482,19 @@ async function updateScatterChart() {
                     data: chartData,
                     pointBackgroundColor: densityColors,
                     pointRadius: 3,        // smaller points
-                    borderWidth: 0         // no border
+                    borderWidth: 0,
+                    datasetIndex: 0          // no border
                 },
                 {
                     label: "Regression Line",
                     data: regressionLine,
                     type: "line",
-                    borderColor: "white",
+                    borderColor: "black",
                     borderWidth: 2,
                     fill: false,
                     pointRadius: 0,        // no points on the line
-                    tension: 0             // straight line
+                    tension: 0,
+                    datasetIndex: 1              
                 }
             ]
         },
