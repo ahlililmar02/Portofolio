@@ -338,7 +338,7 @@ async function updateMapFromCSV() {
 
 async function getScatterData(selectedModel, selectedDate) {
     const data = await loadDailyCSV();
-    const modelCol = modelMap[selectedModel];
+    const modelCol = "pm25_" + modelMap[selectedModel];
 
     let rows = data;
 
@@ -391,9 +391,7 @@ function computeMetrics(points) {
     return { mae, r2, bias };
 }
 
-// ------------------------
-// SCATTER DENSITY COLORS (k-NN approximate)
-// ------------------------
+
 function computeDensityColors(points) {
     return points.map((p, i) => {
         let count = 0;
