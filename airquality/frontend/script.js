@@ -192,6 +192,113 @@ function visualizeRaster(data, label) {
     console.log(`Raster layer updated: ${label}`);
 }
 
+async function loadDailyCSV() {
+    return fetch("daily_complete.csv")
+        .then(response => response.text())
+        .then(text => {
+            return Papa.parse(text, {
+                header: true,
+                dynamicTyping: true,
+                skipEmptyLines: true
+            }).data;
+        })
+        .catch(err => {
+            console.error("Failed to load CSV:", err);
+            return [];
+        });
+}
+
+let dailyCSVCache = null;
+
+async function getPm25DataByDate(dateSelected) {
+    if (!dailyCSVCache) {
+        dailyCSVCache = await loadDailyCSV();
+    }
+
+    let rows = dailyCSVCache;
+
+    if (dateSelected !== "All Dates") {
+        return rows
+            .filter(d => d.date === dateSelected)
+            .map(d => ({
+                station: d.station,
+                lat: d.latitude,
+                lon: d.longitude,
+                pm25: d.pm25
+            }));
+    }
+
+    const aggregated = {};
+
+    rows.forEach(d => {
+        if (!aggregated[d.station]) {
+            aggregated[d.station] = {
+                station: d.station,
+                lat: d.latitude,
+                lon: d.longitude,
+                pm25sum: 0,
+                count: 0
+            };
+        }
+        aggregated[d.station].pm25sum += d.pm25;
+        aggregated[d.station].count += 1;
+    });
+
+    return Object.values(aggregated).map(d => ({
+        station: d.station,
+        lat: d.lat,
+        lon: d.lon,
+        pm25: d.pm25sum / d.count
+    }));
+}
+
+
+let csvMarkerLayer = null;
+
+function addMarkersToMap(stationData) {
+    if (csvMarkerLayer) {
+        map.removeLayer(csvMarkerLayer);
+    }
+
+    csvMarkerLayer = L.layerGroup();
+
+    stationData.forEach(item => {
+        if (!item.lat || !item.lon) return;
+
+        const marker = L.circleMarker([item.lat, item.lon], {
+            radius: 6,
+            weight: 1,
+            fillOpacity: 0.8
+        }).bindPopup(`
+            <b>${item.station}</b><br>
+            PM2.5: ${item.pm25.toFixed(2)}
+        `);
+
+        csvMarkerLayer.addLayer(marker);
+    });
+
+    csvMarkerLayer.addTo(map);
+}
+
+
+async function updateMapFromCSV() {
+    const dateInput = document.getElementById("date-input");
+    const allDatesChecked = document.getElementById("all-dates-checkbox").checked;
+
+    let selectedDate = "All Dates";
+    if (!allDatesChecked) {
+        selectedDate = dateInput.value;
+        if (!selectedDate) {
+            console.error("No date selected");
+            return;
+        }
+    }
+
+    const data = await getPm25DataByDate(selectedDate);
+    addMarkersToMap(data);
+}
+
+
 
 function handleUpdate(initialLoad = false) {
     const model = document.getElementById('model-select').value;
@@ -212,6 +319,8 @@ function handleUpdate(initialLoad = false) {
     }
 
     fetchAndVisualizeJson(model, selectedDateParam, displayName);
+    updateMapFromCSV();
+
 }
 
 function initialize() {
