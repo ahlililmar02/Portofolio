@@ -302,10 +302,11 @@ async function loadChart(stationName) {
         },
         options: {
             maintainAspectRatio: false,
+            aspectRatio: 1,
             responsive: true,
             plugins: { legend: { display: false } },
             scales: {
-                x: { ticks: { display: true, maxTicksLimit: 7}, grid: { display: false } },
+                x: { ticks: { display: true, maxTicksLimit: 5}, grid: { display: false } },
                 y: { grid: { display: false } }
             }
         }
@@ -327,6 +328,7 @@ async function loadChart(stationName) {
         },
         options: {
             maintainAspectRatio: false,
+            aspectRatio: 1,
             responsive: true,
             plugins: { legend: { display: false } },
             scales: {
