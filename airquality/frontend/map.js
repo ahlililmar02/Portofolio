@@ -301,8 +301,6 @@ async function loadChart(stationName) {
             }]
         },
         options: {
-            maintainAspectRatio: true,
-            aspectRatio: 250,
             responsive: true,
             plugins: { legend: { display: false } },
             scales: {
@@ -327,8 +325,6 @@ async function loadChart(stationName) {
             }]
         },
         options: {
-            maintainAspectRatio: true,
-            aspectRatio: 250,
             responsive: true,
             plugins: { legend: { display: false } },
             scales: {
