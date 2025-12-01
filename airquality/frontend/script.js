@@ -306,7 +306,7 @@ function addMarkersToMap(stationData) {
             radius: 6,
             weight: 1,
             fillOpacity: 0.8,
-            fillColor: turboColormap(pm25)
+            fillColor: turboColormap(item.pm25)
         }).bindPopup(`
             <b>${item.station}</b><br>
             PM2.5: ${item.pm25.toFixed(2)}
