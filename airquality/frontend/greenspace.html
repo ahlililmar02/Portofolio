@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Greenspace Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="navbar">
+        <div class="nav-title">Portfolio</div>
+
+        <div class="nav-center">
+            <a href="index.html">Home</a>
+            <a href="map.html">Dashboard</a>
+            <a href="prediction.html">Estimated PM2.5</a>
+            <a href="greenspace.html">Green-space Map</a>
+        </div>
+
+        <div class="nav-right">
+            <span class="material-symbols-outlined profile-icon">
+                account_circle
+            </span>
+        </div>
+    </div>
+    <div class="map-container">
+        <div id="map" class="map-full-view"></div>
+
+        <div id="info-card" class="info-card-hidden">
+            <button id="close-button" class="close-button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+
+            <div class="image-container">
+                <img id="city-image" src="" alt="" class="city-image">
+            </div>
+
+            <div class="content-container">
+                <h3 id="city-name" class="city-name-header"></h3>
+                <p id="city-description" class="city-description-text"></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
