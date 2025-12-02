@@ -125,38 +125,6 @@ if (mapElement && typeof L !== 'undefined') {
             })
             .then(geojsonData => {
                 L.geoJSON(geojsonData, {
-                    onEachFeature: function (feature, layer) {
-                        const props = feature.properties;
-                        
-                        const { 
-                            pca_compos, 
-                            pm25, 
-                            local_emis, 
-                            ntl, 
-                            ndvi, 
-                            poi_densit, 
-                            GA_norm 
-                        } = props;
-                        
-                        if (props) {
-                            const score = pca_compos || 0;
-
-                            const popupContent = `
-                                <strong>${'Greenspace Area'}</strong><hr style="margin: 4px 0;">
-                                <strong>Composite Score:</strong> 
-                                <span style="font-weight: bold; color: ${getColor(score)};">${formatMetric(score)}</span>
-                                <br><br>
-                                <strong>Metrics:</strong><br>
-                                PM2.5: ${formatMetric(pm25)}<br>
-                                Source Emission: ${formatMetric(local_emis)}<br>
-                                Night Lights: ${formatMetric(ntl)}<br>
-                                NDVI: ${formatMetric(ndvi)}<br>
-                                Sensitive Area: ${formatMetric(poi_densit)}<br>
-                                Green Access: ${formatMetric(GA_norm)}
-                            `;
-                            layer.bindPopup(popupContent);
-                        }
-                    },
                     style: function (feature) {
                         const score = feature.properties.pca_compos || 0; 
                         
