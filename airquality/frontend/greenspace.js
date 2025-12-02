@@ -93,8 +93,18 @@ if (mapElement && typeof L !== 'undefined') {
         boxZoom: false,
         keyboard: false,
         dragging: true,
-    }).setView([-6.25, 106.95], 11); // Center over Jakarta with zoom 11
+    }).setView([-6.25, 106.95], 11);
 
+    function getColor(d) {
+        // d is the pca_compos value (0 to 1)
+        return d > 0.8 ? '#D73027' : // Deep Red
+               d > 0.6 ? '#FC8D59' : // Orange-Red
+               d > 0.4 ? '#FEE08B' : // Yellow
+               d > 0.2 ? '#A6D96A' : // Light Green
+                         '#66BD63';  // Dark Green
+    }
+
+    // 1. Add Base Tile Layer
     L.tileLayer(
         "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
         {
@@ -105,13 +115,68 @@ if (mapElement && typeof L !== 'undefined') {
         },
     ).addTo(map);
 
-    // Add city markers
+
+    // 3. Load Greenspace Layer (Updated Styling)
+    fetch('./greenspace.geojson')
+        .then(response => {
+            if (!response.ok) throw new Error('Failed to load greenspace.geojson');
+            return response.json();
+        })
+        .then(data => {
+            L.geoJSON(data, {
+                // *** UPDATED STYLE FUNCTION ***
+                style: function (feature) {
+                    const score = feature.properties.pca_compos; // Get the PCA score (0-1)
+                    return {
+                        color: "#666",      // Stroke color (dark gray border)
+                        weight: 0.5,
+                        fillColor: getColor(score), // Use the custom color function
+                        fillOpacity: 0.8      // Opaque fill
+                    };
+                },
+                // Optional: Add interactivity like a popup on click
+                onEachFeature: function (feature, layer) {
+                    if (feature.properties) {
+                        const { name, pca_compos } = feature.properties;
+                        const popupContent = `
+                            <strong>${name || 'Greenspace Area'}</strong><br>
+                            PCA Composite Score: <strong>${pca_compos.toFixed(4)}</strong>
+                        `;
+                        layer.bindPopup(popupContent);
+                    }
+                }
+            }).addTo(map);
+        })
+        .catch(error => console.error("Error loading Greenspace Data:", error));
+
+    fetch('./jakarta_boundary.geojson')
+        // ... (boundary loading code)
+        .then(response => {
+            if (!response.ok) throw new Error('Failed to load jakarta_boundary.geojson');
+            return response.json();
+        })
+        .then(data => {
+            L.geoJSON(data, {
+                style: function (feature) {
+                    return {
+                        color: "#000000ff",
+                        weight: 2,
+                        opacity: 0.5,
+                        fillColor: "#000000ff",
+                        fillOpacity: 0.05
+                    };
+                }
+            }).addTo(map);
+        })
+        .catch(error => console.error("Error loading Jakarta Boundary:", error));
+
+
+
+    // 3. Add city markers (placed on top of all GeoJSON layers)
     cities.forEach((city) => {
         const divIcon = L.divIcon({
             className: "custom-marker",
-            html: `<div style="background: white; height:10px; width:50px; display:flex;text-align: center;
-                    padding: 2px 3px; border-radius: 4px; border: 2px solid #f59e0b; font-size: 8px; font-weight: 500; 
-                    color: #92400e; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,0.2); cursor: pointer;">${city.name}</div>`,
+            html: `<div style="background: white; padding: 4px 8px; border-radius: 4px; border: 2px solid #f59e0b; font-size: 12px; font-weight: 500; color: #92400e; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,0.2); cursor: pointer;">${city.name}</div>`,
             iconSize: [0, 0],
             iconAnchor: [0, 0],
         });
@@ -120,11 +185,11 @@ if (mapElement && typeof L !== 'undefined') {
             icon: divIcon,
         }).addTo(map);
 
-        // Attach click event to marker
         marker.on("click", () => {
             showCityInfo(city);
         });
     });
+    
 } else {
     console.error('Leaflet or map container not found.');
 }
