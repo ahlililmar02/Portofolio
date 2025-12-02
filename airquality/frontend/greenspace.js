@@ -2,7 +2,7 @@
 const cities = [
     {
         name: "Tambora",
-        coords: [-6.1492257360168034, 106.80055453345109],
+        coords: [-6.1452257360168034, 106.80055453345109],
         image:
             "https://images.unsplash.com/photo-1711078291919-c603b878eb39?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxqYWthcnRhJTIwdXJiYW4lMjBwb2xsdXRpb258ZW58MXx8fHwxNzY0NjY5NzUxfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
         description:
@@ -109,7 +109,7 @@ if (mapElement && typeof L !== 'undefined') {
     cities.forEach((city) => {
         const divIcon = L.divIcon({
             className: "custom-marker",
-            html: `<div style="background: white; padding: 4px 8px; border-radius: 4px; border: 2px solid #f59e0b; font-size: 12px; font-weight: 500; color: #92400e; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,0.2); cursor: pointer;">${city.name}</div>`,
+            html: `<div style="background: white; height:10px; width:20px; padding: 4px 8px; border-radius: 4px; border: 2px solid #f59e0b; font-size: 12px; font-weight: 500; color: #92400e; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,0.2); cursor: pointer;">${city.name}</div>`,
             iconSize: [0, 0],
             iconAnchor: [0, 0],
         });
