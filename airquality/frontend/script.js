@@ -611,12 +611,13 @@ function handleUpdate(initialLoad = false) {
     (async () => {
         try {
             fetchAndVisualizeJson(model, selectedDateParam, displayName); 
+            
+            updateMapFromCSV(); 
 
             const calculatedMetrics = await updateScatterChart(); 
 
             await fetchAndDisplayAnalysis(model, selectedDateParam, calculatedMetrics); 
 
-            updateMapFromCSV(); 
 
         } catch (error) {
             console.error("Error in update flow:", error);
