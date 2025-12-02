@@ -16,7 +16,7 @@ from rasterio.warp import reproject, Resampling
 from rasterio.io import MemoryFile
 import base64
 from pydantic import BaseModel
-from typing import Optional
+import json
 import geopandas as gpd
 from sklearn.metrics import r2_score, mean_absolute_error, mean_squared_error
 from google import genai 
@@ -485,16 +485,15 @@ async def analyze_pm25(
 def get_greenspace():
     gdf = gpd.read_file("greenspace.geojson")
 
+    # Scale numeric columns
     numeric_cols = gdf.select_dtypes(include=["float", "int"]).columns.tolist()
-
     if "cluster" in numeric_cols:
         numeric_cols.remove("cluster")
 
     scaler = MinMaxScaler()
     gdf[numeric_cols] = scaler.fit_transform(gdf[numeric_cols])
 
-    gdf["geometry"] = gdf["geometry"].apply(lambda x: x.__geo_interface__)
+    # Convert geometry to standard geojson, but keep structure
+    geojson = json.loads(gdf.to_json())
 
-    result = gdf.to_dict(orient="records")
-
-    return result
+    return geojson
