@@ -162,7 +162,9 @@ if (mapElement && typeof L !== 'undefined') {
                     return {
                         color: "#000000ff",
                         weight: 2,
-                        opacity: 0.9,
+                        opacity: 1,
+                        fillColor: "#000000ff",
+                        fillOpacity: 1
                     };
                 }
             }).addTo(map);
