@@ -118,74 +118,58 @@ if (mapElement && typeof L !== 'undefined') {
     ).addTo(map);
 
 
-     fetch(`${BACKEND_BASE_URL}/greenspace`) // <-- UPDATED URL
-            .then(response => {
-                if (!response.ok) throw new Error(`Failed to load greenspace data from backend. Status: ${response.status}`);
-                return response.json();
-            })
-            .then(geojsonData => {
-                // ADDED VALIDATION CHECK: Ensure the data is a GeoJSON FeatureCollection
-                if (!geojsonData || geojsonData.type !== 'FeatureCollection' || !Array.isArray(geojsonData.features)) {
-                    // Log the invalid data for inspection before throwing a cleaner error
-                    console.error("Invalid GeoJSON structure received:", geojsonData);
-                    throw new Error("Received data is not a valid GeoJSON FeatureCollection. Please check your backend's output structure.");
-                }
-
-                // Pop-up creation logic (onEachFeature) has been removed here.
-                L.geoJSON(geojsonData, {
-                    // Style the features based on the existing pca_compos 
-                    style: function (feature) {
-                        const score = feature.properties.pca_compos || 0; 
-                        
-                        return {
-                            color: "#666",      
-                            weight: 0.5,
-                            fillColor: getColor(score), 
-                            fillOpacity: 0.8      
-                        };
-                    },
-                }).addTo(map);
-            })
-            .catch(error => console.error("Error loading Greenspace Data:", error));
-
-
-
-    fetch('./jakarta_boundary.geojson')
-        // ... (boundary loading code)
+    fetch(`${BACKEND_BASE_URL}/greenspace`)
         .then(response => {
-            if (!response.ok) throw new Error('Failed to load jakarta_boundary.geojson');
+            if (!response.ok)
+                throw new Error(`Failed to load greenspace data from backend. Status: ${response.status}`);
             return response.json();
         })
-        .then(data => {
-            L.geoJSON(data, {
+        .then(geojsonData => {
+            // Render greenspace polygons
+            L.geoJSON(geojsonData, {
                 style: function (feature) {
+                    const score = feature.properties.pca_compos || 0;
                     return {
-                        color: "#000000ff",
-                        weight: 2,
-                        opacity: 1,
-                        fillColor: "#000000ff",
-                        fillOpacity: 1
+                        color: "#666",
+                        weight: 0.5,
+                        fillColor: getColor(score),
+                        fillOpacity: 0.8
                     };
-                }
+                },
             }).addTo(map);
-        })
-        .catch(error => console.error("Error loading Jakarta Boundary:", error));
 
+        console.log("Greenspace loaded.");
 
-
-    // 3. Add city markers (placed on top of all GeoJSON layers)
-    cities.forEach((city) => {
-        const divIcon = L.divIcon({
-            className: "custom-marker",
-            html: `<div style="background: white; padding: 4px 8px; border-radius: 4px; border: 2px solid #f59e0b; font-size: 12px; font-weight: 500; color: #92400e; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,0.2); cursor: pointer;">${city.name}</div>`,
-            iconSize: [0, 0],
-            iconAnchor: [0, 0],
-        });
-
-        const marker = L.marker(city.coords, {
-            icon: divIcon,
+    return fetch('./jakarta_boundary.geojson');
+    })
+    .then(response => {
+        if (!response.ok)
+            throw new Error('Failed to load jakarta_boundary.geojson');
+        return response.json();
+    })
+    .then(boundaryData => {
+        L.geoJSON(boundaryData, {
+            style: {
+                color: "#000000ff",
+                weight: 2,
+                opacity: 1,
+                fillColor: "#000000ff",
+                fillOpacity: 1
+            }
         }).addTo(map);
 
+        console.log("Boundary loaded.");
+
+        cities.forEach(city => {
+            const divIcon = L.divIcon({
+                className: "custom-marker",
+                html: `<div style="background: white; padding: 4px 8px; border-radius: 4px; border: 2px solid #f59e0b; font-size: 12px; font-weight: 500; color: #92400e; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,0.2); cursor: pointer;">${city.name}</div>`,
+                iconSize: [0, 0],
+                iconAnchor: [0, 0],
+            });
+
+            L.marker(city.coords, { icon: divIcon }).addTo(map);
+        });
         marker.on("click", () => {
             showCityInfo(city);
         });
