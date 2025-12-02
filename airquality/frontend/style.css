@@ -886,7 +886,6 @@ body, html {
 }
 
 .map-container {
-    padding-top: 64px; /* Matches pt-16 in Tailwind */
     height: 100vh;
     position: relative;
     box-sizing: border-box;
