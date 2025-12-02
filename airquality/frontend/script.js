@@ -555,12 +555,6 @@ async function updateScatterChart() {
 
 function updateAnalysisSection(data) {
     const analysisContainer = document.getElementById('analysis-summary');
-    
-    let metricsHtml = '<ul>';
-    for (const [key, value] of Object.entries(data.metrics)) {
-        metricsHtml += `<li><strong>${key}</strong>: ${value.toFixed(3)}</li>`;
-    }
-    metricsHtml += '</ul>';
 
     const aiAnalysisHtml = `
         <h3 class="summary-title">AI Generated Analysis</h3>
