@@ -214,7 +214,7 @@ async function fetchAndDisplayAnalysis(modelShort, selectedDate, metrics) {
         console.error("HTML Error: Could not find element with ID 'analysis-summary'.");
         return;
     }
-    analysisContainer.innerHTML = '<p>Loading AI Analysis and Metrics...</p>';
+    analysisContainer.innerHTML = '<p>Loading AI Analysis...</p>';
 
     try {
         const apiUrl = `${BACKEND_BASE_URL}/analyze-pm25?` + new URLSearchParams({

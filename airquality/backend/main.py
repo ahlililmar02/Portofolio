@@ -383,28 +383,24 @@ def get_gemini_analysis(df, selected_date, selected_model, metrics, zone_summary
     prompt = f"""
     You are an environmental data analyst. Analyze the spatiotemporal results for PM2.5 model performance in Jakarta, do not show the data directly, use bullet points to explain analysis
 
-    **Date**
+    Date
     {selected_date}
 
-    **Machine Learning model used**
+    Machine Learning model used
     {selected_model.upper()}
 
-    **Evaluation Metrics (Calculated on Frontend)**
+    Evaluation Metrics (Calculated on Frontend)
     - R² = {R2:.3f}
     - MAE = {MAE:.3f}
     - Bias = {Bias:.3f}
 
-    **Jakarta Zone Summary (Model vs. Station Values)**
-    {zone_summary.to_markdown()}
-
-    **Example Format**
+    Example Format
     {example_summary}
 
-    **Tasks**
+    Tasks
     1. Provide a concise overall spatial and temporal(seasonality based on dates) and performance summary (under 100 words).
     2. Identify which Jakarta city (zones) show high bias or variability and analyze the PM2.5 spatial pattern.
     3. Explain model behavior possible environmental or model causes (topography, urban sources, etc.).
-    4. Output in bullet points with short paragraphs highlight with bold for important facts.
     """
     
     try:
