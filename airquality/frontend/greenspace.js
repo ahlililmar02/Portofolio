@@ -124,6 +124,13 @@ if (mapElement && typeof L !== 'undefined') {
                 return response.json();
             })
             .then(geojsonData => {
+                // ADDED VALIDATION CHECK: Ensure the data is a GeoJSON FeatureCollection
+                if (!geojsonData || geojsonData.type !== 'FeatureCollection' || !Array.isArray(geojsonData.features)) {
+                    // Log the invalid data for inspection before throwing a cleaner error
+                    console.error("Invalid GeoJSON structure received:", geojsonData);
+                    throw new Error("Received data is not a valid GeoJSON FeatureCollection. Please check your backend's output structure.");
+                }
+
                 // Pop-up creation logic (onEachFeature) has been removed here.
                 L.geoJSON(geojsonData, {
                     // Style the features based on the existing pca_compos 
@@ -142,6 +149,7 @@ if (mapElement && typeof L !== 'undefined') {
             .catch(error => console.error("Error loading Greenspace Data:", error));
 
 
+
     fetch('./jakarta_boundary.geojson')
         // ... (boundary loading code)
         .then(response => {
@@ -154,9 +162,7 @@ if (mapElement && typeof L !== 'undefined') {
                     return {
                         color: "#000000ff",
                         weight: 2,
-                        opacity: 0.5,
-                        fillColor: "#000000ff",
-                        fillOpacity: 0.05
+                        opacity: 0.9,
                     };
                 }
             }).addTo(map);
