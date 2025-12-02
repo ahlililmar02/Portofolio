@@ -120,14 +120,14 @@ if (mapElement && typeof L !== 'undefined') {
 
     fetch(`${BACKEND_BASE_URL}/greenspace`)
         .then(response => {
-            if (!response.ok)
-                throw new Error(`Failed to load greenspace data from backend. Status: ${response.status}`);
+            if (!response.ok) throw new Error(`Failed to load greenspace data. Status: ${response.status}`);
             return response.json();
         })
         .then(geojsonData => {
-            // Render greenspace polygons
+
+            // 1. Add Greenspace Layer FIRST
             L.geoJSON(geojsonData, {
-                style: function (feature) {
+                style: feature => {
                     const score = feature.properties.pca_compos || 0;
                     return {
                         color: "#666",
@@ -135,45 +135,54 @@ if (mapElement && typeof L !== 'undefined') {
                         fillColor: getColor(score),
                         fillOpacity: 0.8
                     };
-                },
+                }
             }).addTo(map);
 
-        console.log("Greenspace loaded.");
+            // After greenspace is loaded, continue to load boundary
+            return fetch('./jakarta_boundary.geojson');
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Failed to load jakarta_boundary.geojson');
+            return response.json();
+        })
+        .then(boundaryData => {
 
-    return fetch('./jakarta_boundary.geojson');
-    })
-    .then(response => {
-        if (!response.ok)
-            throw new Error('Failed to load jakarta_boundary.geojson');
-        return response.json();
-    })
-    .then(boundaryData => {
-        L.geoJSON(boundaryData, {
-            style: {
-                color: "#000000ff",
-                weight: 2,
-                opacity: 1,
-                fillColor: "#000000ff",
-                fillOpacity: 1
-            }
-        }).addTo(map);
+            // 2. Add Boundary Layer SECOND
+            L.geoJSON(boundaryData, {
+                style: () => ({
+                    color: "#000000ff",
+                    weight: 2,
+                    opacity: 1,
+                    fillColor: "#000000ff",
+                    fillOpacity: 1
+                })
+            }).addTo(map);
 
-        console.log("Boundary loaded.");
+            // After boundary is loaded, continue to markers
+            return true; // just a signal
+        })
+        .then(() => {
 
-        cities.forEach(city => {
-            const divIcon = L.divIcon({
-                className: "custom-marker",
-                html: `<div style="background: white; padding: 4px 8px; border-radius: 4px; border: 2px solid #f59e0b; font-size: 12px; font-weight: 500; color: #92400e; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,0.2); cursor: pointer;">${city.name}</div>`,
-                iconSize: [0, 0],
-                iconAnchor: [0, 0],
+            // 3. Add Markers LAST
+            cities.forEach((city) => {
+                const divIcon = L.divIcon({
+                    className: "custom-marker",
+                    html: `<div style="background: white; padding: 4px 8px; border-radius: 4px; border: 2px solid #f59e0b; font-size: 12px; font-weight: 500; color: #92400e; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,0.2); cursor: pointer;">${city.name}</div>`,
+                    iconSize: [0, 0],
+                    iconAnchor: [0, 0]
+                });
+
+                const marker = L.marker(city.coords, { icon: divIcon }).addTo(map);
+
+                marker.on("click", () => {
+                    showCityInfo(city);
+                });
             });
 
-            L.marker(city.coords, { icon: divIcon }).addTo(map);
-            marker.on("click", () => {
-            showCityInfo(city);
+        })
+        .catch(error => {
+            console.error("Error in map loading sequence:", error);
         });
-        });
-    });
     
 } else {
     console.error('Leaflet or map container not found.');
