@@ -129,7 +129,6 @@ if (mapElement && typeof L !== 'undefined') {
                         const props = feature.properties;
                         
                         const { 
-                            name, 
                             pca_compos, 
                             pm25, 
                             local_emis, 
@@ -143,7 +142,7 @@ if (mapElement && typeof L !== 'undefined') {
                             const score = pca_compos || 0;
 
                             const popupContent = `
-                                <strong>${name || 'Greenspace Area'}</strong><hr style="margin: 4px 0;">
+                                <strong>${'Greenspace Area'}</strong><hr style="margin: 4px 0;">
                                 <strong>Composite Score:</strong> 
                                 <span style="font-weight: bold; color: ${getColor(score)};">${formatMetric(score)}</span>
                                 <br><br>
