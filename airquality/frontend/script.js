@@ -555,15 +555,15 @@ async function updateScatterChart() {
 
 function updateAnalysisSection(data) {
     const analysisContainer = document.getElementById('analysis-summary');
-
+    const formattedAnalysisHtml = marked.parse(data.gemini_analysis);
     const aiAnalysisHtml = `
         <h3 class="summary-title">AI Generated Analysis</h3>
         <div class="summary-text-block">
-            ${data.gemini_analysis}
+            ${formattedAnalysisHtml}}
         </div>
     `;
 
-    analysisContainer.innerHTML = aiAnalysisHtml + zoneSummaryHtml;
+    analysisContainer.innerHTML = aiAnalysisHtml;
 }
 
 function getCalculatedMetrics(points) {
