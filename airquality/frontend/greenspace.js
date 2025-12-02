@@ -109,7 +109,7 @@ if (mapElement && typeof L !== 'undefined') {
     cities.forEach((city) => {
         const divIcon = L.divIcon({
             className: "custom-marker",
-            html: `<div style="background: white; height:10px; width:80; display:flex;text-align: center;
+            html: `<div style="background: white; height:10px; width:80px; display:flex;text-align: center;
                     padding: 2px 3px; border-radius: 4px; border: 2px solid #f59e0b; font-size: 8px; font-weight: 500; 
                     color: #92400e; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,0.2); cursor: pointer;">${city.name}</div>`,
             iconSize: [0, 0],
