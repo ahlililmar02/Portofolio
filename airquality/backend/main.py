@@ -19,7 +19,8 @@ from pydantic import BaseModel
 from typing import Optional
 import geopandas as gpd
 from sklearn.metrics import r2_score, mean_absolute_error, mean_squared_error
-from google import genai #
+from google import genai 
+from sklearn.preprocessing import MinMaxScaler
 
 app = FastAPI()
 
