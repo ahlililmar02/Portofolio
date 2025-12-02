@@ -21,6 +21,7 @@ body {
     justify-content: flex-start;
     align-items: center;
     font-family: "Open Sans", sans-serif;
+    z-index: 0;
 }
 
 .map-wrapper {
