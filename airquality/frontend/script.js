@@ -562,16 +562,9 @@ function updateAnalysisSection(data) {
     }
     metricsHtml += '</ul>';
 
-    const zoneSummaryHtml = `
-        <h4 class="summary-title">Zone Summary (Model vs. Station)</h4>
-        <pre>${data.zone_summary}</pre>
-    `;
-
     const aiAnalysisHtml = `
-        <h3 class="summary-title">AI Environmental Analysis</h3>
+        <h3 class="summary-title">AI Generated Analysis</h3>
         <div class="summary-text-block">
-            <h4 class="summary-title">Evaluation Metrics</h4>
-            ${metricsHtml}
             ${data.gemini_analysis}
         </div>
     `;
