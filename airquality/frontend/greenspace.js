@@ -1,4 +1,6 @@
-// Data from the original component
+const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+const BACKEND_BASE_URL = window.API_URL || ''; 
+
 const cities = [
     {
         name: "Taman Sari",
@@ -116,38 +118,60 @@ if (mapElement && typeof L !== 'undefined') {
     ).addTo(map);
 
 
-    // 3. Load Greenspace Layer (Updated Styling)
-    fetch('./greenspace.geojson')
-        .then(response => {
-            if (!response.ok) throw new Error('Failed to load greenspace.geojson');
-            return response.json();
-        })
-        .then(data => {
-            L.geoJSON(data, {
-                // *** UPDATED STYLE FUNCTION ***
-                style: function (feature) {
-                    const score = feature.properties.pca_compos; // Get the PCA score (0-1)
-                    return {
-                        color: "#666",      // Stroke color (dark gray border)
-                        weight: 0.5,
-                        fillColor: getColor(score), // Use the custom color function
-                        fillOpacity: 0.8      // Opaque fill
-                    };
-                },
-                // Optional: Add interactivity like a popup on click
-                onEachFeature: function (feature, layer) {
-                    if (feature.properties) {
-                        const { name, pca_compos } = feature.properties;
-                        const popupContent = `
-                            <strong>${name || 'Greenspace Area'}</strong><br>
-                            PCA Composite Score: <strong>${pca_compos.toFixed(4)}</strong>
-                        `;
-                        layer.bindPopup(popupContent);
-                    }
-                }
-            }).addTo(map);
-        })
-        .catch(error => console.error("Error loading Greenspace Data:", error));
+     fetch(`${BACKEND_BASE_URL}/greenspace`) 
+            .then(response => {
+                if (!response.ok) throw new Error(`Failed to load greenspace data from backend. Status: ${response.status}`);
+                return response.json();
+            })
+            .then(geojsonData => {
+                L.geoJSON(geojsonData, {
+                    onEachFeature: function (feature, layer) {
+                        const props = feature.properties;
+                        
+                        const { 
+                            name, 
+                            pca_compos, 
+                            pm25, 
+                            local_emis, 
+                            ntl, 
+                            ndvi, 
+                            poi_densit, 
+                            GA_norm 
+                        } = props;
+                        
+                        if (props) {
+                            const score = pca_compos || 0;
+
+                            const popupContent = `
+                                <strong>${name || 'Greenspace Area'}</strong><hr style="margin: 4px 0;">
+                                <strong>Composite Score:</strong> 
+                                <span style="font-weight: bold; color: ${getColor(score)};">${formatMetric(score)}</span>
+                                <br><br>
+                                <strong>Metrics:</strong><br>
+                                PM2.5: ${formatMetric(pm25)}<br>
+                                Source Emission: ${formatMetric(local_emis)}<br>
+                                Night Lights: ${formatMetric(ntl)}<br>
+                                NDVI: ${formatMetric(ndvi)}<br>
+                                Sensitive Area: ${formatMetric(poi_densit)}<br>
+                                Green Access: ${formatMetric(GA_norm)}
+                            `;
+                            layer.bindPopup(popupContent);
+                        }
+                    },
+                    style: function (feature) {
+                        const score = feature.properties.pca_compos || 0; 
+                        
+                        return {
+                            color: "#666",      
+                            weight: 0.5,
+                            fillColor: getColor(score), 
+                            fillOpacity: 0.9      
+                        };
+                    },
+                }).addTo(map);
+            })
+            .catch(error => console.error("Error loading Greenspace Data:", error));
+
 
     fetch('./jakarta_boundary.geojson')
         // ... (boundary loading code)
