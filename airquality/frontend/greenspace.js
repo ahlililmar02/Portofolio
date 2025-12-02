@@ -169,9 +169,9 @@ if (mapElement && typeof L !== 'undefined') {
             });
 
             L.marker(city.coords, { icon: divIcon }).addTo(map);
-        });
-        marker.on("click", () => {
+            marker.on("click", () => {
             showCityInfo(city);
+        });
         });
     });
     
