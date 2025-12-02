@@ -6,6 +6,14 @@
     <title>Greenspace Map</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <link rel="stylesheet" href="styles.css">
+    <script>
+        // Get the current timestamp (milliseconds since epoch)
+        const cacheBuster = new Date().getTime(); 
+        const scriptElement = document.createElement('script');
+        // Append the timestamp as a query parameter (e.g., map.js?v=1700000000000)
+        scriptElement.src = 'greenspace.js?v=' + cacheBuster; 
+        document.head.appendChild(scriptElement);
+    </script>
 </head>
 <body>
     <div id="navbar">
@@ -44,6 +52,5 @@
     </div>
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <script src="script.js"></script>
 </body>
 </html>
