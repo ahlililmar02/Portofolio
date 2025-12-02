@@ -1,16 +1,16 @@
 // Data from the original component
 const cities = [
     {
-        name: "Tambora",
-        coords: [-6.1452257360168034, 106.80055453345109],
+        name: "Taman Sari",
+        coords: [-6.144, 106.816],
         image:
             "https://images.unsplash.com/photo-1711078291919-c603b878eb39?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxqYWthcnRhJTIwdXJiYW4lMjBwb2xsdXRpb258ZW58MXx8fHwxNzY0NjY5NzUxfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
         description:
-            "Tambora is a densely populated residential area with limited green spaces. The high population density and lack of vegetation contribute to elevated temperatures and poor air quality, making green space development crucial for community health.",
+            "Taman Sari is a densely populated residential area and urban activities with limited green spaces. The high population density and lack of vegetation contribute to elevated temperatures and poor air quality, making green space development crucial for community health.",
     },
     {
         name: "Sawah Besar",
-        coords: [-6.155453752530772, 106.83249101204726],
+        coords: [-6.155, 106.8325],
         image:
             "https://images.unsplash.com/photo-1670737565773-0a40f68256f5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjcm93ZGVkJTIwY2l0eSUyMHN0cmVldHN8ZW58MXx8fHwxNzY0NjY5NzUxfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
         description:
@@ -18,7 +18,7 @@ const cities = [
     },
     {
         name: "Tanah Abang",
-        coords: [-6.195006957533741, 106.81175576988079],
+        coords: [-6.195, 106.812],
         image:
             "https://images.unsplash.com/photo-1670737565773-0a40f68256f5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjcm93ZGVkJTIwY2l0eSUyMHN0cmVldHN8ZW58MXx8fHwxNzY0NjY5NzUxfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
         description:
@@ -26,7 +26,7 @@ const cities = [
     },
     {
         name: "Tanjung Priok",
-        coords: [-6.134149242112454, 106.87392495815662],
+        coords: [-6.108, 106.885],
         image:
             "https://images.unsplash.com/photo-1604840500198-792eefd7d08f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxpbmR1c3RyaWFsJTIwYXJlYSUyMHBvbGx1dGlvbnxlbnwxfHx8fDE3NjQ2Njk3NTJ8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
         description:
@@ -34,7 +34,7 @@ const cities = [
     },
     {
         name: "Pulo Gadung",
-        coords: [-6.193038155182227, 106.8900472438781],
+        coords: [-6.193, 106.89],
         image:
             "https://images.unsplash.com/photo-1604840500198-792eefd7d08f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxpbmR1c3RyaWFsJTIwYXJlYSUyMHBvbGx1dGlvbnxlbnwxfHx8fDE3NjQ2Njk3NTJ8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
         description:
@@ -42,7 +42,7 @@ const cities = [
     },
     {
         name: "Jatinegara",
-        coords: [-6.231151721068033, 106.87904964825229],
+        coords: [-6.2311, 106.879],
         image:
             "https://images.unsplash.com/photo-1644380344134-c8986ef44b59?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx1cmJhbiUyMGdyZWVuJTIwc3BhY2UlMjBwYXJrfGVufDF8fHx8MTc2NDY2OTc1Mnww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
         description:
