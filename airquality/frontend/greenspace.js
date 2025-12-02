@@ -118,13 +118,15 @@ if (mapElement && typeof L !== 'undefined') {
     ).addTo(map);
 
 
-     fetch(`${BACKEND_BASE_URL}/greenspace`) 
+     fetch(`${BACKEND_BASE_URL}/greenspace`) // <-- UPDATED URL
             .then(response => {
                 if (!response.ok) throw new Error(`Failed to load greenspace data from backend. Status: ${response.status}`);
                 return response.json();
             })
             .then(geojsonData => {
+                // Pop-up creation logic (onEachFeature) has been removed here.
                 L.geoJSON(geojsonData, {
+                    // Style the features based on the existing pca_compos 
                     style: function (feature) {
                         const score = feature.properties.pca_compos || 0; 
                         
@@ -132,7 +134,7 @@ if (mapElement && typeof L !== 'undefined') {
                             color: "#666",      
                             weight: 0.5,
                             fillColor: getColor(score), 
-                            fillOpacity: 0.9      
+                            fillOpacity: 0.8      
                         };
                     },
                 }).addTo(map);
