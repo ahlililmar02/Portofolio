@@ -319,9 +319,9 @@ def calculate_metrics(df, model_col):
     if df.empty or len(df) < 2:
         return {'R2': np.nan, 'MAE': np.nan, 'RMSE': np.nan, 'Bias': np.nan, 'RPE': np.nan}
     
-    # y_true correctly uses the 'pm25' column
+
     y_true = df['pm25'] 
-    y_pred = df[model_col] # model_col is 'pm25_xgb', 'pm25_rf', or 'pm25_lgbm'
+    y_pred = df[model_col] 
 
     R2 = r2_score(y_true, y_pred)
     MAE = mean_absolute_error(y_true, y_pred)
@@ -339,7 +339,6 @@ def calculate_metrics(df, model_col):
 
 
 def assign_zones(df):
-    # ... (No change) ...
     if df.empty:
         return df
 
@@ -367,8 +366,6 @@ def assign_zones(df):
 def get_zone_summary(df, model_col):
     """Generates the zone-based error summary table."""
     
-    # --- ADAPTATION HERE ---
-    # We explicitly rename 'pm25' to 'station_val' and the model column to 'raster_val'
     df_working = df.rename(columns={'pm25': 'station_val', model_col: 'raster_val'})
     
     df_working['error'] = df_working['raster_val'] - df_working['station_val']
@@ -451,7 +448,6 @@ def get_gemini_analysis(df, selected_date, selected_model, metrics, zone_summary
     """
     
     try:
-        # Assuming the 'client' variable is defined globally or passed in
         response = client.models.generate_content(
             model="gemini-2.5-flash",
             contents=prompt

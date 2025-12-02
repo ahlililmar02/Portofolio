@@ -201,7 +201,18 @@ async function fetchAndVisualizeJson(modelShort, selectedDate, displayName) {
         const tifData = await tifResponse.json();
         console.log("Raster data received:", tifData);
         visualizeRaster(tifData, displayName);
+    }
+    catch (error) {
+        console.error("Error fetching raster:", error);
+    }
+}
 
+
+async function fetchAndDisplayAnalysis(modelShort, selectedDate) {
+    const analysisContainer = document.getElementById('analysis-summary');
+    analysisContainer.innerHTML = '<p>Loading AI Analysis and Metrics...</p>';
+
+    try {
         const apiUrl = `${BACKEND_BASE_URL}/analyze-pm25?date=${selectedDate}&model=${modelShort}`;
         
         const analysisResponse = await fetch(apiUrl);
@@ -214,10 +225,11 @@ async function fetchAndVisualizeJson(modelShort, selectedDate, displayName) {
         
         updateAnalysisSection(analysisData);
         
-    }
-    catch (error) {
-        console.error("Error during data fetching or analysis:", error);
-        document.getElementById('analysis-summary').innerHTML = `<p style="color:red;">Analysis failed: ${error.message}</p>`;
+    } catch (error) {
+        console.error("Error fetching or displaying analysis:", error);
+        analysisContainer.innerHTML = `<p style="color:red; font-weight: bold;">
+                                         Analysis failed: ${error.message}
+                                       </p>`;
     }
 }
 
@@ -545,7 +557,6 @@ function updateAnalysisSection(data) {
         <pre>${data.zone_summary}</pre>
     `;
 
-    // The AI analysis is the key part you wanted
     const aiAnalysisHtml = `
         <h3 class="summary-title">AI Environmental Analysis</h3>
         <div class="summary-text-block">
@@ -579,10 +590,13 @@ function handleUpdate(initialLoad = false) {
         displayName = `Single Date (${selectedDateParam})`;
     }
 
+
     fetchAndVisualizeJson(model, selectedDateParam, displayName);
+    
+    fetchAndDisplayAnalysis(model, selectedDateParam); 
+
     updateMapFromCSV();
     updateScatterChart();
-
 }
 
 function initialize() {
