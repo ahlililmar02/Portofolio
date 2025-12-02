@@ -314,30 +314,6 @@ except Exception as e:
     daily_df = pd.DataFrame()
 
 
-def calculate_metrics(df, model_col):
-    """Calculates evaluation metrics (R2, MAE, RMSE, Bias, RPE)."""
-    if df.empty or len(df) < 2:
-        return {'R2': np.nan, 'MAE': np.nan, 'RMSE': np.nan, 'Bias': np.nan, 'RPE': np.nan}
-    
-
-    y_true = df['pm25'] 
-    y_pred = df[model_col] 
-
-    R2 = r2_score(y_true, y_pred)
-    MAE = mean_absolute_error(y_true, y_pred)
-    RMSE = np.sqrt(mean_squared_error(y_true, y_pred))
-    Bias = np.mean(y_pred - y_true)
-    RPE = (Bias / np.mean(y_true)) * 100 if np.mean(y_true) != 0 else np.nan
-
-    return {
-        'R2': R2, 
-        'MAE': MAE, 
-        'RMSE': RMSE, 
-        'Bias': Bias, 
-        'RPE': RPE
-    }
-
-
 def assign_zones(df):
     if df.empty:
         return df
@@ -386,37 +362,26 @@ def get_zone_summary(df, model_col):
     
     return zone_summary
 
-
-
 def get_gemini_analysis(df, selected_date, selected_model, metrics, zone_summary):
 
+    model_col = f'pm25_{selected_model}'
     R2 = metrics['R2']
     MAE = metrics['MAE']
-    RMSE = metrics['RMSE']
     Bias = metrics['Bias']
-    RPE = metrics['RPE']
-    
-    model_col = f'pm25_{selected_model}'
-    
 
     sample_df = df.rename(columns={'pm25': 'station_val', model_col: 'raster_val'})
     
     sample_df['error'] = sample_df['raster_val'] - sample_df['station_val']
     
-    sample_data = sample_df[
-        ['date', 'station', 'station_val', 'raster_val', 'latitude', 'longitude', 'zone', 'error']
-    ].head(50).to_csv(index=False)
     
-    # ... (Rest of the prompt template is unchanged) ...
     example_summary = """
-    - **Overall Model:** R² = 0.83 indicates good correlation, though underestimation occurs in the South.
-    - **Spatial Pattern:** Central and West zones show higher bias, possibly due to coarse urban emission estimates.
-    - **Notes:** High estimated PM2.5 in East Jakarta possibly due to Industrial activity near Bekasi and Karawang.
+    - Overall Model: R² = 0.83 indicates good correlation, though underestimation occurs in the South.
+    - Spatial Pattern: Central and West zones show higher bias, possibly due to coarse urban emission estimates.
+    - Notes: High estimated PM2.5 in East Jakarta possibly due to Industrial activity near Bekasi and Karawang.
     """
     
     prompt = f"""
-    You are an environmental data analyst. Analyze the spatiotemporal results for PM2.5 model performance in Jakarta, do not show the data directly
-    # ... (Seasonal and Spatial Background Theories omitted for brevity) ...
+    You are an environmental data analyst. Analyze the spatiotemporal results for PM2.5 model performance in Jakarta, do not show the data directly, use bullet points to explain analysis
 
     **Date**
     {selected_date}
@@ -424,27 +389,22 @@ def get_gemini_analysis(df, selected_date, selected_model, metrics, zone_summary
     **Machine Learning model used**
     {selected_model.upper()}
 
-    **Evaluation Metrics**
+    **Evaluation Metrics (Calculated on Frontend)**
     - R² = {R2:.3f}
     - MAE = {MAE:.3f}
-    - RMSE = {RMSE:.3f}
     - Bias = {Bias:.3f}
-    - RPE = {RPE:.2f}%
 
     **Jakarta Zone Summary (Model vs. Station Values)**
     {zone_summary.to_markdown()}
-
-    **Sample Data (First 50 Rows for Context):**
-    {sample_data}
 
     **Example Format**
     {example_summary}
 
     **Tasks**
-    1. Provide a concise overall spatial and temporal(seasonality based on dates) and performance summary (under 150 words).
+    1. Provide a concise overall spatial and temporal(seasonality based on dates) and performance summary (under 100 words).
     2. Identify which Jakarta city (zones) show high bias or variability and analyze the PM2.5 spatial pattern.
     3. Explain model behavior possible environmental or model causes (topography, urban sources, etc.).
-    4. Output in **bullet points** with short paragraphs highlight with bold for important facts.
+    4. Output in bullet points with short paragraphs highlight with bold for important facts.
     """
     
     try:
@@ -465,8 +425,17 @@ class AnalysisResult(BaseModel):
 @app.get("/analyze-pm25", response_model=AnalysisResult)
 async def analyze_pm25(
     date: str = Query(..., description="Date in YYYY-MM-DD format, or 'All Dates'"),
-    model: str = Query(..., description="Model abbreviation: 'xgb', 'rf', or 'lgbm'")
+    model: str = Query(..., description="Model abbreviation: 'xgb', 'rf', or 'lgbm'"),
+    R2: float = Query(..., description="R-squared metric"),
+    MAE: float = Query(..., description="Mean Absolute Error metric"),
+    Bias: float = Query(..., description="Bias metric"),
 ):
+    metrics = {
+        'R2': R2, 
+        'MAE': MAE, 
+        'Bias': Bias, 
+    }
+
     if daily_df.empty:
         return AnalysisResult(
             date=date, model=model, metrics={}, zone_summary="Data Error", 
@@ -493,7 +462,6 @@ async def analyze_pm25(
             gemini_analysis=f"Model column '{model_col}' not found in data."
         )
 
-    metrics = calculate_metrics(filtered_df, model_col)
 
     df_with_zones = assign_zones(filtered_df)
     zone_summary = get_zone_summary(df_with_zones, model_col)

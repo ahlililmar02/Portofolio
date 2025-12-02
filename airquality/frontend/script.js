@@ -208,13 +208,23 @@ async function fetchAndVisualizeJson(modelShort, selectedDate, displayName) {
 }
 
 
-async function fetchAndDisplayAnalysis(modelShort, selectedDate) {
+async function fetchAndDisplayAnalysis(modelShort, selectedDate, metrics) {
     const analysisContainer = document.getElementById('analysis-summary');
+    if (!analysisContainer) {
+        console.error("HTML Error: Could not find element with ID 'analysis-summary'.");
+        return;
+    }
     analysisContainer.innerHTML = '<p>Loading AI Analysis and Metrics...</p>';
 
     try {
-        const apiUrl = `${BACKEND_BASE_URL}/analyze-pm25?date=${selectedDate}&model=${modelShort}`;
-        
+        const apiUrl = `${BACKEND_BASE_URL}/analyze-pm25?` + new URLSearchParams({
+            date: selectedDate,
+            model: modelShort,
+            R2: metrics.r2.toFixed(3),
+            MAE: metrics.mae.toFixed(3),
+            Bias: metrics.bias.toFixed(3),
+        });
+
         const analysisResponse = await fetch(apiUrl);
 
         if (!analysisResponse.ok) {
@@ -222,14 +232,11 @@ async function fetchAndDisplayAnalysis(modelShort, selectedDate) {
         }
         
         const analysisData = await analysisResponse.json();
-        
         updateAnalysisSection(analysisData);
         
     } catch (error) {
         console.error("Error fetching or displaying analysis:", error);
-        analysisContainer.innerHTML = `<p style="color:red; font-weight: bold;">
-                                         Analysis failed: ${error.message}
-                                       </p>`;
+        analysisContainer.innerHTML = `<p style="color:red; font-weight: bold;">Analysis failed: ${error.message}</p>`;
     }
 }
 
@@ -495,6 +502,7 @@ async function updateScatterChart() {
     document.querySelector(".metric-card:nth-child(2) .metric-value").textContent = r2.toFixed(3);
     document.querySelector(".metric-card:nth-child(3) .metric-value").textContent = `${bias.toFixed(2)} µg/m³`;
 
+    
     // Destroy old chart
     if (scatterChart) scatterChart.destroy();
 
@@ -540,7 +548,9 @@ async function updateScatterChart() {
             }
         }
     });
+    return { mae, r2, bias };
 }
+
 
 
 function updateAnalysisSection(data) {
@@ -560,8 +570,6 @@ function updateAnalysisSection(data) {
     const aiAnalysisHtml = `
         <h3 class="summary-title">AI Environmental Analysis</h3>
         <div class="summary-text-block">
-            <p><strong>Date:</strong> ${data.date}</p>
-            <p><strong>Model:</strong> ${data.model}</p>
             <h4 class="summary-title">Evaluation Metrics</h4>
             ${metricsHtml}
             ${data.gemini_analysis}
@@ -571,6 +579,15 @@ function updateAnalysisSection(data) {
     analysisContainer.innerHTML = aiAnalysisHtml + zoneSummaryHtml;
 }
 
+function getCalculatedMetrics(points) {
+    const { mae, r2, bias } = computeMetrics(points); 
+
+    return { 
+        mae: mae, 
+        r2: r2, 
+        bias: bias 
+    };
+}
 
 function handleUpdate(initialLoad = false) {
     const model = document.getElementById('model-select').value;
@@ -591,12 +608,19 @@ function handleUpdate(initialLoad = false) {
     }
 
 
-    fetchAndVisualizeJson(model, selectedDateParam, displayName);
-    
-    fetchAndDisplayAnalysis(model, selectedDateParam); 
+    (async () => {
+        try {
+            fetchAndVisualizeJson(model, selectedDateParam, displayName); 
 
-    updateMapFromCSV();
-    updateScatterChart();
+            const calculatedMetrics = await updateScatterChart(); 
+
+            await fetchAndDisplayAnalysis(model, selectedDateParam, calculatedMetrics); 
+
+            updateMapFromCSV(); 
+
+        } catch (error) {
+            console.error("Error in update flow:", error);
+        }})();
 }
 
 function initialize() {
