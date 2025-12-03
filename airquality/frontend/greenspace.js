@@ -36,7 +36,7 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
     },
     {
         name: "Pulo Gadung/Cakung",
-        coords: [-6.192,106.91],
+        coords: [-6.192,106.905],
         image:
             "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiztPBJbAU76EAMMWWvx6yOaP243Fw-D9rZpjX028zdi7mdJ3gBatvOQPVa4kvgRsWFL9D-wfzg4SAuA5BoXWtpGJjAvqZg00vj8Loul8qBIA6Zbgvdyt_PGPnWhmHMoNUr2iiYB6_Hvyxq/w1200-h630-p-k-no-nu/Daftar+Nama+Telepon+Perusahaan+di+Kawasan+Industri+Pulogadung+%2528JIEP%2529.jpg",
         description:
@@ -49,6 +49,14 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
             "https://asset.kompas.com/crops/rpg13PWmQP5sjIaFm4kwvu8mtBE=/0x0:1000x667/1200x800/data/photo/2023/07/13/64afddd634c6b.jpg",
         description:
             "A mixed residential and commercial area near railway lines, Jatinegara needs green corridors to reduce noise pollution and improve air quality. Parks would provide much-needed recreation spaces for the growing population.",
+    },
+	{
+        name: "Kebon Sirih",
+        coords: [-6.18456,106.83460],
+        image:
+            "https://www.google.com/url?sa=i&url=https%3A%2F%2Fmegapolitan.kompas.com%2Fread%2F2025%2F10%2F05%2F10240771%2Fhut-ke-80-tni-di-monas-lalu-lintas-jalan-kebon-sirih-tugu-tani-macet&psig=AOvVaw0XFpcO1VxFtQA1nscPomdu&ust=1764847712319000&source=images&cd=vfe&opi=89978449&ved=0CBUQjRxqFwoTCKC3rZ6ooZEDFQAAAAAdAAAAABAehttps://www.google.com/imgres?q=kebon%20sirih%20macet&imgurl=https%3A%2F%2Fasset.kompas.com%2Fcrops%2FMo7qJMYg9e8HEeulQ4x99ehnLGA%3D%2F0x0%3A0x0%2F1200x800%2Fdata%2Fphoto%2F2025%2F10%2F05%2F68e1defac39c3.jpg&imgrefurl=https%3A%2F%2Fmegapolitan.kompas.com%2Fread%2F2025%2F10%2F05%2F10240771%2Fhut-ke-80-tni-di-monas-lalu-lintas-jalan-kebon-sirih-tugu-tani-macet&docid=4s7HxrocwDFeJM&tbnid=wrBWFOgLO3pG1M&vet=12ahUKEwjw082_qKGRAxUpT2wGHT_mJsQQM3oECCcQAA..i&w=1200&h=800&hcb=2&ved=2ahUKEwjw082_qKGRAxUpT2wGHT_mJsQQM3oECCcQAA",
+        description:
+            "Kebon Sirih sits in the heart of Central Jakarta, surrounded by dense commercial zones, government offices, and major arterial roads that experience constant traffic throughout the day.",
     },
   ];
 
