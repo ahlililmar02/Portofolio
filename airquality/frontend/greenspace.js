@@ -79,41 +79,77 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
   ];
 
   // Helper: draw a simple horizontal bar chart on a canvas
-  function drawBarChart(canvas, labels, values) {
-    canvas.width = canvas.clientWidth * devicePixelRatio;
-    canvas.height = canvas.clientHeight * devicePixelRatio;
-    const ctx = canvas.getContext('2d');
-    ctx.scale(devicePixelRatio, devicePixelRatio);
+    function drawBarChart(canvas, labels, values) {
+    const dpr = devicePixelRatio || 1;
+    canvas.width = canvas.clientWidth * dpr;
+    canvas.height = canvas.clientHeight * dpr;
+
+    const ctx = canvas.getContext("2d");
+    ctx.scale(dpr, dpr);
+
     const width = canvas.clientWidth;
     const height = canvas.clientHeight;
-    ctx.clearRect(0,0,width,height);
+    ctx.clearRect(0, 0, width, height);
 
-    const max = Math.max(...values, 0.01);
-    const barH = Math.min(18, Math.floor((height - (labels.length - 1) * 6) / labels.length));
+    const barHeight = 18;
+    const spacing = 10;
+    const maxValue = Math.max(...values);
+
+    ctx.font = "13px system-ui";
+    ctx.textAlign = "left";
+
     let y = 0;
-    ctx.font = '11px system-ui, Arial';
-    labels.forEach((lab, i) => {
-      const v = values[i];
-      const bw = Math.max(6, (v / max) * (width - 80));
-      // label
-      ctx.fillStyle = '#444';
-      ctx.fillText(lab, 6, y + barH - 4);
-      // background bar
-      ctx.fillStyle = '#eee';
-      ctx.fillRect(80, y, width - 90, barH);
-      // fill
-      ctx.fillStyle = '#f59e0b';
-      ctx.fillRect(80, y, bw, barH);
-      // value text
-      ctx.fillStyle = '#fff';
-      ctx.font = '11px system-ui, Arial';
-      ctx.textAlign = 'right';
-      ctx.fillText(String(Math.round(v * 100) / 100), Math.min(80 + bw - 4, 80 + bw), y + barH - 4);
-      ctx.textAlign = 'left';
-      y += barH + 6;
-    });
-  }
 
+    labels.forEach((label, i) => {
+        const v = values[i];        // raw value (0–1)
+        const pct = v * 100;        // percent for text
+        const color = getColor(v);  // <-- use your color scale
+
+        const barX = 120;
+        const barMaxWidth = width - barX - 20;
+        const barWidth = Math.max((v / maxValue) * barMaxWidth, 5);
+
+        // Label
+        ctx.fillStyle = "#4b5563";
+        ctx.fillText(label, 10, y + barHeight - 4);
+
+        // Gray background bar
+        ctx.fillStyle = "#e5e7eb";
+        roundRect(ctx, barX, y, barMaxWidth, barHeight, 9, true);
+
+        // Color fill bar
+        ctx.fillStyle = color;
+        roundRect(ctx, barX, y, barWidth, barHeight, 9, true);
+
+        // Value text inside bar
+        ctx.fillStyle = (v > 0.4 ? "#fff" : "#000"); 
+        ctx.textAlign = "center";
+        ctx.fillText(
+        Math.round(pct),
+        barX + barWidth / 2,
+        y + barHeight - 4
+        );
+
+        ctx.textAlign = "left";
+        y += barHeight + spacing;
+    });
+    }
+
+    function roundRect(ctx, x, y, w, h, r, fill) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+
+    if (fill) ctx.fill();
+    }
 
   // Utility to compute average overview metrics from geojson features
   function computeOverviewFromFeatures(features) {
