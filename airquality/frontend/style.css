@@ -951,6 +951,10 @@ body, html {
     transition: opacity 0.3s, transform 0.3s;
 }
 
+#overview-card {
+  display: none; /* hide until ready */
+}
+
 .close-button {
     position: absolute;
     top: 12px; /* Matches top-3 (0.75rem) */
