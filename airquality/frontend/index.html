@@ -24,7 +24,17 @@
 			</span>
 		</div>
 	</div>
+    <script>
+        const links = document.querySelectorAll('.nav-center a');
+        const currentPage = window.location.pathname.split("/").pop(); // get file name
 
+        links.forEach(link => {
+            if (link.getAttribute('href') === currentPage || 
+                (currentPage === '' && link.getAttribute('href') === 'index.html')) {
+                link.classList.add('active');
+            }
+        });
+    </script>
     <!-- HERO SECTION -->
     <section class="hero">
         <h1>Welcome to My Portfolio</h1>

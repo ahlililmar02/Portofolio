@@ -38,7 +38,17 @@
             <span class="material-symbols-outlined profile-icon">account_circle</span>
         </div>
     </div>
+    <script>
+        const links = document.querySelectorAll('.nav-center a');
+        const currentPage = window.location.pathname.split("/").pop(); // get file name
 
+        links.forEach(link => {
+            if (link.getAttribute('href') === currentPage || 
+                (currentPage === '' && link.getAttribute('href') === 'index.html')) {
+                link.classList.add('active');
+            }
+        });
+    </script>
     <div class="pm25-prediction-container">
         
         <div class="hero-section">
