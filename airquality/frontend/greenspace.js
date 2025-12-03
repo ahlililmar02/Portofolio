@@ -100,40 +100,40 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
     let y = 0;
 
-    labels.forEach((label, i) => {
-        const v = values[i];        // raw value (0–1)
-        const pct = v * 100;        // percent for text
-        const color = getColor(v);  // <-- use your color scale
+	labels.forEach((label, i) => {
+		const v = values[i];              // value is 0–100
+		const pct = v*100;                    // same as value
+		const color = getColor(ratio);    // color scale expects 0–1
 
-        const barX = 120;
-        const barMaxWidth = width - barX - 20;
-        const barWidth = Math.max((v / maxValue) * barMaxWidth, 5);
+		const barX = 120;
+		const barMaxWidth = width - barX - 20;
+		const barWidth = Math.max(ratio * barMaxWidth, 5);  // scale by 100
 
-        // Label
-        ctx.fillStyle = "#4b5563";
-        ctx.fillText(label, 10, y + barHeight - 4);
+		// Label text
+		ctx.fillStyle = "#4b5563";
+		ctx.fillText(label, 10, y + barHeight - 4);
 
-        // Gray background bar
-        ctx.fillStyle = "#e5e7eb";
-        roundRect(ctx, barX, y, barMaxWidth, barHeight, 9, true);
+		// Gray background
+		ctx.fillStyle = "#e5e7eb";
+		roundRect(ctx, barX, y, barMaxWidth, barHeight, 9, true);
 
-        // Color fill bar
-        ctx.fillStyle = color;
-        roundRect(ctx, barX, y, barWidth, barHeight, 9, true);
+		// Color bar
+		ctx.fillStyle = color;
+		roundRect(ctx, barX, y, barWidth, barHeight, 9, true);
 
-        // Value text inside bar
-        ctx.fillStyle = (v > 0.4 ? "#fff" : "#000"); 
-        ctx.textAlign = "center";
-        ctx.fillText(
-        Math.round(pct),
-        barX + barWidth / 2,
-        y + barHeight - 4
-        );
+		// Number text
+		ctx.fillStyle = (ratio > 0.4 ? "#fff" : "#000");
+		ctx.textAlign = "center";
+		ctx.fillText(
+			Math.round(pct),
+			barX + barWidth / 2,
+			y + barHeight - 4
+		);
 
-        ctx.textAlign = "left";
-        y += barHeight + spacing;
-    });
-    }
+		ctx.textAlign = "left";
+		y += barHeight + spacing;
+	});}
+
 
     function roundRect(ctx, x, y, w, h, r, fill) {
     ctx.beginPath();
