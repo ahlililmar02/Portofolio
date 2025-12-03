@@ -207,8 +207,6 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 	}
 
 
-
-
     // Fetch greenspace -> add layer, then boundary -> markers
     fetch(`${BACKEND_BASE_URL}/greenspace`)
       .then(res => {
@@ -216,13 +214,17 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         return res.json();
       })
       .then(geojsonData => {
-        // add greenspace first
+        if (selectedCluster !== "all") {
+                geojsonData.features = geojsonData.features.filter(f =>
+                    f.properties &&
+                    f.properties.cluster === Number(selectedCluster)
+                );}
         const greens = L.geoJSON(geojsonData, {
           style: feature => {
             const score = feature.properties && feature.properties.pca_compos ? feature.properties.pca_compos : 0;
             return {
               color: "#666",
-              weight: 0.1,
+              weight: 0.05,
               fillColor: getColor(score),
               fillOpacity: 0.8
             };
@@ -252,10 +254,9 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         // add boundary
         L.geoJSON(boundaryData, {
           style: () => ({
-            color: "#000000ff",
+            color: "#555454ff",
             weight: 0.5,
-            opacity: 1,
-            fillOpacity: 0
+            opacity: 0.9,
           })
         }).addTo(map);
 
