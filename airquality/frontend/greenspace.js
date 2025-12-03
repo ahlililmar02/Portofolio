@@ -172,184 +172,209 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
     return avg;
   }
 
-  // Map init
   if (!mapEl) {
-    console.error('Map container missing');
-  } else {
-    const map = L.map('map', {
-      zoomControl: false,
-      scrollWheelZoom: false,
-      doubleClickZoom: false,
-      touchZoom: false,
-      boxZoom: false,
-      keyboard: false,
-      dragging: true,
-    }).setView([-6.25, 106.95], 11);
+	console.error('Map container missing');
+	} else {
 
-    L.tileLayer(
-      "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
-      {
-        attribution:
-            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-        subdomains: "abcd",
-        maxZoom: 19,
-      },
-    ).addTo(map);
+	const map = L.map('map', {
+		zoomControl: false,
+		scrollWheelZoom: false,
+		doubleClickZoom: false,
+		touchZoom: false,
+		boxZoom: false,
+		keyboard: false,
+		dragging: true,
+	}).setView([-6.25, 106.95], 11);
+
+	L.tileLayer(
+		"https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+		{
+		attribution:
+			'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+		subdomains: "abcd",
+		maxZoom: 19,
+		}
+	).addTo(map);
 
 	function getColor(d) {
-		return  d > 0.75 ? '#fc3a3a' :   // red
-				d > 0.60 ? '#fd844c' :   // orange
-				d > 0.50 ? '#f9b95f' :   // yellow
-				d > 0.40 ? '#f1f651ff' :   // lime green
-				d > 0.25 ? '#5ae72f' :   // green
-				d > 0.00 ? '#4b9948' :   // deep green
-						'#4b9948';    // fallback (class 7)
+		return d > 0.75 ? '#fc3a3a' :
+			d > 0.60 ? '#fd844c' :
+			d > 0.50 ? '#f9b95f' :
+			d > 0.40 ? '#f1f651ff' :
+			d > 0.25 ? '#5ae72f' :
+			d > 0.00 ? '#4b9948' :
+						'#4b9948';
 	}
 
+	// ------------------------------------------------------
+	// GLOBAL HOLDER: latest loaded greenspace (after filter)
+	// ------------------------------------------------------
+	let lastGreenspace = null;
+	let greensLayer = null;
 
-    // Fetch greenspace -> add layer, then boundary -> markers
-    fetch(`${BACKEND_BASE_URL}/greenspace`)
-      .then(res => {
-        if (!res.ok) throw new Error('Failed to load greenspace data. Status: ' + res.status);
-        return res.json();
-      })
-      .then(geojsonData => {
-        if (selectedCluster !== "all") {
-                geojsonData.features = geojsonData.features.filter(f =>
-                    f.properties &&
-                    f.properties.cluster === Number(selectedCluster)
-                );}
-        const greens = L.geoJSON(geojsonData, {
-          style: feature => {
-            const score = feature.properties && feature.properties.pca_compos ? feature.properties.pca_compos : 0;
-            return {
-              color: "#666",
-              weight: 0.05,
-              fillColor: getColor(score),
-              fillOpacity: 0.8
-            };
-          }
-        }).addTo(map);
+	function loadGreenspace(selectedCluster = "all") {
+		return fetch(`${BACKEND_BASE_URL}/greenspace`)
+		.then(res => {
+			if (!res.ok)
+			throw new Error("Failed to load greenspace data. Status: " + res.status);
+			return res.json();
+		})
+		.then(geojsonData => {
 
-        // compute overview averages
-        const overviewMetricsVals = computeOverviewFromFeatures(geojsonData.features || []);
+			// CLUSTER FILTER
+			if (selectedCluster !== "all") {
+			geojsonData.features = geojsonData.features.filter(f =>
+				f.properties &&
+				f.properties.cluster === Number(selectedCluster)
+			);
+			}
 
-        // populate overview info card
-        overviewImage.src = 'https://images.unsplash.com/photo-1680244116826-467f252cf503?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxqYWthcnRhJTIwY2l0eSUyMHNreWxpbmV8ZW58MXx8fHwxNzY0NzMwMjU3fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral';
-        overviewDesc.textContent = 'Jakarta faces significant environmental challenges with high air pollution, dense population, limited green spaces, heavy traffic congestion, and heat island effects. Strategic green space development across districts is essential.';
+			// store filtered version
+			lastGreenspace = geojsonData;
 
+			// remove old layer
+			if (greensLayer) map.removeLayer(greensLayer);
 
-        // draw overview chart (use values scaled for visualization)
-        const overviewValues = indicatorLabels.map(l => (overviewMetricsVals[l.key] || 0));
-        drawBarChart(overviewChartCanvas, indicatorLabels.map(l => l.label), overviewValues);
+			// draw polygons
+			greensLayer = L.geoJSON(geojsonData, {
+			style: feature => {
+				const score = feature.properties?.pca_compos || 0;
+				return {
+				color: "#666",
+				weight: 0.05,
+				fillColor: getColor(score),
+				fillOpacity: 0.8
+				};
+			}
+			}).addTo(map);
 
-        // After greenspace loaded, fetch boundary
-        return fetch('./jakarta_boundary.geojson');
-      })
-      .then(res => {
-        if (!res.ok) throw new Error('Failed to load jakarta_boundary.geojson');
-        return res.json();
-      })
-      .then(boundaryData => {
-        // add boundary
-        L.geoJSON(boundaryData, {
-          style: () => ({
-            color: "#555454ff",
-            weight: 0.5,
-            opacity: 0.9,
-          })
-        }).addTo(map);
+			// overview metrics
+			const overviewMetricsVals = computeOverviewFromFeatures(
+			geojsonData.features || []
+			);
 
-        // Now add markers last
-        const markerLayers = [];
-        cities.forEach(city => {
-          const divIcon = L.divIcon({
+			// update overview card visuals
+			overviewImage.src = 'https://images.unsplash.com/photo-1680244116826-467f252cf503?...';
+			overviewDesc.textContent =
+			'Jakarta faces significant environmental challenges...';
+
+			const overviewValues = indicatorLabels.map(
+			l => overviewMetricsVals[l.key] || 0
+			);
+			drawBarChart(
+			overviewChartCanvas,
+			indicatorLabels.map(l => l.label),
+			overviewValues
+			);
+
+			return geojsonData; // pass forward
+		});
+	}
+
+	// ------------------------------------------------------
+	// INITIAL LOAD
+	// ------------------------------------------------------
+	loadGreenspace("all")
+		.then(() => fetch('./jakarta_boundary.geojson'))
+		.then(res => {
+		if (!res.ok) throw new Error('Failed to load jakarta_boundary.geojson');
+		return res.json();
+		})
+		.then(boundaryData => {
+		L.geoJSON(boundaryData, {
+			style: () => ({
+			color: "#555454ff",
+			weight: 0.5,
+			opacity: 0.9,
+			})
+		}).addTo(map);
+
+		// Add city markers (after greenspace + boundary)
+		const markerLayers = [];
+
+		cities.forEach(city => {
+			const divIcon = L.divIcon({
 			className: "custom-marker",
 			html: `
 				<div style="
 				width: 14px;
 				height: 14px;
-				background: #9ca3af;          /* grey-400 */
-				border: 2px solid #6b7280;    /* grey-500 border */
+				background: #9ca3af;
+				border: 2px solid #6b7280;
 				border-radius: 50%;
-				box-shadow: 0 2px 4px rgba(0,0,0,0.25); /* depth */
+				box-shadow: 0 2px 4px rgba(0,0,0,0.25);
 				"></div>
 			`,
 			iconSize: [14, 14],
 			iconAnchor: [7, 7]
 			});
 
-          const marker = L.marker(city.coords, { icon: divIcon }).addTo(map);
-          marker.on('click', () => {
-            // hide overview card
-            overviewCard.classList.add('hidden');
-            cityCard.classList.remove('hidden');
+			const marker = L.marker(city.coords, { icon: divIcon }).addTo(map);
 
-            // find the polygon that contains this city coords from the greenspace data
-            // we need the last-loaded greenspace geojson; fetch it again (could be cached earlier)
-            fetch(`${BACKEND_BASE_URL}/greenspace`)
-              .then(r => r.json())
-              .then(gData => {
-                const pt = turf.point([city.coords[1], city.coords[0]]); // turf expects [lng, lat]
-                let matched = null;
-                (gData.features || []).some(feat => {
-                  try {
-                    if (feat.geometry && feat.properties) {
-                      const bool = turf.booleanPointInPolygon(pt, feat);
-                      if (bool) { matched = feat; return true; }
-                    }
-                  } catch (e) { /* ignore invalid geometry */ }
-                  return false;
-                });
+			marker.on("click", () => {
+			overviewCard.classList.add("hidden");
+			cityCard.classList.remove("hidden");
 
-                // Fill city infocard with either matched polygon properties or fallback
-                const props = (matched && matched.properties) ? matched.properties : null;
-                populateCityCard(city, props);
-              })
-              .catch(error => {
-                console.error('Error fetching greenspace for city lookup', error);
-                populateCityCard(city, null);
-              });
-          });
+			// USE FILTERED greenspace stored earlier
+			const gData = lastGreenspace;
+			if (!gData) return populateCityCard(city, null);
 
-          markerLayers.push(marker);
-        });
+			const pt = turf.point([city.coords[1], city.coords[0]]);
+			let matched = null;
 
-      })
-      .catch(err => {
-        console.error('Error in map loading sequence:', err);
-      });
+			(gData.features || []).some(f => {
+				try {
+				if (turf.booleanPointInPolygon(pt, f)) {
+					matched = f;
+					return true;
+				}
+				} catch (_) {}
+				return false;
+			});
 
-    // close button — go back to overview
-    cityCloseBtn.addEventListener('click', () => {
-      cityCard.classList.add('hidden');
-      overviewCard.classList.remove('hidden');
-    });
+			populateCityCard(city, matched?.properties || null);
+			});
 
-    // populate city card with city object and polygon properties (props may be null)
-    function populateCityCard(city, props) {
-      cityImage.src = city.image || '';
-      cityImage.alt = city.name;
-      cityName.textContent = city.name;
-      cityDesc.textContent = city.description || '';
+			markerLayers.push(marker);
+		});
 
+		})
+		.catch(err => console.error('Error in map loading sequence:', err));
 
-      // if props exist, use requested keys; else fallback to placeholders
-      const getVal = (k) => {
-        if (!props) return 0;
-        const v = props[k];
-        return (typeof v === 'number') ? v : (v ? Number(v) : 0);
-      };
+	// ------------------------------------------------------
+	// CLUSTER SELECTOR
+	// ------------------------------------------------------
+	document.getElementById("clusterSelector").addEventListener("change", e => {
+		const selected = e.target.value;
+		loadGreenspace(selected);
+	});
 
-      const values = indicatorLabels.map(l => getVal(l.key));
-      indicatorLabels.forEach((l, idx) => {
-        const percent = Math.round(values[idx] * 100);
-        const color = (l.key === 'ndvi' || l.key === 'GA_norm') ? 'green' : 'amber';
-      });
+	// ------------------------------------------------------
+	// CITY CARD POPULATION
+	// ------------------------------------------------------
+	function populateCityCard(city, props) {
+		cityImage.src = city.image || "";
+		cityName.textContent = city.name;
+		cityDesc.textContent = city.description || "";
 
-      // draw city chart
-      drawBarChart(cityChartCanvas, indicatorLabels.map(l => l.label), values);
+		const getVal = (key) => {
+		if (!props) return 0;
+		const v = props[key];
+		return typeof v === "number" ? v : Number(v || 0);
+		};
 
-      // show city card
-      cityCard.classList.remove('hidden');
-    }}
+		const values = indicatorLabels.map(l => getVal(l.key));
+		drawBarChart(
+		cityChartCanvas,
+		indicatorLabels.map(l => l.label),
+		values
+		);
+
+		cityCard.classList.remove("hidden");
+	}
+
+	cityCloseBtn.addEventListener("click", () => {
+		cityCard.classList.add("hidden");
+		overviewCard.classList.remove("hidden");
+	});
+	}
