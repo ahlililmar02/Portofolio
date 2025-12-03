@@ -197,17 +197,16 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
     ).addTo(map);
 
     function getColor(d) {
-		return d > 0.90 ? '#D73027' :   // deep red
-				d > 0.80 ? '#E95531' :   // red-orange
-				d > 0.70 ? '#FC8D59' :   // orange
-				d > 0.60 ? '#FDB374' :   // light orange
-				d > 0.50 ? '#FEE08B' :   // yellow
-				d > 0.40 ? '#E4E88A' :   // yellow-lime
-				d > 0.30 ? '#C2E67A' :   // lime-green
-				d > 0.20 ? '#A6D96A' :   // green
-				d > 0.10 ? '#7BC869' :   // darker green
+		return d > 0.875 ? '#dd3c33ff' :   // deep red
+				d > 0.75  ? '#FC6B3A' :   // strong red-orange
+				d > 0.625 ? '#FC8D59' :   // orange
+				d > 0.50  ? '#FEC981' :   // light orange
+				d > 0.375 ? '#FEE08B' :   // yellow
+				d > 0.25  ? '#C4DF7A' :   // lime-green
+				d > 0.125 ? '#A6D96A' :   // green
 							'#66BD63';    // deep green
 		}
+
 
 
     // Fetch greenspace -> add layer, then boundary -> markers
@@ -264,11 +263,20 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         const markerLayers = [];
         cities.forEach(city => {
           const divIcon = L.divIcon({
-            className: "custom-marker",
-            html: `<div style="background: white; padding: 4px 8px; border-radius: 4px; border: 2px solid #f59e0b; font-size: 12px; font-weight: 500; color: #92400e; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,0.2); cursor: pointer;">${city.name}</div>`,
-            iconSize: [0,0],
-            iconAnchor: [0,0]
-          });
+			className: "custom-marker",
+			html: `
+				<div style="
+				width: 14px;
+				height: 14px;
+				background: #9ca3af;          /* grey-400 */
+				border: 2px solid #6b7280;    /* grey-500 border */
+				border-radius: 50%;
+				box-shadow: 0 2px 4px rgba(0,0,0,0.25); /* depth */
+				"></div>
+			`,
+			iconSize: [14, 14],
+			iconAnchor: [7, 7]
+			});
 
           const marker = L.marker(city.coords, { icon: divIcon }).addTo(map);
           marker.on('click', () => {
