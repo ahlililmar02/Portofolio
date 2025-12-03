@@ -1001,10 +1001,10 @@ body, html {
     color: #4b5563; /* Matches text-gray-600 */
     font-size: 0.875rem; /* Matches text-sm */
     line-height: 1.5; /* Matches leading-relaxed */
-    margin: 0;
+    margin-bottom: 10px;
 }
 
-.chart-wrap { padding-top: 8px; padding-bottom: 16px; }
+.chart-wrap { padding-top: 8px; padding-bottom: 8px; }
 .chart-canvas { width: 100%; height: 200px; margin-top: 8px;display:block; }
 
 .priority-btn {
