@@ -101,28 +101,28 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
     let y = 0;
 
 	labels.forEach((label, i) => {
-		const v = values[i];              // value is 0–100
-		const pct = v*100;                    // same as value
-		const color = getColor(ratio);    // color scale expects 0–1
+		const v = values[i];          // 0–1 value
+		const pct = v * 100;          // just for display
+		const color = getColor(v);    // color scale works with 0–1
 
 		const barX = 120;
 		const barMaxWidth = width - barX - 20;
-		const barWidth = Math.max(pct * barMaxWidth, 5);  // scale by 100
+		const barWidth = Math.max(v * barMaxWidth, 5);  // scale bar using 0–1 value
 
-		// Label text
+		// Label
 		ctx.fillStyle = "#4b5563";
 		ctx.fillText(label, 10, y + barHeight - 4);
 
-		// Gray background
+		// Background bar
 		ctx.fillStyle = "#e5e7eb";
 		roundRect(ctx, barX, y, barMaxWidth, barHeight, 9, true);
 
-		// Color bar
+		// Filled bar
 		ctx.fillStyle = color;
 		roundRect(ctx, barX, y, barWidth, barHeight, 9, true);
 
-		// Number text
-		ctx.fillStyle = (ratio > 0.4 ? "#fff" : "#000");
+		// Value text
+		ctx.fillStyle = (v > 0.4 ? "#fff" : "#000");
 		ctx.textAlign = "center";
 		ctx.fillText(
 			Math.round(pct),
@@ -132,7 +132,8 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
 		ctx.textAlign = "left";
 		y += barHeight + spacing;
-	});}
+	});
+	}
 
 
     function roundRect(ctx, x, y, w, h, r, fill) {
