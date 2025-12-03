@@ -722,8 +722,8 @@ body {
 .chart-placeholder{
     background-color: #f3f4f6; 
     border-radius: 0.5rem; 
-    height: 400px;
-    width: 240px;
+    height: 280px;
+    width: 300px;
     display: flex;
     align-items: center;
     margin: auto;
