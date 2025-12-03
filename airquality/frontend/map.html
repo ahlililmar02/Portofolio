@@ -26,7 +26,7 @@
 
 </head>
 <body>
-<div id="navbar">
+	<div id="navbar">
 		<div class="nav-title">Portfolio</div>
 
 		<div class="nav-center">
@@ -41,124 +41,124 @@
 				account_circle
 			</span>
 		</div>
-</div>
-<script>
-	const links = document.querySelectorAll('.nav-center a');
-	const currentPage = window.location.pathname.split("/").pop(); // get file name
+	</div>
+	<script>
+		const links = document.querySelectorAll('.nav-center a');
+		const currentPage = window.location.pathname.split("/").pop(); 
 
-	links.forEach(link => {
-		if (link.getAttribute('href') === currentPage || 
-			(currentPage === '' && link.getAttribute('href') === 'index.html')) {
-			link.classList.add('active');
-		}
-	});
-</script>
-<div class="page-wrapper">
+		links.forEach(link => {
+			if (link.getAttribute('href') === currentPage || 
+				(currentPage === '' && link.getAttribute('href') === 'index.html')) {
+				link.classList.add('active');
+			}
+		});
+	</script>
+	<div class="page-wrapper">
     
 
-	<div class="map-wrapper ">
+		<div class="map-wrapper ">
 		
-		<div id="map"></div>
-		
-		<div class="download-wrapper">
-			<div class="panel-wrapper">
-				<div class="side-panel">
-					<div class="basic-title">Download Data</div>
+			<div id="map"></div>
+			
+			<div class="download-wrapper">
+				<div class="panel-wrapper">
+					<div class="side-panel">
+						<div class="basic-title">Download Data</div>
 
-					<div class="filter-group">
-						<label for="startDateFilter">Start Date:</label>
-						<input type="text" id="startDateFilter" placeholder="Select start date">
-					</div>
+						<div class="filter-group">
+							<label for="startDateFilter">Start Date:</label>
+							<input type="text" id="startDateFilter" placeholder="Select start date">
+						</div>
 
-					<div class="filter-group">
-						<label for="endDateFilter">End Date:</label>
-						<input type="text" id="endDateFilter" placeholder="Select end date">
-					</div>
+						<div class="filter-group">
+							<label for="endDateFilter">End Date:</label>
+							<input type="text" id="endDateFilter" placeholder="Select end date">
+						</div>
 
-					<div class="filter-group">
-					<button id="downloadBtn">Download CSV</button>
+						<div class="filter-group">
+						<button id="downloadBtn">Download CSV</button>
+						</div>
+						
 					</div>
+					<button class="side-panel-toggle" type="button">
+						
+						<span class="material-icons sp-icon-open">keyboard_double_arrow_right</span>
+						<span class="material-icons sp-icon-close">keyboard_double_arrow_left</span>
+					</button>
+
 					
+
 				</div>
-				<button class="side-panel-toggle" type="button">
-					
-					<span class="material-icons sp-icon-open">keyboard_double_arrow_right</span>
-					<span class="material-icons sp-icon-close">keyboard_double_arrow_left</span>
-				</button>
-
-				
-
-			</div>
-		</div>
-
-		<div class="charts-wrapper global-wrapper">
-			<div id="globalAQIBox" class="aqi-overlay"></div>
-
-			<div id="globalAnalysisBox" class="analysis-box hidden">
-				<span id="globalAnalysisIcon" class="material-symbols-outlined"></span>
-				<span id="globalAnalysisText"></span>
 			</div>
 
-			<div class="switcher">
-				<div class="card-wrapper">
-					<div class="switch-card" id="card1a">
-						<h4>Highest AQI Today</h4>
-						<div id="top5Table" class="aqi-table"></div>
-					</div>
+			<div class="charts-wrapper global-wrapper">
+				<div id="globalAQIBox" class="aqi-overlay"></div>
 
-					<div class="switch-card hidden" id="card1b">
-						<h4>Lowest AQI Today</h4>
-						<div id="top5LowestTable" class="aqi-table"></div>
-					</div>
-				</div>
-				<button id="prevBtn1" class="switch-btn hidden" type="button">
-					<span class="material-icons">keyboard_double_arrow_left</span>
-					<span class="switch-label">Highest</span>
-				</button>
-
-				<button id="nextBtn1" class="switch-btn" type="button">
-					<span class="switch-label">Lowest</span>
-					<span class="material-icons">keyboard_double_arrow_right</span>
-				</button>
-			</div>
-		</div>
-
-		<div class="charts-wrapper detail-wrapper hidden">
-
-			<!-- CLOSE BUTTON -->
-			<div class="close-btn" id="closeDetail">✖</div>
-
-			<div id="aqiOverlay" class="aqi-overlay"></div>
-
-			<div id="detailAnalysisBox" class="analysis-box hidden">
-				<span id="detailAnalysisIcon" class="material-symbols-outlined"></span>
-				<span id="detailAnalysisText"></span>
-			</div>
-
-			<div class="switcher">
-				<div class="card-wrapper">
-					<div class="switch-card chart1" id="card2a">
-						<h4>Today</h4>
-						<canvas id="barChart" style="width: 300px; height: 300px;"></canvas>
-					</div>
-
-					<div class="switch-card chart2 hidden" id="card2b">
-						<h4>Last 7 Days</h4>
-						<canvas id="lineChart" style="width: 300px; height: 300px;"></canvas>
-					</div>
+				<div id="globalAnalysisBox" class="analysis-box hidden">
+					<span id="globalAnalysisIcon" class="material-symbols-outlined"></span>
+					<span id="globalAnalysisText"></span>
 				</div>
 
-				<button id="prevBtn2" class="switch-btn hidden" type="button">
-					<span class="material-icons">keyboard_double_arrow_left</span>
-					<span class="switch-label">Today</span>
-				</button>
+				<div class="switcher">
+					<div class="card-wrapper">
+						<div class="switch-card" id="card1a">
+							<h4>Highest AQI Today</h4>
+							<div id="top5Table" class="aqi-table"></div>
+						</div>
 
-				<button id="nextBtn2" class="switch-btn" type="button">
-					<span class="switch-label">Last 7 Days</span>
-					<span class="material-icons">keyboard_double_arrow_right</span>
-				</button>
+						<div class="switch-card hidden" id="card1b">
+							<h4>Lowest AQI Today</h4>
+							<div id="top5LowestTable" class="aqi-table"></div>
+						</div>
+					</div>
+					<button id="prevBtn1" class="switch-btn hidden" type="button">
+						<span class="material-icons">keyboard_double_arrow_left</span>
+						<span class="switch-label">Highest</span>
+					</button>
+
+					<button id="nextBtn1" class="switch-btn" type="button">
+						<span class="switch-label">Lowest</span>
+						<span class="material-icons">keyboard_double_arrow_right</span>
+					</button>
+				</div>
 			</div>
-		</div>
+
+			<div class="charts-wrapper detail-wrapper hidden">
+
+				<!-- CLOSE BUTTON -->
+				<div class="close-btn" id="closeDetail">✖</div>
+
+				<div id="aqiOverlay" class="aqi-overlay"></div>
+
+				<div id="detailAnalysisBox" class="analysis-box hidden">
+					<span id="detailAnalysisIcon" class="material-symbols-outlined"></span>
+					<span id="detailAnalysisText"></span>
+				</div>
+
+				<div class="switcher">
+					<div class="card-wrapper">
+						<div class="switch-card chart1" id="card2a">
+							<h4>Today</h4>
+							<canvas id="barChart" style="width: 300px; height: 300px;"></canvas>
+						</div>
+
+						<div class="switch-card chart2 hidden" id="card2b">
+							<h4>Last 7 Days</h4>
+							<canvas id="lineChart" style="width: 300px; height: 300px;"></canvas>
+						</div>
+					</div>
+
+					<button id="prevBtn2" class="switch-btn hidden" type="button">
+						<span class="material-icons">keyboard_double_arrow_left</span>
+						<span class="switch-label">Today</span>
+					</button>
+
+					<button id="nextBtn2" class="switch-btn" type="button">
+						<span class="switch-label">Last 7 Days</span>
+						<span class="material-icons">keyboard_double_arrow_right</span>
+					</button>
+				</div>
+			</div>
 
 			
 		</div>
