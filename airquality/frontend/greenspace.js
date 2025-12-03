@@ -3,32 +3,32 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
   const cities = [
     {
-        name: "Taman Sari",
-        coords: [-6.144, 106.816],
+        name: "Mangga Besar",
+        coords: [-6.14536,106.81471],
         image:
             "https://images.unsplash.com/photo-1711078291919-c603b878eb39?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxqYWthcnRhJTIwdXJiYW4lMjBwb2xsdXRpb258ZW58MXx8fHwxNzY0NjY5NzUxfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
         description:
-            "Taman Sari is a densely populated residential area and urban activities with limited green spaces. The high population density and lack of vegetation contribute to elevated temperatures and poor air quality, making green space development crucial for community health.",
+            "Mangga Besar is a densely populated residential area and urban activities with limited green spaces. The high population density and lack of vegetation contribute to elevated temperatures and poor air quality, making green space development crucial for community health.",
     },
     {
-        name: "Sawah Besar",
-        coords: [-6.155, 106.8325],
+        name: "Kemayoran",
+        coords: [-6.16668,106.85188],
         image:
             "https://images.unsplash.com/photo-1670737565773-0a40f68256f5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjcm93ZGVkJTIwY2l0eSUyMHN0cmVldHN8ZW58MXx8fHwxNzY0NjY5NzUxfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
         description:
-            "Located in central Jakarta, Sawah Besar experiences heavy traffic congestion and urban heat island effects. Green spaces would help reduce surface temperatures, improve air quality, and provide recreational areas for residents.",
+            "As a former airport area now filled with apartments, offices, and event venues, Kemayoran experiences high human mobility that adds to emissions throughout the day. Green spaces would help improve air quality for residents.",
     },
     {
-        name: "Tanah Abang",
-        coords: [-6.195, 106.812],
+        name: "Tomang",
+        coords: [-6.17213,106.79294],
         image:
             "https://images.unsplash.com/photo-1670737565773-0a40f68256f5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjcm93ZGVkJTIwY2l0eSUyMHN0cmVldHN8ZW58MXx8fHwxNzY0NjY5NzUxfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
         description:
-            "As a major commercial hub, Tanah Abang suffers from concrete dominance and lack of vegetation. The area needs green infrastructure to mitigate pollution from the busy textile market and improve the wellbeing of workers and shoppers.",
+            "Tomang is heavily affected by its position next to one of West Jakarta’s busiest major roads, where constant traffic from private vehicles, buses, and trucks creates persistent congestion and high emission levels.",
     },
     {
-        name: "Tanjung Priok",
-        coords: [-6.108, 106.885],
+        name: "Tanjung Priok/Koja",
+        coords: [-6.115,106.90],
         image:
             "https://images.unsplash.com/photo-1604840500198-792eefd7d08f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxpbmR1c3RyaWFsJTIwYXJlYSUyMHBvbGx1dGlvbnxlbnwxfHx8fDE3NjQ2Njk3NTJ8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
         description:
@@ -36,7 +36,7 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
     },
     {
         name: "Pulo Gadung",
-        coords: [-6.193, 106.89],
+        coords: [-6.19118,106.91395],
         image:
             "https://images.unsplash.com/photo-1604840500198-792eefd7d08f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxpbmR1c3RyaWFsJTIwYXJlYSUyMHBvbGx1dGlvbnxlbnwxfHx8fDE3NjQ2Njk3NTJ8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
         description:
@@ -44,7 +44,7 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
     },
     {
         name: "Jatinegara",
-        coords: [-6.2311, 106.879],
+        coords: [-6.22995,106.86881],
         image:
             "https://images.unsplash.com/photo-1644380344134-c8986ef44b59?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx1cmJhbiUyMGdyZWVuJTIwc3BhY2UlMjBwYXJrfGVufDF8fHx8MTc2NDY2OTc1Mnww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
         description:
@@ -197,12 +197,18 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
     ).addTo(map);
 
     function getColor(d) {
-      return d > 0.8 ? '#D73027' :
-             d > 0.6 ? '#FC8D59' :
-             d > 0.4 ? '#FEE08B' :
-             d > 0.2 ? '#A6D96A' :
-                       '#66BD63';
-    }
+		return d > 0.90 ? '#D73027' :   // deep red
+				d > 0.80 ? '#E95531' :   // red-orange
+				d > 0.70 ? '#FC8D59' :   // orange
+				d > 0.60 ? '#FDB374' :   // light orange
+				d > 0.50 ? '#FEE08B' :   // yellow
+				d > 0.40 ? '#E4E88A' :   // yellow-lime
+				d > 0.30 ? '#C2E67A' :   // lime-green
+				d > 0.20 ? '#A6D96A' :   // green
+				d > 0.10 ? '#7BC869' :   // darker green
+							'#66BD63';    // deep green
+		}
+
 
     // Fetch greenspace -> add layer, then boundary -> markers
     fetch(`${BACKEND_BASE_URL}/greenspace`)
