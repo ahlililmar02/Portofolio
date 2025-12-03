@@ -720,6 +720,7 @@ body {
 .map-placeholder, .chart-placeholder {
     background-color: #f3f4f6; 
     border-radius: 0.5rem; 
+    height: 400px;
     display: flex;
     align-items: center;
     justify-content: center;
