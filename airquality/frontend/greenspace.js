@@ -219,7 +219,7 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 			d > 0.50 ? '#f9b95f' :
 			d > 0.40 ? '#f1f651ff' :
 			d > 0.25 ? '#5ae72f' :
-			d > 0.00 ? '#4b9948' :
+			d > 0.00 ? '#59b656ff' :
 						'#4b9948';
 	}
 
