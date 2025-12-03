@@ -107,7 +107,7 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
 		const barX = 120;
 		const barMaxWidth = width - barX - 20;
-		const barWidth = Math.max(ratio * barMaxWidth, 5);  // scale by 100
+		const barWidth = Math.max(pct * barMaxWidth, 5);  // scale by 100
 
 		// Label text
 		ctx.fillStyle = "#4b5563";
