@@ -359,25 +359,6 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
     })
     .catch(err => console.error('Map load error:', err));
 
-	
-	let boundaryLayer = null;
-
-	fetch('./jakarta_boundary.geojson')
-		.then(res => {
-			if (!res.ok) throw new Error('Failed to load jakarta_boundary.geojson');
-			return res.json();
-		})
-		.then(boundaryData => {
-			boundaryLayer = L.geoJSON(boundaryData, {
-				style: () => ({
-					color: "#555454ff",
-					weight: 0.9,
-					opacity: 0.9,
-				})
-			}).addTo(map);
-		})
-		.catch(err => console.error("Boundary error:", err));
-
 
 	const priorityButtons = document.querySelectorAll(".priority-btn");
 
@@ -403,6 +384,23 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 		});
 	});
 
+	let boundaryLayer = null;
+
+		fetch('./jakarta_boundary.geojson')
+			.then(res => {
+				if (!res.ok) throw new Error('Failed to load jakarta_boundary.geojson');
+				return res.json();
+			})
+			.then(boundaryData => {
+				boundaryLayer = L.geoJSON(boundaryData, {
+					style: () => ({
+						color: "#555454ff",
+						weight: 0.9,
+						opacity: 0.9,
+					})
+				}).addTo(map);
+			})
+			.catch(err => console.error("Boundary error:", err));
 
 
 
