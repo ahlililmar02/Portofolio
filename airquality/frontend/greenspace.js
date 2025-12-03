@@ -268,8 +268,6 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 		marker.on("click", () => {
 			// Hide both cards instantly
 			overviewCard.classList.add("hidden");
-			cityCard.classList.add("hidden");
-
 			// Allow DOM to update before loading data
 			setTimeout(() => {
 			fetch(`${BACKEND_BASE_URL}/greenspace`)
