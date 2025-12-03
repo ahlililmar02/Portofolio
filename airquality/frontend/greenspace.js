@@ -197,11 +197,11 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
     ).addTo(map);
 
     function getColor(d) {
-		return  d > 0.75  ? '#fc3a3aff' :   // strong red-orange
-				d > 0.625 ? '#fd844cff' :   // orange
-				d > 0.50  ? '#f9b95fff' :   // light orange
-				d > 0.375 ? '#f9d267ff' :   // yellow
-				d > 0.25  ? '#C4DF7A' :   // lime-green
+		return  d > 0.75 ? '#fc3a3aff' :   // strong red-orange
+				d > 0.6  ? '#fd844cff' :   // orange
+				d > 0.50 ? '#f9b95fff' :   // light orange
+				d > 0.4  ? '#f6ca51ff' :   // yellow
+				d > 0.2  ? '#cafb43ff' :   // lime-green
 							'#66BD63';    // deep green
 		}
 
