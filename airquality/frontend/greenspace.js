@@ -103,7 +103,14 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 	labels.forEach((label, i) => {
 		const v = values[i];          // 0–1 value
 		const pct = v * 100;          // just for display
-		const color = getColor(v);    // color scale works with 0–1
+		// Invert NDVI & GA_norm values for color scale only
+		let adjustedValue = v;
+		if (l.key === "ndvi" || l.key === "GA_norm") {
+			adjustedValue = 1 - v;   // invert 0–1 scale
+		}
+
+		const color = getColor(adjustedValue);
+
 
 		const barX = 120;
 		const barMaxWidth = width - barX - 20;
