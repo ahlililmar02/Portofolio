@@ -10,24 +10,20 @@
 	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />	
 	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 	<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+	<link rel="stylesheet" href="style.css?v=1234567890">
 
 
 	<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 	<script>
-        const cache = new Date().getTime();
-
-        // CSS
-        const css = document.createElement("link");
-        css.rel = "stylesheet";
-        css.href = "style.css?v=" + cache;
-        document.head.appendChild(css);
-
-        // JS
-        const script = document.createElement("script");
-        script.src = "map.js?v=" + cache;
-        document.head.appendChild(script);
+        // Get the current timestamp (milliseconds since epoch)
+        const cacheBuster = new Date().getTime(); 
+        const scriptElement = document.createElement('script');
+        // Append the timestamp as a query parameter (e.g., map.js?v=1700000000000)
+        scriptElement.src = 'map.js?v=' + cacheBuster; 
+        document.head.appendChild(scriptElement);
     </script>
+
 </head>
 <body>
 <div id="navbar">
