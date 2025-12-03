@@ -300,9 +300,6 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 				})
 				.catch(err => {
 				console.error("Error fetching greenspace for city lookup", err);
-
-				populateCityCard(city, null);
-				cityCard.classList.remove("hidden");
 				});
 			}, 50); // small delay makes card transition smooth
 		});
