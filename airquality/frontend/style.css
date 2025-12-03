@@ -954,6 +954,7 @@ body, html {
     opacity: 1;
     transform: translateX(0);
     pointer-events: auto;
+    z-index: 1000;
 }
 
 .close-button {
