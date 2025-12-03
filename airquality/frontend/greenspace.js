@@ -300,6 +300,9 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 				})
 				.catch(err => {
 				console.error("Error fetching greenspace for city lookup", err);
+
+				populateCityCard(city, null);
+				cityCard.classList.remove("hidden");
 				});
 			}, 50); // small delay makes card transition smooth
 		});
@@ -320,6 +323,7 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
 		// populate card
 		function populateCityCard(city, props) {
+
 		cityImage.src = city.image || "";
 		cityImage.alt = city.name;
 		cityName.textContent = city.name;
@@ -334,4 +338,9 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 		const values = indicatorLabels.map(l => getVal(l.key));
 
 		// Draw updated chart
-		drawBarChart(cityChartCanvas, indicatorLabels.map(l => l.label), values);}}
+		drawBarChart(
+			cityChartCanvas,
+			indicatorLabels.map(l => l.label),
+			values
+		);
+		}
