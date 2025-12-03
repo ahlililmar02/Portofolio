@@ -343,4 +343,4 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 			indicatorLabels.map(l => l.label),
 			values
 		);
-		}
+		}}
