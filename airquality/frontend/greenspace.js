@@ -221,12 +221,12 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 		})
 		.then(geojsonData => {
 
-			// CLUSTER FILTER
 			if (selectedCluster !== "all") {
-			geojsonData.features = geojsonData.features.filter(f =>
-				f.properties &&
-				f.properties.cluster === Number(selectedCluster)
-			);
+				geojsonData.features = geojsonData.features.filter(f =>
+					f.properties &&
+					Number.isFinite(f.properties.cluster) &&
+					f.properties.cluster === Number(selectedCluster)
+				);
 			}
 
 			// store filtered version
