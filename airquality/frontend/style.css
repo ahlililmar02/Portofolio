@@ -1015,11 +1015,6 @@ body, html {
 #info-card, #overview-card {
     position: absolute;
     top: 20px;
-    left: 20px;
+    right: 20px;
     z-index: 9999;
-    background: white;
-    padding: 16px;
-    border-radius: 8px;
-    max-width: 320px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
 }

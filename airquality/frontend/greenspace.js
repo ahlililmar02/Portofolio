@@ -57,7 +57,6 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
   const overviewImage = document.getElementById('overview-image');
   const overviewName = document.getElementById('overview-name');
   const overviewDesc = document.getElementById('overview-desc');
-  const overviewMetrics = document.getElementById('overview-metrics');
   const overviewChartCanvas = document.getElementById('overview-chart');
 
   const cityCard = document.getElementById('info-card');
@@ -65,7 +64,6 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
   const cityImage = document.getElementById('city-image');
   const cityName = document.getElementById('city-name');
   const cityDesc = document.getElementById('city-description');
-  const cityMetrics = document.getElementById('city-metrics');
   const cityChartCanvas = document.getElementById('city-chart');
 
   const mapEl = document.getElementById('map');
@@ -116,24 +114,6 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
     });
   }
 
-  // Helper: create metric rows (percentage-style) inside card
-  function createMetricRow(label, percent, color = 'amber') {
-    const row = document.createElement('div');
-    row.className = 'metric-row';
-    const lab = document.createElement('div');
-    lab.className = 'label';
-    lab.textContent = label;
-    const barWrap = document.createElement('div');
-    barWrap.className = 'metric-bar';
-    const fill = document.createElement('div');
-    fill.className = 'fill ' + (color === 'green' ? 'green' : 'amber');
-    fill.style.width = Math.min(100, Math.round(percent)) + '%';
-    fill.textContent = Math.round(percent);
-    barWrap.appendChild(fill);
-    row.appendChild(lab);
-    row.appendChild(barWrap);
-    return row;
-  }
 
   // Utility to compute average overview metrics from geojson features
   function computeOverviewFromFeatures(features) {
@@ -214,16 +194,6 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         overviewImage.src = 'https://images.unsplash.com/photo-1680244116826-467f252cf503?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxqYWthcnRhJTIwY2l0eSUyMHNreWxpbmV8ZW58MXx8fHwxNzY0NzMwMjU3fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral';
         overviewDesc.textContent = 'Jakarta faces significant environmental challenges with high air pollution, dense population, limited green spaces, heavy traffic congestion, and heat island effects. Strategic green space development across districts is essential.';
 
-        // clear previous
-        overviewMetrics.innerHTML = '';
-        // map keys to nicer labels and pick color
-        indicatorLabels.forEach(lbl => {
-          const val = overviewMetricsVals[lbl.key] || 0;
-          // show as percent where applicable (scale to 0-100 for display)
-          const percent = Math.round((val) * 100);
-          const color = lbl.key === 'ndvi' || lbl.key === 'GA_norm' ? 'green' : 'amber';
-          overviewMetrics.appendChild(createMetricRow(lbl.label, percent, color));
-        });
 
         // draw overview chart (use values scaled for visualization)
         const overviewValues = indicatorLabels.map(l => (overviewMetricsVals[l.key] || 0));
@@ -323,7 +293,6 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
       indicatorLabels.forEach((l, idx) => {
         const percent = Math.round(values[idx] * 100);
         const color = (l.key === 'ndvi' || l.key === 'GA_norm') ? 'green' : 'amber';
-        cityMetrics.appendChild(createMetricRow(l.label, percent, color));
       });
 
       // draw city chart
