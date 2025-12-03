@@ -539,6 +539,23 @@ body {
     font-weight: 500;
 }
 
+/* Create the underline effect */
+.nav-center a::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 2px; /* Thickness of underline */
+    width: 0%;
+    background-color: #333; /* Color of underline */
+    transition: width 0.3s ease;
+}
+
+/* On hover, expand the underline */
+.nav-center a:hover::after {
+    width: 100%;
+}
+
 
 .nav-right {
     display: flex;
