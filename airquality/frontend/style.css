@@ -905,11 +905,6 @@ body, html {
     width: 100%;
 }
 
-/* Leaflet Overrides (from the original <style> block) */
-.leaflet-container {
-    height: 100%;
-    width: 100%;
-}
 .leaflet-control-zoom {
     border: 2px solid rgba(0,0,0,0.2);
     border-radius: 4px;
