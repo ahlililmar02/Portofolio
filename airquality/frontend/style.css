@@ -717,10 +717,19 @@ body {
     font-weight: 600;
 }
 
-.map-placeholder, .chart-placeholder {
+.chart-placeholder{
     background-color: #f3f4f6; 
     border-radius: 0.5rem; 
-    height: 400px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.map-placeholder {
+    background-color: #f3f4f6; 
+    border-radius: 0.5rem; 
+    height: 300px;
     display: flex;
     align-items: center;
     justify-content: center;
