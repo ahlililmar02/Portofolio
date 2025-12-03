@@ -38,7 +38,7 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         name: "Pulo Gadung/Cakung",
         coords: [-6.19118,106.91395],
         image:
-            "https://akcdn.detik.net.id/visual/2018/06/14/7db9451d-fc09-4539-8ab5-8553e707b552_169.jpeg?w=1200",
+            "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiztPBJbAU76EAMMWWvx6yOaP243Fw-D9rZpjX028zdi7mdJ3gBatvOQPVa4kvgRsWFL9D-wfzg4SAuA5BoXWtpGJjAvqZg00vj8Loul8qBIA6Zbgvdyt_PGPnWhmHMoNUr2iiYB6_Hvyxq/w1200-h630-p-k-no-nu/Daftar+Nama+Telepon+Perusahaan+di+Kawasan+Industri+Pulogadung+%2528JIEP%2529.jpg",
         description:
             "An industrial zone with factories and warehouses, Pulo Gadung requires extensive green space planning to reduce industrial pollution impacts. Urban forests would help absorb emissions and create healthier conditions for workers.",
     },
