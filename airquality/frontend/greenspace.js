@@ -279,8 +279,6 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
       cityName.textContent = city.name;
       cityDesc.textContent = city.description || '';
 
-      // clear metrics
-      cityMetrics.innerHTML = '';
 
       // if props exist, use requested keys; else fallback to placeholders
       const getVal = (k) => {
