@@ -6,7 +6,7 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         name: "Mangga Besar",
         coords: [-6.14536,106.81471],
         image:
-            "https://images.unsplash.com/photo-1711078291919-c603b878eb39?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxqYWthcnRhJTIwdXJiYW4lMjBwb2xsdXRpb258ZW58MXx8fHwxNzY0NjY5NzUxfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
+            "https://www.rukita.co/stories/wp-content/uploads/2022/05/the-jakarta-possst.jpg",
         description:
             "Mangga Besar is a densely populated residential area and urban activities with limited green spaces. The high population density and lack of vegetation contribute to elevated temperatures and poor air quality, making green space development crucial for community health.",
     },
@@ -14,7 +14,7 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         name: "Kemayoran",
         coords: [-6.16668,106.85188],
         image:
-            "https://images.unsplash.com/photo-1670737565773-0a40f68256f5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjcm93ZGVkJTIwY2l0eSUyMHN0cmVldHN8ZW58MXx8fHwxNzY0NjY5NzUxfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
+            "https://cdn.antaranews.com/cache/1200x800/2023/06/18/IMG-20230618-WA0000_4.jpg",
         description:
             "As a former airport area now filled with apartments, offices, and event venues, Kemayoran experiences high human mobility that adds to emissions throughout the day. Green spaces would help improve air quality for residents.",
     },
@@ -22,7 +22,7 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         name: "Tomang",
         coords: [-6.17213,106.79294],
         image:
-            "https://images.unsplash.com/photo-1670737565773-0a40f68256f5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjcm93ZGVkJTIwY2l0eSUyMHN0cmVldHN8ZW58MXx8fHwxNzY0NjY5NzUxfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
+            "https://asset.tribunnews.com/588xrFLs3HDqiVj4yumB_dgvFNA=/1200x675/filters:upscale():quality(30):format(webp):focal(0.5x0.5:0.5x0.5)/tribunnews/foto/bank/originals/penutupan-tol-dalam-kota-ke-arah-cikampek_20220507_172234.jpg",
         description:
             "Tomang is heavily affected by its position next to one of West Jakarta’s busiest major roads, where constant traffic from private vehicles, buses, and trucks creates persistent congestion and high emission levels.",
     },
@@ -30,15 +30,15 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         name: "Tanjung Priok/Koja",
         coords: [-6.113,106.90],
         image:
-            "https://images.unsplash.com/photo-1604840500198-792eefd7d08f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxpbmR1c3RyaWFsJTIwYXJlYSUyMHBvbGx1dGlvbnxlbnwxfHx8fDE3NjQ2Njk3NTJ8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
+            "https://static.republika.co.id/uploads/images/inpicture_slide/sejumlah-truk-kontainer-terjebak-kemacetan-di-sekitar-pelabuahan-peti-_130725201525-357.jpg",
         description:
             "Home to Jakarta's main port, Tanjung Priok faces severe air pollution from industrial activities and shipping operations. Green buffers are essential to filter pollutants and protect residential areas from industrial emissions.",
     },
     {
-        name: "Pulo Gadung",
+        name: "Pulo Gadung/Cakung",
         coords: [-6.19118,106.91395],
         image:
-            "https://images.unsplash.com/photo-1604840500198-792eefd7d08f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxpbmR1c3RyaWFsJTIwYXJlYSUyMHBvbGx1dGlvbnxlbnwxfHx8fDE3NjQ2Njk3NTJ8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
+            "https://akcdn.detik.net.id/visual/2018/06/14/7db9451d-fc09-4539-8ab5-8553e707b552_169.jpeg?w=1200",
         description:
             "An industrial zone with factories and warehouses, Pulo Gadung requires extensive green space planning to reduce industrial pollution impacts. Urban forests would help absorb emissions and create healthier conditions for workers.",
     },
