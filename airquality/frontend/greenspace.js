@@ -203,8 +203,6 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
                        '#66BD63';
     }
 
-	cityCard.classList.add('hidden');
-
     // Fetch greenspace -> add layer, then boundary -> markers
     fetch(`${BACKEND_BASE_URL}/greenspace`)
       .then(res => {
@@ -256,88 +254,85 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         }).addTo(map);
 
         // Now add markers last
-	const markerLayers = [];
-	cities.forEach(city => {
-	const divIcon = L.divIcon({
-		className: "custom-marker",
-		html: `<div style="background: white; padding: 4px 8px; border-radius: 4px; border: 2px solid #f59e0b; font-size: 12px; font-weight: 500; color: #92400e; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,0.2); cursor: pointer;">${city.name}</div>`,
-		iconSize: [0,0],
-		iconAnchor: [0,0]
-	});
+        const markerLayers = [];
+        cities.forEach(city => {
+          const divIcon = L.divIcon({
+            className: "custom-marker",
+            html: `<div style="background: white; padding: 4px 8px; border-radius: 4px; border: 2px solid #f59e0b; font-size: 12px; font-weight: 500; color: #92400e; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,0.2); cursor: pointer;">${city.name}</div>`,
+            iconSize: [0,0],
+            iconAnchor: [0,0]
+          });
 
-	const marker = L.marker(city.coords, { icon: divIcon }).addTo(map);
+          const marker = L.marker(city.coords, { icon: divIcon }).addTo(map);
+          marker.on('click', () => {
+            // hide overview card
+            overviewCard.classList.add('hidden');
+            cityCard.classList.add('hidden');
+            // find the polygon that contains this city coords from the greenspace data
+            // we need the last-loaded greenspace geojson; fetch it again (could be cached earlier)
+            fetch(`${BACKEND_BASE_URL}/greenspace`)
+              .then(r => r.json())
+              .then(gData => {
+                const pt = turf.point([city.coords[1], city.coords[0]]); // turf expects [lng, lat]
+                let matched = null;
+                (gData.features || []).some(feat => {
+                  try {
+                    if (feat.geometry && feat.properties) {
+                      const bool = turf.booleanPointInPolygon(pt, feat);
+                      if (bool) { matched = feat; return true; }
+                    }
+                  } catch (e) { /* ignore invalid geometry */ }
+                  return false;
+                });
 
-	marker.on("click", () => {
-		// Hide instantly
-		overviewCard.classList.add("hidden");
-		cityCard.classList.add("hidden");
+                // Fill city infocard with either matched polygon properties or fallback
+                const props = (matched && matched.properties) ? matched.properties : null;
+                populateCityCard(city, props);
+              })
+              .catch(error => {
+                console.error('Error fetching greenspace for city lookup', error);
+                populateCityCard(city, null);
+              });
+          });
 
-		// Fetch greenspace
-		fetch(`${BACKEND_BASE_URL}/greenspace`)
-		.then(r => r.json())
-		.then(gData => {
-			const pt = turf.point([city.coords[1], city.coords[0]]);
-			let matched = null;
+          markerLayers.push(marker);
+        });
 
-			(gData.features || []).some(feat => {
-			try {
-				if (feat.geometry && feat.properties) {
-				if (turf.booleanPointInPolygon(pt, feat)) {
-					matched = feat;
-					return true;
-				}
-				}
-			} catch (e) {}
-			return false;
-			});
+      })
+      .catch(err => {
+        console.error('Error in map loading sequence:', err);
+      });
 
-			const props = matched ? matched.properties : null;
+    // close button — go back to overview
+    cityCloseBtn.addEventListener('click', () => {
+      cityCard.classList.add('hidden');
+      overviewCard.classList.remove('hidden');
+    });
 
-			// Fill + show card
-			populateCityCard(city, props);
-		})
-		.catch(err => {
-			console.error("Error fetching greenspace for city lookup", err);
-			populateCityCard(city, null);
-		});
-	});
+    // populate city card with city object and polygon properties (props may be null)
+    function populateCityCard(city, props) {
+      cityImage.src = city.image || '';
+      cityImage.alt = city.name;
+      cityName.textContent = city.name;
+      cityDesc.textContent = city.description || '';
 
-	markerLayers.push(marker);
-	});
 
-	})
-	.catch(err => {
-	console.error("Error in map loading sequence:", err);
-	});}
+      // if props exist, use requested keys; else fallback to placeholders
+      const getVal = (k) => {
+        if (!props) return 0;
+        const v = props[k];
+        return (typeof v === 'number') ? v : (v ? Number(v) : 0);
+      };
 
-	// back to overview
-	cityCloseBtn.addEventListener("click", () => {
-	cityCard.classList.add("hidden");
-	overviewCard.classList.remove("hidden");
-	});
+      const values = indicatorLabels.map(l => getVal(l.key));
+      indicatorLabels.forEach((l, idx) => {
+        const percent = Math.round(values[idx] * 100);
+        const color = (l.key === 'ndvi' || l.key === 'GA_norm') ? 'green' : 'amber';
+      });
 
-	// populate card
-	function populateCityCard(city, props) {
+      // draw city chart
+      drawBarChart(cityChartCanvas, indicatorLabels.map(l => l.label), values);
 
-	cityImage.src = city.image || "";
-	cityImage.alt = city.name;
-	cityName.textContent = city.name;
-	cityDesc.textContent = city.description || "";
-
-	const getVal = (k) => {
-		if (!props) return 0;
-		const v = props[k];
-		return (typeof v === "number") ? v : (v ? Number(v) : 0);
-	};
-
-	const values = indicatorLabels.map(l => getVal(l.key));
-
-	// Draw updated chart
-	drawBarChart(
-		cityChartCanvas,
-		indicatorLabels.map(l => l.label),
-		values
-	);
-	cityCard.classList.remove("hidden");
-	}
-
+      // show city card
+      cityCard.classList.remove('hidden');
+    }}
