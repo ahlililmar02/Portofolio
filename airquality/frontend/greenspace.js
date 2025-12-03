@@ -306,27 +306,29 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 		});
 	}
 
-	// ------------------------------------------------------
-	// INITIAL LOAD
-	// ------------------------------------------------------
+	let boundaryLayer = null;
+
+	// ⭐ Load boundary once — outside all functions
+	fetch('./jakarta_boundary.geojson')
+		.then(res => {
+			if (!res.ok) throw new Error('Failed to load jakarta_boundary.geojson');
+			return res.json();
+		})
+		.then(boundaryData => {
+			boundaryLayer = L.geoJSON(boundaryData, {
+				style: () => ({
+					color: "#555454ff",
+					weight: 0.9,
+					opacity: 0.9,
+				})
+			}).addTo(map);
+		})
+		.catch(err => console.error("Boundary error:", err));
+
+
 	loadGreenspace("all")
-    .then(() => fetch('./jakarta_boundary.geojson'))
-    .then(res => {
-        if (!res.ok) throw new Error('Failed to load jakarta_boundary.geojson');
-        return res.json();
-    })
-    .then(boundaryData => {
-
-        // ⭐ KEEP boundary in a dedicated layer
-        const boundaryLayer = L.geoJSON(boundaryData, {
-            style: () => ({
-                color: "#555454ff",
-                weight: 0.9,
-                opacity: 0.9,
-            })
-        }).addTo(map);
-
-        // Add city markers (after greenspace + boundary)
+    .then(() => {
+        // After greenspace is loaded → add city markers
         const markerLayers = [];
 
         cities.forEach(city => {
@@ -373,14 +375,8 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
             markerLayers.push(marker);
         });
-
     })
-    .catch(err => console.error('Error in map loading sequence:', err));
-
-
-	// ================================
-	// ⭐ PRIORITY BUTTON HANDLER FIXED
-	// ================================
+    .catch(err => console.error('Map load error:', err));
 
 	const priorityButtons = document.querySelectorAll(".priority-btn");
 
@@ -388,29 +384,24 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 		btn.addEventListener("click", () => {
 			const selectedPriority = btn.dataset.priority;
 
-			// remove active style
 			priorityButtons.forEach(b => b.classList.remove("priority-active"));
 			btn.classList.add("priority-active");
 
-			// convert priority → cluster number
 			let clusterValue = "all";
 			if (selectedPriority === "low") clusterValue = "2";
 			if (selectedPriority === "medium") clusterValue = "1";
 			if (selectedPriority === "high") clusterValue = "0";
 
-			// ⭐ remove ONLY greenspace layers
 			map.eachLayer(layer => {
-				if (layer.options && layer.options.pane === "overlayPane") {
-					if (layer instanceof L.GeoJSON && layer !== boundaryLayer) {
-						map.removeLayer(layer);
-					}
+				if (layer !== boundaryLayer && layer instanceof L.GeoJSON) {
+					map.removeLayer(layer);
 				}
 			});
 
-			// reload greenspace with filter
 			loadGreenspace(clusterValue);
 		});
 	});
+
 
 
 
