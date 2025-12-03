@@ -722,7 +722,7 @@ body {
 .chart-placeholder{
     background-color: #f3f4f6; 
     border-radius: 0.5rem; 
-    height: 300px;
+    height: 400px;
     width: 300px;
     display: flex;
     align-items: center;
@@ -734,7 +734,7 @@ body {
     background-color: #f3f4f6; 
     border-radius: 0.5rem; 
     width: 600px;
-    height: 450px;
+    height: 600px;
     display: flex;
     align-items: center;
     margin: auto;
