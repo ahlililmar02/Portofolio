@@ -46,7 +46,7 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         name: "Jatinegara",
         coords: [-6.225,106.86881],
         image:
-            "https://images.unsplash.com/photo-1644380344134-c8986ef44b59?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx1cmJhbiUyMGdyZWVuJTIwc3BhY2UlMjBwYXJrfGVufDF8fHx8MTc2NDY2OTc1Mnww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
+            "https://asset.kompas.com/crops/rpg13PWmQP5sjIaFm4kwvu8mtBE=/0x0:1000x667/1200x800/data/photo/2023/07/13/64afddd634c6b.jpg",
         description:
             "A mixed residential and commercial area near railway lines, Jatinegara needs green corridors to reduce noise pollution and improve air quality. Parks would provide much-needed recreation spaces for the growing population.",
     },
