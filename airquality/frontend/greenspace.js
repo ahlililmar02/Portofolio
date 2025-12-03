@@ -295,12 +295,10 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
 			// Fill + show card
 			populateCityCard(city, props);
-			cityCard.classList.remove("hidden");
 		})
 		.catch(err => {
 			console.error("Error fetching greenspace for city lookup", err);
 			populateCityCard(city, null);
-			cityCard.classList.remove("hidden");
 		});
 	});
 
@@ -340,5 +338,6 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 		indicatorLabels.map(l => l.label),
 		values
 	);
+	cityCard.classList.remove("hidden");
 	}
 
