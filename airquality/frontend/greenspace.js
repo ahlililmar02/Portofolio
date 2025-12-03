@@ -101,45 +101,47 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
     let y = 0;
 
 	labels.forEach((label, i) => {
-		const v = values[i];          // 0–1 value
-		const pct = v * 100;          // just for display
-		// Invert NDVI & GA_norm values for color scale only
-		let adjustedValue = v;
-		if (l.key === "ndvi" || l.key === "GA_norm") {
-			adjustedValue = 1 - v;   // invert 0–1 scale
-		}
+    const v = values[i];          // raw 0–1 value
+    const pct = v * 100;
 
-		const color = getColor(adjustedValue);
+    // find which indicator this bar belongs to
+    const l = indicatorLabels[i];
 
+    // invert NDVI + GA_norm ONLY for color scale
+    let adjustedValue = v;
+    if (l.key === "ndvi" || l.key === "GA_norm") {
+        adjustedValue = 1 - v;
+    }
 
-		const barX = 120;
-		const barMaxWidth = width - barX - 20;
-		const barWidth = Math.max(v * barMaxWidth, 5);  // scale bar using 0–1 value
+    const color = getColor(adjustedValue);
 
-		// Label
-		ctx.fillStyle = "#4b5563";
-		ctx.fillText(label, 10, y + barHeight - 4);
+    // Bar drawing
+    const barX = 120;
+    const barMaxWidth = width - barX - 20;
+    const barWidth = Math.max(v * barMaxWidth, 5);
 
-		// Background bar
-		ctx.fillStyle = "#e5e7eb";
-		roundRect(ctx, barX, y, barMaxWidth, barHeight, 9, true);
+    // Label
+    ctx.fillStyle = "#4b5563";
+    ctx.fillText(label, 10, y + barHeight - 4);
 
-		// Filled bar
-		ctx.fillStyle = color;
-		roundRect(ctx, barX, y, barWidth, barHeight, 9, true);
+    // Background bar
+    ctx.fillStyle = "#e5e7eb";
+    roundRect(ctx, barX, y, barMaxWidth, barHeight, 9, true);
 
-		// Value text
-		ctx.fillStyle = (v > 0.4 ? "#fff" : "#000");
-		ctx.textAlign = "center";
-		ctx.fillText(
-			Math.round(pct),
-			barX + barWidth / 2,
-			y + barHeight - 4
-		);
+    // Filled bar (with adjusted inverted color)
+    ctx.fillStyle = color;
+    roundRect(ctx, barX, y, barWidth, barHeight, 9, true);
 
-		ctx.textAlign = "left";
-		y += barHeight + spacing;
-	});
+    // Value text
+    ctx.fillStyle = (v > 0.4 ? "#fff" : "#000");
+    ctx.textAlign = "center";
+    ctx.fillText(Math.round(pct), barX + barWidth / 2, y + barHeight - 4);
+
+    ctx.textAlign = "left";
+
+    y += barHeight + spacing;
+});
+
 	}
 
 
