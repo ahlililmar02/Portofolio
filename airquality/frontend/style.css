@@ -939,7 +939,7 @@ body, html {
 /* Info Card Styling */
 #info-card, #overview-card {
     position: absolute;
-    top: 80px; /* Matches top-20 (5rem) + 64px padding-top */
+    top: 40px; /* Matches top-20 (5rem) + 64px padding-top */
     right: 24px; /* Matches right-6 (1.5rem) */
     width: 320px; /* Matches w-80 */
     height: 600px;
