@@ -54,8 +54,8 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         name: "Kebon Sirih",
         coords: [-6.18456,106.83460],
         image:
-            "https://www.google.com/url?sa=i&url=https%3A%2F%2Fmegapolitan.kompas.com%2Fread%2F2025%2F10%2F05%2F10240771%2Fhut-ke-80-tni-di-monas-lalu-lintas-jalan-kebon-sirih-tugu-tani-macet&psig=AOvVaw0XFpcO1VxFtQA1nscPomdu&ust=1764847712319000&source=images&cd=vfe&opi=89978449&ved=0CBUQjRxqFwoTCKC3rZ6ooZEDFQAAAAAdAAAAABAehttps://www.google.com/imgres?q=kebon%20sirih%20macet&imgurl=https%3A%2F%2Fasset.kompas.com%2Fcrops%2FMo7qJMYg9e8HEeulQ4x99ehnLGA%3D%2F0x0%3A0x0%2F1200x800%2Fdata%2Fphoto%2F2025%2F10%2F05%2F68e1defac39c3.jpg&imgrefurl=https%3A%2F%2Fmegapolitan.kompas.com%2Fread%2F2025%2F10%2F05%2F10240771%2Fhut-ke-80-tni-di-monas-lalu-lintas-jalan-kebon-sirih-tugu-tani-macet&docid=4s7HxrocwDFeJM&tbnid=wrBWFOgLO3pG1M&vet=12ahUKEwjw082_qKGRAxUpT2wGHT_mJsQQM3oECCcQAA..i&w=1200&h=800&hcb=2&ved=2ahUKEwjw082_qKGRAxUpT2wGHT_mJsQQM3oECCcQAA",
-        description:
+			"https://asset.kompas.com/crops/Mo7qJMYg9e8HEeulQ4x99ehnLGA=/0x0:0x0/1200x800/data/photo/2025/10/05/68e1defac39c3.jpg",
+		description:
             "Kebon Sirih sits in the heart of Central Jakarta, surrounded by dense commercial zones, government offices, and major arterial roads that experience constant traffic throughout the day.",
     },
   ];
