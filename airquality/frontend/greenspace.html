@@ -34,6 +34,17 @@
             </span>
         </div>
     </div>
+    <script>
+        const links = document.querySelectorAll('.nav-center a');
+        const currentPage = window.location.pathname.split("/").pop(); // get file name
+
+        links.forEach(link => {
+            if (link.getAttribute('href') === currentPage || 
+                (currentPage === '' && link.getAttribute('href') === 'index.html')) {
+                link.classList.add('active');
+            }
+        });
+    </script>
     <div class="map-container">
     
         <div id="map" class="map-full-view"></div>
