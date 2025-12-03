@@ -202,7 +202,6 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 				d > 0.50  ? '#f9b95fff' :   // light orange
 				d > 0.375 ? '#f9d267ff' :   // yellow
 				d > 0.25  ? '#C4DF7A' :   // lime-green
-				d > 0.125 ? '#A6D96A' :   // green
 							'#66BD63';    // deep green
 		}
 
