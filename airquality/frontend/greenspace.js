@@ -231,6 +231,8 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
           marker.on('click', () => {
             // hide overview card
             overviewCard.classList.add('hidden');
+            cityCard.classList.remove('hidden');
+
             // find the polygon that contains this city coords from the greenspace data
             // we need the last-loaded greenspace geojson; fetch it again (could be cached earlier)
             fetch(`${BACKEND_BASE_URL}/greenspace`)
