@@ -394,23 +394,87 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
 	let boundaryLayer = null;
 
-		fetch('./jakarta_boundary.geojson')
-			.then(res => {
-				if (!res.ok) throw new Error('Failed to load jakarta_boundary.geojson');
-				return res.json();
-			})
-			.then(boundaryData => {
-				boundaryLayer = L.geoJSON(boundaryData, {
-					style: () => ({
-						color: "#555454ff",
-						weight: 0.9,
-						opacity: 0.9,
-					})
-				}).addTo(map);
-			})
-			.catch(err => console.error("Boundary error:", err));
+	async function initMap() {
+		try {
+			// 1️⃣ Load greenspace first
+			lastGreenspace = await loadGreenspace("all");
 
+			// 2️⃣ Now show the overview card info
+			const overviewMetricsVals = computeOverviewFromFeatures(lastGreenspace.features || []);
 
+			overviewName.textContent = "All Areas Overview";
+			overviewDesc.textContent =
+				"Jakarta faces significant environmental challenges with high air pollution, dense population, limited green spaces, heavy traffic congestion, and heat island effects. Strategic green space development across districts is essential.";
+
+			const overviewValues = indicatorLabels.map(l => (overviewMetricsVals[l.key] || 0));
+			drawBarChart(overviewChartCanvas, indicatorLabels.map(l => l.label), overviewValues);
+
+			// 3️⃣ Load boundary AFTER greenspace
+			const res = await fetch('./jakarta_boundary.geojson');
+			if (!res.ok) throw new Error('Failed to load jakarta_boundary.geojson');
+			const boundaryData = await res.json();
+
+			boundaryLayer = L.geoJSON(boundaryData, {
+				style: () => ({
+					color: "#555454ff",
+					weight: 0.9,
+					opacity: 0.9,
+				})
+			}).addTo(map);
+
+			// 4️⃣ Add city markers
+			const markerLayers = [];
+
+			cities.forEach(city => {
+				const divIcon = L.divIcon({
+					className: "custom-marker",
+					html: `<div style="
+						width: 14px;
+						height: 14px;
+						background: #9ca3af;
+						border: 2px solid #6b7280;
+						border-radius: 50%;
+						box-shadow: 0 2px 4px rgba(0,0,0,0.25);
+					"></div>`,
+					iconSize: [14, 14],
+					iconAnchor: [7, 7]
+				});
+
+				const marker = L.marker(city.coords, { icon: divIcon }).addTo(map);
+
+				marker.on("click", () => {
+					overviewCard.classList.add("hidden");
+					cityCard.classList.remove("hidden");
+
+					const gData = lastGreenspace;
+					if (!gData) return populateCityCard(city, null);
+
+					const pt = turf.point([city.coords[1], city.coords[0]]);
+					let matched = null;
+
+					(gData.features || []).some(f => {
+						try {
+							if (turf.booleanPointInPolygon(pt, f)) {
+								matched = f;
+								return true;
+							}
+						} catch (_) {}
+						return false;
+					});
+
+					populateCityCard(city, matched?.properties || null);
+				});
+
+				markerLayers.push(marker);
+			});
+
+		} catch (err) {
+			console.error("Error initializing map:", err);
+		}
+	}
+
+	// Start everything
+	initMap();
 
 	// ------------------------------------------------------
 	// CITY CARD POPULATION
