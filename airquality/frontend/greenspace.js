@@ -28,7 +28,7 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
     },
     {
         name: "Tanjung Priok/Koja",
-        coords: [-6.115,106.90],
+        coords: [-6.113,106.90],
         image:
             "https://images.unsplash.com/photo-1604840500198-792eefd7d08f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxpbmR1c3RyaWFsJTIwYXJlYSUyMHBvbGx1dGlvbnxlbnwxfHx8fDE3NjQ2Njk3NTJ8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
         description:
@@ -44,7 +44,7 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
     },
     {
         name: "Jatinegara",
-        coords: [-6.22995,106.86881],
+        coords: [-6.225,106.86881],
         image:
             "https://images.unsplash.com/photo-1644380344134-c8986ef44b59?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx1cmJhbiUyMGdyZWVuJTIwc3BhY2UlMjBwYXJrfGVufDF8fHx8MTc2NDY2OTc1Mnww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
         description:
