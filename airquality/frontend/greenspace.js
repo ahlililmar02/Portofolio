@@ -224,7 +224,10 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 	}
 
 
-
+	let lastGreenspace = null;
+	let greensLayer = null;
+	let boundaryLayer = null;
+	
 	function loadGreenspace(selectedCluster = "all") {
 		return fetch(`${BACKEND_BASE_URL}/greenspace`)
 		.then(res => {
@@ -310,9 +313,7 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 		});
 	}
 
-	let lastGreenspace = null;
-	let greensLayer = null;
-	let boundaryLayer = null;
+
 
 	async function initMapSequence() {
 		try {
