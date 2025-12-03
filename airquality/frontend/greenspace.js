@@ -200,7 +200,7 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 		return  d > 0.75 ? '#fc3a3a' :   // red
 				d > 0.60 ? '#fd844c' :   // orange
 				d > 0.50 ? '#f9b95f' :   // yellow
-				d > 0.40 ? '#d0f651' :   // lime green
+				d > 0.40 ? '#f1f651ff' :   // lime green
 				d > 0.25 ? '#5ae72f' :   // green
 				d > 0.00 ? '#4b9948' :   // deep green
 						'#4b9948';    // fallback (class 7)
