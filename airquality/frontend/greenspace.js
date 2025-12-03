@@ -60,11 +60,11 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
   const overviewMetrics = document.getElementById('overview-metrics');
   const overviewChartCanvas = document.getElementById('overview-chart');
 
-  const cityCard = document.getElementById('city-card');
-  const cityCloseBtn = document.getElementById('city-close');
+  const cityCard = document.getElementById('info-card');
+  const cityCloseBtn = document.getElementById('close-button');
   const cityImage = document.getElementById('city-image');
   const cityName = document.getElementById('city-name');
-  const cityDesc = document.getElementById('city-desc');
+  const cityDesc = document.getElementById('city-description');
   const cityMetrics = document.getElementById('city-metrics');
   const cityChartCanvas = document.getElementById('city-chart');
 
