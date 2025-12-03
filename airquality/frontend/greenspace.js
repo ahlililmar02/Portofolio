@@ -255,8 +255,34 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
 			// update overview card visuals
 			overviewImage.src = 'https://images.unsplash.com/photo-1680244116826-467f252cf503?...';
-			overviewDesc.textContent =
-			'Jakarta faces significant environmental challenges...';
+			// === UPDATE OVERVIEW TITLE & DESCRIPTION BASED ON CLUSTER ===
+			if (selectedCluster === "2") {
+				overviewName.textContent = "Low Priority Area";
+				overviewDesc.textContent =
+					"These areas are considered not urgent for additional greenspace because they already have good vegetation coverage, strong green accessibility, and lower environmental pressure.";
+			}
+
+			else if (selectedCluster === "1") {
+				overviewName.textContent = "Sensitive Area";
+				overviewDesc.textContent =
+					"These areas should be prioritized for greenspace improvement due to the high density of sensitive locations such as schools, kindergartens, hospitals, and other vulnerable public facilities.";
+
+			}
+
+			else if (selectedCluster === "0") {
+				overviewName.textContent = "Emission Source Area";
+				overviewDesc.textContent =
+					"These zones are considered urgent for greenspace development because they contain high industrial activity, dense commercial zones, or major transportation corridors that contribute significantly to air pollution.";
+
+			}
+
+			else {
+				// "all" fallback
+				overviewName.textContent = "Jakarta Overview";
+				overviewDesc.textContent =
+					"Jakarta faces significant environmental challenges with high air pollution, dense population, limited green spaces, heavy traffic congestion, and heat island effects. Strategic green space development across districts is essential.";
+			}
+
 
 			const overviewValues = indicatorLabels.map(
 			l => overviewMetricsVals[l.key] || 0
