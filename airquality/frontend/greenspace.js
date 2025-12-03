@@ -241,7 +241,7 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 				const score = feature.properties?.pca_compos || 0;
 				return {
 				color: "#666",
-				weight: 0.05,
+				weight: 0.1,
 				fillColor: getColor(score),
 				fillOpacity: 0.8
 				};
@@ -284,7 +284,7 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 		L.geoJSON(boundaryData, {
 			style: () => ({
 			color: "#555454ff",
-			weight: 0.5,
+			weight: 0.9,
 			opacity: 0.9,
 			})
 		}).addTo(map);

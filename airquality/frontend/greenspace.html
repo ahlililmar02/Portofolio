@@ -34,7 +34,14 @@
         </div>
     </div>
     <div class="map-container">
+        <select id="clusterSelector">
+            <option value="all">All Clusters</option>
+            <option value="1">Low (Cluster 1)</option>
+            <option value="2">Medium (Cluster 2)</option>
+            <option value="3">High (Cluster 3)</option>
+        </select>
         <div id="map" class="map-full-view"></div>
+
         <div id="overview-card" class="info-card">
             <div class="image-container">
                 <img id="overview-image" src="" alt="" class="city-image">
@@ -65,12 +72,7 @@
                 </div>
             </div>
         </div>
-        <select id="clusterSelector">
-            <option value="all">All Clusters</option>
-            <option value="1">Low (Cluster 1)</option>
-            <option value="2">Medium (Cluster 2)</option>
-            <option value="3">High (Cluster 3)</option>
-        </select>
+
 
     </div>
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
