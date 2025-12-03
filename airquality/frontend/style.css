@@ -1000,3 +1000,36 @@ body, html {
 
 .chart-wrap { padding-top: 8px; padding-bottom: 16px; }
 .chart-canvas { width: 100%; height: 200px; margin-top: 8px;display:block; }
+
+.priority-btn {
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.priority-btn:hover {
+    background: #e5e7eb;
+}
+
+/* Active states */
+.priority-active {
+    color: white !important;
+}
+
+.priority-btn[data-priority="all"].priority-active {
+    background: #6b7280 !important;
+}
+.priority-btn[data-priority="low"].priority-active {
+    background: #22c55e !important; /* green */
+}
+.priority-btn[data-priority="medium"].priority-active {
+    background: #facc15 !important; /* yellow */
+}
+.priority-btn[data-priority="high"].priority-active {
+    background: #ef4444 !important; /* red */
+}

@@ -376,13 +376,32 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 		})
 		.catch(err => console.error('Error in map loading sequence:', err));
 
-	// ------------------------------------------------------
-	// CLUSTER SELECTOR
-	// ------------------------------------------------------
-	document.getElementById("clusterSelector").addEventListener("change", e => {
-		const selected = e.target.value;
-		loadGreenspace(selected);
+	const priorityButtons = document.querySelectorAll(".priority-btn");
+
+	priorityButtons.forEach(btn => {
+		btn.addEventListener("click", () => {
+			const selectedPriority = btn.dataset.priority;
+
+			// remove active class
+			priorityButtons.forEach(b => b.classList.remove("priority-active"));
+			btn.classList.add("priority-active");
+
+			// convert priority → cluster number
+			let clusterValue = "all";
+			if (selectedPriority === "low") clusterValue = "2";
+			if (selectedPriority === "medium") clusterValue = "1";
+			if (selectedPriority === "high") clusterValue = "0";
+
+			// remove old layers
+			map.eachLayer(layer => {
+				if (layer instanceof L.GeoJSON) map.removeLayer(layer);
+			});
+
+			// reload greenspace with cluster filter
+			loadGreenspace(clusterValue);
+		});
 	});
+
 
 	// ------------------------------------------------------
 	// CITY CARD POPULATION
