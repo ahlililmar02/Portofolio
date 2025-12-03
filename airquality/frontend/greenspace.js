@@ -254,94 +254,87 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         }).addTo(map);
 
         // Now add markers last
-        const markerLayers = [];
-        cities.forEach(city => {
-          const divIcon = L.divIcon({
-            className: "custom-marker",
-            html: `<div style="background: white; padding: 4px 8px; border-radius: 4px; border: 2px solid #f59e0b; font-size: 12px; font-weight: 500; color: #92400e; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,0.2); cursor: pointer;">${city.name}</div>`,
-            iconSize: [0,0],
-            iconAnchor: [0,0]
-          });
+       const markerLayers = [];
+		cities.forEach(city => {
+		const divIcon = L.divIcon({
+			className: "custom-marker",
+			html: `<div style="background: white; padding: 4px 8px; border-radius: 4px; border: 2px solid #f59e0b; font-size: 12px; font-weight: 500; color: #92400e; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,0.2); cursor: pointer;">${city.name}</div>`,
+			iconSize: [0,0],
+			iconAnchor: [0,0]
+		});
 
-          const marker = L.marker(city.coords, { icon: divIcon }).addTo(map);
-          marker.on('click', () => {
-            // Always hide both first
-            overviewCard.classList.add('hidden');
-            cityCard.classList.add('hidden');
+		const marker = L.marker(city.coords, { icon: divIcon }).addTo(map);
 
-            // After hiding, fetch and update content
-            fetch(`${BACKEND_BASE_URL}/greenspace`)
-                .then(r => r.json())
-                .then(gData => {
-                const pt = turf.point([city.coords[1], city.coords[0]]);
-                let matched = null;
+		marker.on("click", () => {
+			// Hide both cards instantly
+			overviewCard.classList.add("hidden");
+			cityCard.classList.add("hidden");
 
-                (gData.features || []).some(feat => {
-                    try {
-                    if (feat.geometry && feat.properties) {
-                        if (turf.booleanPointInPolygon(pt, feat)) {
-                        matched = feat;
-                        return true;
-                        }
-                    }
-                    } catch (e) {}
-                    return false;
-                });
+			// Allow DOM to update before loading data
+			setTimeout(() => {
+			fetch(`${BACKEND_BASE_URL}/greenspace`)
+				.then(r => r.json())
+				.then(gData => {
+				const pt = turf.point([city.coords[1], city.coords[0]]);
+				let matched = null;
 
-                const props = matched ? matched.properties : null;
+				(gData.features || []).some(feat => {
+					try {
+					if (feat.geometry && feat.properties) {
+						if (turf.booleanPointInPolygon(pt, feat)) {
+						matched = feat;
+						return true;
+						}
+					}
+					} catch (e) {}
+					return false;
+				});
 
-                // Fill card
-                populateCityCard(city, props);
+				const props = matched ? matched.properties : null;
 
-                // Show updated card
-                cityCard.classList.remove('hidden');
-                })
-                .catch(error => {
-                console.error('Error fetching greenspace for city lookup', error);
+				// Fill card
+				populateCityCard(city, props);
 
-                // Fallback and show
-                populateCityCard(city, null);
-                cityCard.classList.remove('hidden');
-                });
-            });
+				// Show card
+				cityCard.classList.remove("hidden");
+				})
+				.catch(err => {
+				console.error("Error fetching greenspace for city lookup", err);
 
+				populateCityCard(city, null);
+				cityCard.classList.remove("hidden");
+				});
+			}, 50); // small delay makes card transition smooth
+		});
 
-          markerLayers.push(marker);
-        });
+		markerLayers.push(marker);
+		});
 
-      })
-      .catch(err => {
-        console.error('Error in map loading sequence:', err);
-      });
+		})
+		.catch(err => {
+		console.error("Error in map loading sequence:", err);
+		});
 
-    // close button — go back to overview
-    cityCloseBtn.addEventListener('click', () => {
-      cityCard.classList.add('hidden');
-      overviewCard.classList.remove('hidden');
-    });
+		// back to overview
+		cityCloseBtn.addEventListener("click", () => {
+		cityCard.classList.add("hidden");
+		overviewCard.classList.remove("hidden");
+		});
 
-    // populate city card with city object and polygon properties (props may be null)
-    function populateCityCard(city, props) {
-      cityImage.src = city.image || '';
-      cityImage.alt = city.name;
-      cityName.textContent = city.name;
-      cityDesc.textContent = city.description || '';
+		// populate card
+		function populateCityCard(city, props) {
+		cityImage.src = city.image || "";
+		cityImage.alt = city.name;
+		cityName.textContent = city.name;
+		cityDesc.textContent = city.description || "";
 
+		const getVal = (k) => {
+			if (!props) return 0;
+			const v = props[k];
+			return (typeof v === "number") ? v : (v ? Number(v) : 0);
+		};
 
-      // if props exist, use requested keys; else fallback to placeholders
-      const getVal = (k) => {
-        if (!props) return 0;
-        const v = props[k];
-        return (typeof v === 'number') ? v : (v ? Number(v) : 0);
-      };
+		const values = indicatorLabels.map(l => getVal(l.key));
 
-      const values = indicatorLabels.map(l => getVal(l.key));
-      indicatorLabels.forEach((l, idx) => {
-        const percent = Math.round(values[idx] * 100);
-        const color = (l.key === 'ndvi' || l.key === 'GA_norm') ? 'green' : 'amber';
-      });
-
-      // draw city chart
-      drawBarChart(cityChartCanvas, indicatorLabels.map(l => l.label), values);
-
-    }}
+		// Draw updated chart
+		drawBarChart(cityChartCanvas, indicatorLabels.map(l => l.label), values);}}
