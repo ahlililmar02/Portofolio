@@ -707,6 +707,7 @@ body {
 .heatmap-card, .chart-card {
     background-color: white;
     border-radius: 0.5rem; 
+    height: 600px;
     box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     padding: 1.5rem; 
 }
@@ -720,7 +721,8 @@ body {
 .chart-placeholder{
     background-color: #f3f4f6; 
     border-radius: 0.5rem; 
-    height: 100px;
+    height: 200px;
+    width: 200px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -729,17 +731,13 @@ body {
 .map-placeholder {
     background-color: #f3f4f6; 
     border-radius: 0.5rem; 
-    height: 300px;
+    width: 400px;
+    height: 400px;
     display: flex;
     align-items: center;
     justify-content: center;
 }
-.map-placeholder {
-    aspect-ratio: 3 / 3; 
-}
-.chart-placeholder {
-    aspect-ratio: 1 / 1; 
-}
+
 .map-placeholder .text-center p,
 .chart-placeholder .text-center p {
     color: #9ca3af;
