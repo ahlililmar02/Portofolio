@@ -310,71 +310,77 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 	// INITIAL LOAD
 	// ------------------------------------------------------
 	loadGreenspace("all")
-		.then(() => fetch('./jakarta_boundary.geojson'))
-		.then(res => {
-		if (!res.ok) throw new Error('Failed to load jakarta_boundary.geojson');
-		return res.json();
-		})
-		.then(boundaryData => {
-		L.geoJSON(boundaryData, {
-			style: () => ({
-			color: "#555454ff",
-			weight: 0.9,
-			opacity: 0.9,
-			})
-		}).addTo(map);
+    .then(() => fetch('./jakarta_boundary.geojson'))
+    .then(res => {
+        if (!res.ok) throw new Error('Failed to load jakarta_boundary.geojson');
+        return res.json();
+    })
+    .then(boundaryData => {
 
-		// Add city markers (after greenspace + boundary)
-		const markerLayers = [];
+        // ⭐ KEEP boundary in a dedicated layer
+        const boundaryLayer = L.geoJSON(boundaryData, {
+            style: () => ({
+                color: "#555454ff",
+                weight: 0.9,
+                opacity: 0.9,
+            })
+        }).addTo(map);
 
-		cities.forEach(city => {
-			const divIcon = L.divIcon({
-			className: "custom-marker",
-			html: `
-				<div style="
-				width: 14px;
-				height: 14px;
-				background: #9ca3af;
-				border: 2px solid #6b7280;
-				border-radius: 50%;
-				box-shadow: 0 2px 4px rgba(0,0,0,0.25);
-				"></div>
-			`,
-			iconSize: [14, 14],
-			iconAnchor: [7, 7]
-			});
+        // Add city markers (after greenspace + boundary)
+        const markerLayers = [];
 
-			const marker = L.marker(city.coords, { icon: divIcon }).addTo(map);
+        cities.forEach(city => {
+            const divIcon = L.divIcon({
+                className: "custom-marker",
+                html: `
+                    <div style="
+                        width: 14px;
+                        height: 14px;
+                        background: #9ca3af;
+                        border: 2px solid #6b7280;
+                        border-radius: 50%;
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.25);
+                    "></div>
+                `,
+                iconSize: [14, 14],
+                iconAnchor: [7, 7]
+            });
 
-			marker.on("click", () => {
-			overviewCard.classList.add("hidden");
-			cityCard.classList.remove("hidden");
+            const marker = L.marker(city.coords, { icon: divIcon }).addTo(map);
 
-			// USE FILTERED greenspace stored earlier
-			const gData = lastGreenspace;
-			if (!gData) return populateCityCard(city, null);
+            marker.on("click", () => {
+                overviewCard.classList.add("hidden");
+                cityCard.classList.remove("hidden");
 
-			const pt = turf.point([city.coords[1], city.coords[0]]);
-			let matched = null;
+                const gData = lastGreenspace;
+                if (!gData) return populateCityCard(city, null);
 
-			(gData.features || []).some(f => {
-				try {
-				if (turf.booleanPointInPolygon(pt, f)) {
-					matched = f;
-					return true;
-				}
-				} catch (_) {}
-				return false;
-			});
+                const pt = turf.point([city.coords[1], city.coords[0]]);
+                let matched = null;
 
-			populateCityCard(city, matched?.properties || null);
-			});
+                (gData.features || []).some(f => {
+                    try {
+                        if (turf.booleanPointInPolygon(pt, f)) {
+                            matched = f;
+                            return true;
+                        }
+                    } catch (_) {}
+                    return false;
+                });
 
-			markerLayers.push(marker);
-		});
+                populateCityCard(city, matched?.properties || null);
+            });
 
-		})
-		.catch(err => console.error('Error in map loading sequence:', err));
+            markerLayers.push(marker);
+        });
+
+    })
+    .catch(err => console.error('Error in map loading sequence:', err));
+
+
+	// ================================
+	// ⭐ PRIORITY BUTTON HANDLER FIXED
+	// ================================
 
 	const priorityButtons = document.querySelectorAll(".priority-btn");
 
@@ -382,7 +388,7 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 		btn.addEventListener("click", () => {
 			const selectedPriority = btn.dataset.priority;
 
-			// remove active class
+			// remove active style
 			priorityButtons.forEach(b => b.classList.remove("priority-active"));
 			btn.classList.add("priority-active");
 
@@ -392,15 +398,20 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 			if (selectedPriority === "medium") clusterValue = "1";
 			if (selectedPriority === "high") clusterValue = "0";
 
-			// remove old layers
+			// ⭐ remove ONLY greenspace layers
 			map.eachLayer(layer => {
-				if (layer instanceof L.GeoJSON) map.removeLayer(layer);
+				if (layer.options && layer.options.pane === "overlayPane") {
+					if (layer instanceof L.GeoJSON && layer !== boundaryLayer) {
+						map.removeLayer(layer);
+					}
+				}
 			});
 
-			// reload greenspace with cluster filter
+			// reload greenspace with filter
 			loadGreenspace(clusterValue);
 		});
 	});
+
 
 
 	// ------------------------------------------------------
