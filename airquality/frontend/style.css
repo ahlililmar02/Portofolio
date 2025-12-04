@@ -584,7 +584,7 @@ body {
 
 /* HAMBURGER ICON (hidden on desktop) */
 .menu-toggle {
-    display: none;
+    display: none !important;
 }
 
 /* MOBILE SIDEBAR */
@@ -618,11 +618,11 @@ body {
 @media (max-width: 768px) {
 
     .nav-center {
-        display: none;
+        display: none !important;
     }
 
     .menu-toggle {
-        display: inline-block;
+        display: inline-block  !important;
         font-size: 32px;
         cursor: pointer;
         margin-left: 20px;
