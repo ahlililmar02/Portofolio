@@ -612,7 +612,7 @@ body {
 
 /* SHOW SIDEBAR */
 .mobile-menu.active {
-    right: 0;
+    transform: translateX(0);
 }
 
 /* ---- MOBILE RESPONSIVE ---- */
