@@ -45,63 +45,65 @@
             }
         });
     </script>
-    <div class="map-container">
-    
-        <div id="map" class="map-full-view"></div>
+    <div class="page-wrapper">
+        <div class="map-container">
+        
+            <div id="map" class="map-full-view"></div>
 
-        <div id="overview-card" class="info-card">
-            <div class="image-container">
-                <img id="overview-image" src="" alt="" class="city-image">
-            </div>
-            <div class="content-container">
-                <h3 id="overview-name" class="city-name-header">Jakarta</h3>
-                <p id="overview-desc" class="city-description-text"></p>
-                <div class="chart-wrap">
-                    <canvas id="overview-chart" class="chart-canvas"></canvas>
+            <div id="overview-card" class="info-card">
+                <div class="image-container">
+                    <img id="overview-image" src="" alt="" class="city-image">
+                </div>
+                <div class="content-container">
+                    <h3 id="overview-name" class="city-name-header">Jakarta</h3>
+                    <p id="overview-desc" class="city-description-text"></p>
+                    <div class="chart-wrap">
+                        <canvas id="overview-chart" class="chart-canvas"></canvas>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div id="info-card" class="info-card hidden">
-            <button id="close-button" class="close-button">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-            </button>
+            <div id="info-card" class="info-card hidden">
+                <button id="close-button" class="close-button">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
 
-            <div class="image-container">
-                <img id="city-image" src="" alt="" class="city-image">
-            </div>
+                <div class="image-container">
+                    <img id="city-image" src="" alt="" class="city-image">
+                </div>
 
-            <div class="content-container">
-                <h3 id="city-name" class="city-name-header"></h3>
-                <p id="city-description" class="city-description-text"></p>
-                <div class="chart-wrap">
-                    <canvas id="city-chart" class="chart-canvas"></canvas>
+                <div class="content-container">
+                    <h3 id="city-name" class="city-name-header"></h3>
+                    <p id="city-description" class="city-description-text"></p>
+                    <div class="chart-wrap">
+                        <canvas id="city-chart" class="chart-canvas"></canvas>
+                    </div>
                 </div>
             </div>
-        </div>
-        <!-- Priority Button Panel -->
-        <div id="priorityPanel"
-            style="
-                position: absolute;
-                bottom: 70px;
-                left: 20px;
-                z-index: 1000;
-                background: white;
-                padding: 12px;
-                border-radius: 10px;
-                box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-            ">
-            
-            <div style="display: flex; gap: 6px;">
-                <button data-priority="all" class="priority-btn priority-active">All</button>
-                <button data-priority="low" class="priority-btn">Low</button>
-                <button data-priority="medium" class="priority-btn">Medium</button>
-                <button data-priority="high" class="priority-btn">High</button>
+            <!-- Priority Button Panel -->
+            <div id="priorityPanel"
+                style="
+                    position: absolute;
+                    bottom: 70px;
+                    left: 20px;
+                    z-index: 1000;
+                    background: white;
+                    padding: 12px;
+                    border-radius: 10px;
+                    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+                ">
+                
+                <div style="display: flex; gap: 6px;">
+                    <button data-priority="all" class="priority-btn priority-active">All</button>
+                    <button data-priority="low" class="priority-btn">Low</button>
+                    <button data-priority="medium" class="priority-btn">Medium</button>
+                    <button data-priority="high" class="priority-btn">High</button>
+                </div>
+
             </div>
 
+
         </div>
-
-
     </div>
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="config.js"></script>
