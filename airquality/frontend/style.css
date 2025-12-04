@@ -592,10 +592,11 @@ body {
 .mobile-menu {
     position: fixed;
     top: 0;
+    right: 0;
     width: 250px;
     height: 100%;
     background: #faf7f1;
-    padding: 60px 20px;
+    padding: 80px 20px;
     display: flex;
     flex-direction: column;
     gap: 25px;
