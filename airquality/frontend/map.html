@@ -40,8 +40,17 @@
 			<span class="material-symbols-outlined profile-icon">
 				account_circle
 			</span>
-		</div>
-	</div>
+			<span class="material-symbols-outlined menu-toggle">menu</span>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div id="mobile-menu" class="mobile-menu">
+        <a href="index.html">Home</a>
+        <a href="map.html">Dashboard</a>
+        <a href="prediction.html">Estimated PM2.5</a>
+        <a href="greenspace.html">Green-space Map</a>
+    </div>
 	<script>
 		const links = document.querySelectorAll('.nav-center a');
 		const currentPage = window.location.pathname.split("/").pop(); 
