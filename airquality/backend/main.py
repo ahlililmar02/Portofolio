@@ -36,162 +36,177 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-conn = psycopg2.connect(
-    host=os.getenv("DB_HOST"),
-    database=os.getenv("DB_NAME"),
-    user=os.getenv("DB_USER"),
-    password=os.getenv("DB_PASS"),
-)
+def get_conn():
+    return psycopg2.connect(
+        host=os.getenv("DB_HOST"),
+        database=os.getenv("DB_NAME"),
+        user=os.getenv("DB_USER"),
+        password=os.getenv("DB_PASS"),
+    )
 
 @app.get("/stations")
 def get_stations():
-    with conn.cursor() as cur:
-        cur.execute("""
-            SELECT DISTINCT ON (station) station, latitude, longitude, sourceid
-            FROM aqi
-            ORDER BY station, time DESC;
-        """)
-        rows = cur.fetchall()
-        stations = []
-        for row in rows:
-            stations.append({
-                "station": row[0],
-                "latitude": row[1],
-                "longitude": row[2],
-                "sourceid": row[3],
-            })
-    return stations
+    conn = get_conn()
+    with conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT DISTINCT ON (station) station, latitude, longitude, sourceid
+                FROM aqi
+                ORDER BY station, time DESC;
+            """)
+            rows = cur.fetchall()
+    conn.close()
+    return [
+        {
+            "station": row[0],
+            "latitude": row[1],
+            "longitude": row[2],
+            "sourceid": row[3],
+        }
+        for row in rows
+    ]
+
 
 
 @app.get("/stations/latest")
 def get_all_latest():
-    with conn.cursor() as cur:
-        cur.execute("""
-            SELECT DISTINCT ON (aqi.station)
-                aqi.station,
-                aqi.time,
-                aqi.aqi,
-                aqi.pm25,
-                aqi.latitude,
-                aqi.longitude,
-                aqi.sourceid
-            FROM aqi,
-                (SELECT MAX(time) AS max_time FROM aqi) AS latest
-            WHERE aqi.time >= latest.max_time - INTERVAL '3 hours'
-            AND aqi.aqi IS NOT NULL
-            AND aqi.aqi <> 0
-            AND aqi.aqi::text <> 'NaN'   
-            ORDER BY aqi.station, aqi.time DESC;
-        """)
-        rows = cur.fetchall()
-        columns = [desc[0] for desc in cur.description]
-        return [dict(zip(columns, row)) for row in rows]
+    conn = get_conn()
+    with conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT DISTINCT ON (aqi.station)
+                    aqi.station,
+                    aqi.time,
+                    aqi.aqi,
+                    aqi.pm25,
+                    aqi.latitude,
+                    aqi.longitude,
+                    aqi.sourceid
+                FROM aqi,
+                    (SELECT MAX(time) AS max_time FROM aqi) AS latest
+                WHERE aqi.time >= latest.max_time - INTERVAL '3 hours'
+                AND aqi.aqi IS NOT NULL
+                AND aqi.aqi <> 0
+                AND aqi.aqi::text <> 'NaN'
+                ORDER BY aqi.station, aqi.time DESC;
+            """)
+            rows = cur.fetchall()
+            columns = [desc[0] for desc in cur.description]
+    conn.close()
+    return [dict(zip(columns, row)) for row in rows]
+
 
 
 @app.get("/stations/daily")
 def get_all_daily():
-    with conn.cursor() as cur:
-        cur.execute("""
-            SELECT station, time::date AS date,
-                ROUND(AVG(aqi::numeric), 2) AS aqi
-            FROM aqi
-            WHERE time::date <= (SELECT MAX(time::date) FROM aqi)
-            AND time::date >= (SELECT MAX(time::date) FROM aqi) - INTERVAL '6 days'
-            AND aqi IS NOT NULL
-            AND aqi <> 'NaN'
-            AND aqi <> 0 
-            GROUP BY station, date
-            ORDER BY station, date ASC;
+    conn = get_conn()
+    with conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT station, time::date AS date,
+                    ROUND(AVG(aqi::numeric), 2) AS aqi
+                FROM aqi
+                WHERE time::date <= (SELECT MAX(time::date) FROM aqi)
+                AND time::date >= (SELECT MAX(time::date) FROM aqi) - INTERVAL '6 days'
+                AND aqi IS NOT NULL
+                AND aqi <> 'NaN'
+                AND aqi <> 0 
+                GROUP BY station, date
+                ORDER BY station, date ASC;
 
-        """)
-        rows = cur.fetchall()
-        
-    grouped_results = {}
+            """)
+            rows = cur.fetchall()
+            
+        grouped_results = {}
 
-    for station, date, aqi in rows:
-        daily_data = {
-            "date": date.isoformat(),
-            "aqi": float(aqi)
-        }
-        
-        if station not in grouped_results:
-            grouped_results[station] = {
-                "station": station,
-                "daily": []
+        for station, date, aqi in rows:
+            daily_data = {
+                "date": date.isoformat(),
+                "aqi": float(aqi)
             }
-        
-        grouped_results[station]["daily"].append(daily_data)
+            
+            if station not in grouped_results:
+                grouped_results[station] = {
+                    "station": station,
+                    "daily": []
+                }
+            
+            grouped_results[station]["daily"].append(daily_data)
 
-    result = list(grouped_results.values())
-    
+        result = list(grouped_results.values())
+    conn.close()
     return result
 
 
 
 @app.get("/stations/today")
 def get_all_today():
-    with conn.cursor() as cur:
-        cur.execute("""
-            SELECT 
-                station, 
-                time, 
-                aqi
-            FROM 
-                aqi
-            WHERE 
-                time::date = (SELECT MAX(time::date) FROM aqi)
-                AND aqi IS NOT NULL
-                AND aqi <> 'NaN'
-                AND aqi <> 0
-            ORDER BY station, time ASC; 
-        """)
-        rows = cur.fetchall()
+    conn = get_conn()
+    with conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT 
+                    station, 
+                    time, 
+                    aqi
+                FROM 
+                    aqi
+                WHERE 
+                    time::date = (SELECT MAX(time::date) FROM aqi)
+                    AND aqi IS NOT NULL
+                    AND aqi <> 'NaN'
+                    AND aqi <> 0
+                ORDER BY station, time ASC; 
+            """)
+            rows = cur.fetchall()
 
-    grouped_results = {}
+        grouped_results = {}
 
-    for station_name, time_obj, aqi_val in rows:
-        data_point = {
-            "time": time_obj.isoformat(),
-            "aqi": float(aqi_val)
-        }
-        
-        if station_name not in grouped_results:
-            grouped_results[station_name] = {
-                "station": station_name,
-                "today": [] 
+        for station_name, time_obj, aqi_val in rows:
+            data_point = {
+                "time": time_obj.isoformat(),
+                "aqi": float(aqi_val)
             }
-        
-        grouped_results[station_name]["today"].append(data_point)
+            
+            if station_name not in grouped_results:
+                grouped_results[station_name] = {
+                    "station": station_name,
+                    "today": [] 
+                }
+            
+            grouped_results[station_name]["today"].append(data_point)
 
-    result = list(grouped_results.values())
-    
+        result = list(grouped_results.values())
+    conn.close()
     return result
 
 
 
 @app.get("/download")
 def download_data(start: str = Query(...), end: str = Query(...)):
-    with conn.cursor() as cur:
-        cur.execute("""
-            SELECT *
-            FROM aqi
-            WHERE time >= %s AND time <= %s
-            ORDER BY time;
-        """, (start, end))
-        rows = cur.fetchall()
-        columns = [desc[0] for desc in cur.description]
+    conn = get_conn()
+    with conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT *
+                FROM aqi
+                WHERE time >= %s AND time <= %s
+                ORDER BY time;
+            """, (start, end))
+            rows = cur.fetchall()
+            columns = [desc[0] for desc in cur.description]
 
-        stream = StringIO()
-        stream.write(",".join(columns) + "\n")
-        for r in rows:
-            stream.write(",".join([str(c) for c in r]) + "\n")
-        stream.seek(0)
-
-        return StreamingResponse(
-            stream,
-            media_type="text/csv",
-            headers={"Content-Disposition": "attachment; filename=data.csv"},
-        )
+            stream = StringIO()
+            stream.write(",".join(columns) + "\n")
+            for r in rows:
+                stream.write(",".join([str(c) for c in r]) + "\n")
+            stream.seek(0)
+        conn.close()
+    return StreamingResponse(
+        stream,
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=data.csv"},
+    )
 
 app.mount("/tif", StaticFiles(directory="tif"), name="tif_files")
 
