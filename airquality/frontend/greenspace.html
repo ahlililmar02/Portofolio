@@ -32,7 +32,18 @@
             <span class="material-symbols-outlined profile-icon">
                 account_circle
             </span>
+            <span class="material-symbols-outlined menu-toggle">menu</span>
         </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div id="mobile-menu" class="mobile-menu">
+        <a href="index.html">Home</a>
+        <a href="map.html">Dashboard</a>
+        <a href="prediction.html">Estimated PM2.5</a>
+        <a href="greenspace.html">Green-space Map</a>
+    </div>
+
     </div>
     <script>
         const links = document.querySelectorAll('.nav-center a');
@@ -104,6 +115,15 @@
 
     </div>
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        const menuToggle = document.querySelector(".menu-toggle");
+        const mobileMenu = document.getElementById("mobile-menu");
+
+        menuToggle.addEventListener("click", () => {
+            mobileMenu.classList.toggle("active");
+        });
+    </script>
+
     <script src="config.js"></script>
 
 </body>
