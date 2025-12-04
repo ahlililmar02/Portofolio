@@ -582,6 +582,57 @@ body {
     padding-left: 40px;
 }
 
+/* HAMBURGER ICON (hidden on desktop) */
+.menu-toggle {
+    display: none;
+}
+
+/* MOBILE SIDEBAR */
+.mobile-menu {
+    position: fixed;
+    top: 0;
+    right: -250px; /* hidden by default */
+    width: 250px;
+    height: 100%;
+    background: #faf7f1;
+    padding: 60px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    transition: right 0.3s ease;
+    z-index: 20000;
+}
+
+.mobile-menu a {
+    font-size: 18px;
+    color: #333;
+    text-decoration: none;
+}
+
+/* SHOW SIDEBAR */
+.mobile-menu.active {
+    right: 0;
+}
+
+/* ---- MOBILE RESPONSIVE ---- */
+@media (max-width: 768px) {
+
+    .nav-center {
+        display: none;
+    }
+
+    .menu-toggle {
+        display: inline-block;
+        font-size: 32px;
+        cursor: pointer;
+        margin-left: 20px;
+    }
+
+    #navbar {
+        padding: 15px 20px;
+    }
+}
+
 .hero {
     height: 100vh;
     display: flex;
