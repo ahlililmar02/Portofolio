@@ -583,9 +583,10 @@ body {
 }
 
 /* HAMBURGER ICON (hidden on desktop) */
-.menu-toggle {
+.menu-toggle.material-symbols-outlined {
     display: none !important;
 }
+
 
 /* MOBILE SIDEBAR */
 .mobile-menu {
@@ -621,7 +622,7 @@ body {
         display: none !important;
     }
 
-    .menu-toggle {
+    .menu-toggle.material-symbols-outlined {
         display: inline-block  !important;
         font-size: 32px;
         cursor: pointer;
