@@ -592,7 +592,6 @@ body {
 .mobile-menu {
     position: fixed;
     top: 0;
-    right: -250px; /* hidden by default */
     width: 250px;
     height: 100%;
     background: #faf7f1;
@@ -601,6 +600,7 @@ body {
     flex-direction: column;
     gap: 25px;
     transition: right 0.3s ease;
+    transform: translateX(100%);
     z-index: 20000;
 }
 
@@ -627,6 +627,10 @@ body {
         font-size: 32px;
         cursor: pointer;
         margin-left: 20px;
+    }
+
+    #navbar {
+        padding: 15px 20px;
     }
 }
 
