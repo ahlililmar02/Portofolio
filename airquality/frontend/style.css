@@ -579,10 +579,6 @@ body {
     padding-left: 40px;
 }
 
-.menu-toggle.material-symbols-outlined {
-    display: none !important;
-}
-
 
 .mobile-menu {
     position: fixed;
@@ -611,14 +607,18 @@ body {
     text-decoration: none;
 }
 
+#navbar .menu-toggle.material-symbols-outlined {
+    display: none !important;
+}
+
 /* ---- MOBILE RESPONSIVE ---- */
 @media (max-width: 768px) {
 
-    .nav-center {
+    #navbar .nav-center {
         display: none !important;
     }
 
-    .menu-toggle.material-symbols-outlined {
+    #navbar .menu-toggle.material-symbols-outlined {
         display: inline-block  !important;
         font-size: 32px;
         cursor: pointer;
