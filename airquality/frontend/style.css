@@ -410,7 +410,7 @@ body {
         display: flex;
         flex-direction: row;
         overflow-x: auto;
-        width: 100%;
+        width: 175px;
         gap: 16px;
         padding-bottom: 12px;
         scroll-snap-type: x mandatory;
