@@ -883,6 +883,9 @@ body {
     gap: 2rem;
 }
 
+.heatmap-card {
+        grid-column: span 2 / span 2; }
+
 @media (max-width: 768px) {
     .viz-grid {
         grid-template-columns: 1fr;  /* collapse into one column */
@@ -901,6 +904,8 @@ body {
     box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     padding: 1.5rem; 
 }
+
+
 .card-title {
     color: #111827; 
     margin-bottom: 1rem; 
