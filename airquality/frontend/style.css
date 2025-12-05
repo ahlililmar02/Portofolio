@@ -507,45 +507,7 @@ body {
 
     /* CARDS become horizontal slider */
     .switcher {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        overflow-x: auto;
-        width: 170px !important;
-        gap: 16px;
-        padding-bottom: 12px;
-        height: 200px !important;
-        scroll-snap-type: x mandatory;
-    }
-
-    .card-wrapper {
-        display: flex;
-        flex-direction: row;
-        overflow-x: auto;
-        width: 100% !important;
-        gap: 16px;
-        padding-bottom: 12px;
-        scroll-snap-type: x mandatory;
-    }
-
-    .switch-card {
-        min-width: 85%;
-        padding: 14px;
-        scroll-snap-align: start;
-    }
-
-    /* CHART CANVAS AUTOSCALE */
-    .switch-card canvas {
-        width: 100% !important;
-        height: auto !important;
-        max-height: 230px;
-    }
-
-    /* Switch Buttons larger */
-    .switch-btn {
-        padding: 8px 16px !important;
-        font-size: 10px !important;
+        display: none;
     }
 
 }
