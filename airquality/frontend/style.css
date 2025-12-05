@@ -1230,3 +1230,54 @@ body, html {
 .priority-btn[data-priority="high"].priority-active {
     background: #ef4444 !important; /* red */
 }
+
+/* ----------------------------- */
+/* MOBILE VERSION (max-width 768px) */
+/* ----------------------------- */
+@media (max-width: 768px) {
+
+    /* Main card shrink + reposition */
+    #info-card,
+    #overview-card {
+        width: 40% !important;        /* shrink to 40% of screen */
+        height: auto !important;      /* let content define height */
+        top: 10px !important;         /* smaller margin from top */
+        right: 10px !important;       /* smaller margin from right */
+        border-radius: 6px;
+        padding: 0;
+    }
+
+    .image-container {
+        height: 120px !important;
+    }
+
+    .city-name-header {
+        font-size: 1rem !important;
+        margin-bottom: 8px;
+    }
+
+    .city-description-text {
+        font-size: 0.75rem !important;
+        margin-bottom: 8px;
+    }
+
+    .content-container {
+        padding: 12px !important;
+    }
+
+    .close-button {
+        top: 8px !important;
+        right: 8px !important;
+        padding: 4px !important;
+    }
+
+    .close-button svg {
+        width: 14px !important;
+        height: 14px !important;
+    }
+
+    .chart-canvas {
+        height: 150px !important;
+        margin-top: 6px;
+    }
+}
