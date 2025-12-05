@@ -86,8 +86,17 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
     { key: 'GA_norm', label: 'Green Access' },
   ];
 
-  // Helper: draw a simple horizontal bar chart on a canvas
     function drawBarChart(canvas, labels, values) {
+	const isMobile = window.matchMedia("(max-width: 768px)").matches;
+
+    const config = {
+        fontSize: isMobile ? 10 : 13,
+        barHeight: isMobile ? 14 : 18,
+        spacing: isMobile ? 6 : 10,
+        barX: isMobile ? 90 : 120,
+        radius: isMobile ? 6 : 9
+    };
+
     const dpr = devicePixelRatio || 1;
     canvas.width = canvas.clientWidth * dpr;
     canvas.height = canvas.clientHeight * dpr;
