@@ -100,11 +100,11 @@ body {
         bottom: 80px;     /* move higher */
         left: 10px;       /* adjust */
         right: 10px;      /* optional — center it */
-        width: auto;      /* expand */
+        width: 50%;      /* expand */
         gap: 8px;
         padding: 12px;
-        font-size: 11px;
-        grid-auto-flow: row; /* stack vertically on small screens */
+        font-size: 8px;
+        grid-auto-flow: column; /* stack vertically on small screens */
     }
 
     /* Legend mobile */
@@ -114,7 +114,7 @@ body {
         right: 10px;
         width: auto;
         padding: 10px 14px;
-        font-size: 10px;
+        font-size: 8px;
         gap: 8px;
     }
 
@@ -346,14 +346,14 @@ body {
     .global-wrapper,
     .detail-wrapper {
         position: fixed !important;
-        top: 10px;
-        right: 10px;
+        top: 40px;
+        right: 40px;
 
-        width: 30% !important;
-        height: 20vh; /* 50% screen height */
+        width: 40% !important;
+        height: 30vh; /* 50% screen height */
         padding: 14px 18px !important;
 
-        border-radius: 18px 18px 0 0;
+        border-radius: 18px;
         background: white;
         box-shadow: 0 -2px 14px rgba(0,0,0,0.25);
 
@@ -389,14 +389,14 @@ body {
 
     /* TABLE + GRID shrink */
     .global-wrapper .aqi-table {
-        grid-template-columns: 15px 1fr 30px !important;
-        font-size: 10px !important;
+        grid-template-columns: 5px 1fr 10px !important;
+        font-size: 8px !important;
         gap: 6px !important;
     }
 
     .aqi-box {
         padding: 4px 6px !important;
-        font-size: 10px !important;
+        font-size: 8px !important;
         min-width: 32px !important;
     }
 
