@@ -489,7 +489,7 @@ body {
 
     /* TABLE + GRID shrink */
     .global-wrapper .aqi-table {
-        grid-template-columns: 5px 20px 10px !important;
+        grid-template-columns: 5px 30px 10px !important;
         font-size: 8px !important;
         gap: 6px !important;
     }
@@ -510,7 +510,7 @@ body {
         display: flex;
         flex-direction: row;
         overflow-x: auto;
-        width: 175px;
+        width: 175px !important;
         gap: 16px;
         padding-bottom: 12px;
         scroll-snap-type: x mandatory;
