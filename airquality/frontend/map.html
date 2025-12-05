@@ -62,6 +62,14 @@
 			}
 		});
 	</script>
+	<script>
+		const menuToggle = document.querySelector(".menu-toggle");
+		const mobileMenu = document.getElementById("mobile-menu");
+
+		menuToggle.addEventListener("click", () => {
+			mobileMenu.classList.toggle("active");
+		});
+	</script>
 	<div class="page-wrapper">
     
 
@@ -200,14 +208,7 @@
 
 	</div>
 	
-<script>
-        const menuToggle = document.querySelector(".menu-toggle");
-        const mobileMenu = document.getElementById("mobile-menu");
 
-        menuToggle.addEventListener("click", () => {
-            mobileMenu.classList.toggle("active");
-        });
-</script>
 <script src="config.js"></script>
 </body>
 </html>

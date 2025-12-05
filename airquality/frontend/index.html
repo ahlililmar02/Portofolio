@@ -30,6 +30,14 @@
         <a href="greenspace.html">Green-space Map</a>
     </div>
     <script>
+        const menuToggle = document.querySelector(".menu-toggle");
+        const mobileMenu = document.getElementById("mobile-menu");
+
+        menuToggle.addEventListener("click", () => {
+            mobileMenu.classList.toggle("active");
+        });
+    </script>
+    <script>
         const links = document.querySelectorAll('.nav-center a');
         const currentPage = window.location.pathname.split("/").pop(); // get file name
 
@@ -45,14 +53,5 @@
         <h1>Welcome to My Portfolio</h1>
         <p>Air Quality, Meteorology, and Data Science Projects</p>
     </section>
-
-    <script>
-        const menuToggle = document.querySelector(".menu-toggle");
-        const mobileMenu = document.getElementById("mobile-menu");
-
-        menuToggle.addEventListener("click", () => {
-            mobileMenu.classList.toggle("active");
-        });
-    </script>
 </body>
 </html>

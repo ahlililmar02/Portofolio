@@ -46,6 +46,14 @@
         <a href="greenspace.html">Green-space Map</a>
     </div>
     <script>
+            const menuToggle = document.querySelector(".menu-toggle");
+            const mobileMenu = document.getElementById("mobile-menu");
+
+            menuToggle.addEventListener("click", () => {
+                mobileMenu.classList.toggle("active");
+            });
+    </script>
+    <script>
         const links = document.querySelectorAll('.nav-center a');
         const currentPage = window.location.pathname.split("/").pop(); // get file name
 
@@ -184,14 +192,7 @@
             </div>
         </div>
     </div>
-    <script>
-            const menuToggle = document.querySelector(".menu-toggle");
-            const mobileMenu = document.getElementById("mobile-menu");
 
-            menuToggle.addEventListener("click", () => {
-                mobileMenu.classList.toggle("active");
-            });
-    </script>
     <script src="config.js"></script>
 </body>
 </html>
