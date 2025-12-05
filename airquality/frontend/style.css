@@ -512,10 +512,10 @@ body {
         align-items: center;
         justify-content: center;
         overflow-x: auto;
-        width: 175px !important;
+        width: 170px !important;
         gap: 16px;
         padding-bottom: 12px;
-        height: 100% !important;
+        height: 200px !important;
         scroll-snap-type: x mandatory;
     }
 
