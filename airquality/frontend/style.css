@@ -103,7 +103,7 @@ body {
         width: 50%;      /* expand */
         gap: 8px;
         padding: 12px;
-        font-size: 8px;
+        font-size: 10px;
         grid-auto-flow: column; /* stack vertically on small screens */
     }
 
@@ -616,7 +616,7 @@ body {
 
     position: sticky;
     top: 0;
-    z-index: 10000;
+    z-index: 100000;
 }
 
 /* LEFT TITLE */
@@ -699,7 +699,7 @@ body {
     gap: 25px;
     transition: transform 0.3s ease;   /* FIXED */
     transform: translateX(100%);       /* start hidden */
-    z-index: 20000;
+    z-index: 100000;
 }
 
 .mobile-menu.active {
@@ -726,6 +726,7 @@ body {
 
     #navbar .menu-toggle.material-symbols-outlined {
         display: inline-block  !important;
+        z-index: 100000;
         font-size: 32px;
         cursor: pointer;
         margin-left: 20px;
