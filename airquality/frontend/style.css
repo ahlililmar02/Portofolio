@@ -93,6 +93,38 @@ body {
   gap: 15px; 
 }
 
+@media (max-width: 768px) {
+
+    /* Filter box mobile */
+    .filter-box {
+        bottom: 80px;     /* move higher */
+        left: 10px;       /* adjust */
+        right: 10px;      /* optional — center it */
+        width: auto;      /* expand */
+        gap: 8px;
+        padding: 12px;
+        font-size: 11px;
+        grid-auto-flow: row; /* stack vertically on small screens */
+    }
+
+    /* Legend mobile */
+    .legend {
+        bottom: 10px;
+        left: 10px;
+        right: 10px;
+        width: auto;
+        padding: 10px 14px;
+        font-size: 10px;
+        gap: 8px;
+    }
+
+    .leg-item {
+        width: 10px;
+        height: 10px;
+        margin-right: 4px;
+    }
+}
+
 .check-title{
     border-radius: 6px;
     margin: 3px 2px 6px 3px;
@@ -304,6 +336,106 @@ body {
     z-index: 9999;
     display: flex;
     align-items: center;   
+}
+
+
+@media (max-width: 768px) {
+
+    /* MAIN WRAPPERS become a bottom sheet */
+    .charts-wrapper,
+    .global-wrapper,
+    .detail-wrapper {
+        position: fixed !important;
+        bottom: 0;
+        top: auto;
+        left: 0;
+        right: 0;
+
+        width: 100% !important;
+        height: 48vh; /* 50% screen height */
+        padding: 14px 18px !important;
+
+        border-radius: 18px 18px 0 0;
+        background: white;
+        box-shadow: 0 -2px 14px rgba(0,0,0,0.25);
+
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+
+        overflow-y: auto;
+        z-index: 99999;
+    }
+
+    /* AQI overlay section */
+    #globalAQIBox,
+    .detail-wrapper .aqi-overlay {
+        margin-top: 10px !important;
+        padding: 10px !important;
+        font-size: 11px !important;
+    }
+
+    /* Text analysis boxes shrink */
+    .analysis-box {
+        padding: 10px !important;
+        font-size: 11px !important;
+    }
+
+    /* CLOSE BUTTON */
+    .detail-wrapper .close-btn {
+        top: 8px;
+        right: 16px;
+        font-size: 20px;
+        opacity: 0.8;
+    }
+
+    /* TABLE + GRID shrink */
+    .global-wrapper .aqi-table {
+        grid-template-columns: 15px 1fr 30px !important;
+        font-size: 10px !important;
+        gap: 6px !important;
+    }
+
+    .aqi-box {
+        padding: 4px 6px !important;
+        font-size: 10px !important;
+        min-width: 32px !important;
+    }
+
+    /* Divider */
+    .detail-wrapper .separator {
+        margin: 6px 0;
+    }
+
+    /* CARDS become horizontal slider */
+    .switcher .card-wrapper {
+        display: flex;
+        flex-direction: row;
+        overflow-x: auto;
+        gap: 16px;
+        padding-bottom: 12px;
+        scroll-snap-type: x mandatory;
+    }
+
+    .switch-card {
+        min-width: 85%;
+        padding: 14px;
+        scroll-snap-align: start;
+    }
+
+    /* CHART CANVAS AUTOSCALE */
+    .switch-card canvas {
+        width: 100% !important;
+        height: auto !important;
+        max-height: 230px;
+    }
+
+    /* Switch Buttons larger */
+    .switch-btn {
+        padding: 8px 16px !important;
+        font-size: 14px !important;
+    }
+
 }
 
 
