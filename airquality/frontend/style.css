@@ -97,7 +97,7 @@ body {
 
     /* Filter box mobile */
     .filter-box {
-        bottom: 80px;     /* move higher */
+        bottom: 60px;     /* move higher */
         left: 10px;       /* adjust */
         right: 10px;      /* optional — center it */
         width: 50%;      /* expand */
@@ -346,8 +346,8 @@ body {
     .global-wrapper,
     .detail-wrapper {
         position: fixed !important;
-        top: 40px;
-        right: 40px;
+        top: 60px;
+        right: 10px;
 
         width: 40% !important;
         height: 30vh; /* 50% screen height */
@@ -389,7 +389,7 @@ body {
 
     /* TABLE + GRID shrink */
     .global-wrapper .aqi-table {
-        grid-template-columns: 5px 1fr 10px !important;
+        grid-template-columns: 5px 12px 10px !important;
         font-size: 8px !important;
         gap: 6px !important;
     }
@@ -431,7 +431,7 @@ body {
     /* Switch Buttons larger */
     .switch-btn {
         padding: 8px 16px !important;
-        font-size: 14px !important;
+        font-size: 10px !important;
     }
 
 }
