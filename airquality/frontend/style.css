@@ -508,11 +508,14 @@ body {
     /* CARDS become horizontal slider */
     .switcher {
         display: flex;
-        flex-direction: row;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
         overflow-x: auto;
         width: 175px !important;
         gap: 16px;
         padding-bottom: 12px;
+        height: 100% !important;
         scroll-snap-type: x mandatory;
     }
 
