@@ -616,7 +616,7 @@ body {
 
     position: sticky;
     top: 0;
-    z-index: 100000;
+    z-index: 100001;
 }
 
 /* LEFT TITLE */
@@ -677,6 +677,7 @@ body {
 .nav-right {
     display: flex;
     align-items: center;
+    z-index: 100001;
 }
 
 .profile-icon {
