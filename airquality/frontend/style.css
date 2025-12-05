@@ -879,14 +879,17 @@ body {
 }
 .viz-grid {
     display: grid;
-    gap: 2rem; 
+    grid-template-columns: repeat(3, minmax(0, 1fr)); /* 3 columns on desktop */
+    gap: 2rem;
 }
-@media (max-width: 1024) { 
+
+@media (max-width: 768px) {
     .viz-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: 1fr;  /* collapse into one column */
     }
+
     .heatmap-card {
-        grid-column: span 2 / span 2; 
+        grid-column: span 1; /* reset any span */
     }
 }
 
