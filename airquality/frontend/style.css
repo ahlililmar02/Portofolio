@@ -506,11 +506,21 @@ body {
     }
 
     /* CARDS become horizontal slider */
-    .switcher .card-wrapper {
+    .switcher {
         display: flex;
         flex-direction: row;
         overflow-x: auto;
         width: 175px !important;
+        gap: 16px;
+        padding-bottom: 12px;
+        scroll-snap-type: x mandatory;
+    }
+
+    .card-wrapper {
+        display: flex;
+        flex-direction: row;
+        overflow-x: auto;
+        width: 100% !important;
         gap: 16px;
         padding-bottom: 12px;
         scroll-snap-type: x mandatory;
