@@ -346,13 +346,11 @@ body {
     .global-wrapper,
     .detail-wrapper {
         position: fixed !important;
-        bottom: 0;
-        top: auto;
-        left: 0;
-        right: 0;
+        top: 10px;
+        right: 10px;
 
-        width: 100% !important;
-        height: 48vh; /* 50% screen height */
+        width: 30% !important;
+        height: 20vh; /* 50% screen height */
         padding: 14px 18px !important;
 
         border-radius: 18px 18px 0 0;
