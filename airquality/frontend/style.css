@@ -1276,11 +1276,9 @@ body, html {
         height: 14px !important;
     }
 
-    .chart-wrap{
+    .chart-canvas {
         display: flex;
         flex-direction: column;
-    }
-    .chart-canvas {
         height: 150px !important;
         margin-top: 6px;
     }
