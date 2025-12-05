@@ -87,7 +87,18 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
   ];
 
   // Helper: draw a simple horizontal bar chart on a canvas
-    function drawBarChart(canvas, labels, values) {
+   function drawBarChart(canvas, labels, values) {
+    const isMobile = window.matchMedia("(max-width: 768px)").matches;
+
+    // 📱 Mobile vs Desktop sizes
+    const config = {
+        fontSize: isMobile ? 9 : 13,
+        barHeight: isMobile ? 14 : 18,
+        spacing: isMobile ? 6 : 10,
+        barX: isMobile ? 100 : 120,
+        radius: isMobile ? 6 : 9
+    };
+
     const dpr = devicePixelRatio || 1;
     canvas.width = canvas.clientWidth * dpr;
     canvas.height = canvas.clientHeight * dpr;
@@ -99,75 +110,72 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
     const height = canvas.clientHeight;
     ctx.clearRect(0, 0, width, height);
 
-    const barHeight = 18;
-    const spacing = 10;
     const maxValue = Math.max(...values);
 
-    ctx.font = "13px system-ui";
+    ctx.font = `${config.fontSize}px system-ui`;
     ctx.textAlign = "left";
 
     let y = 0;
 
-	labels.forEach((label, i) => {
-    const v = values[i];          // raw 0–1 value
-    const pct = v * 100;
+    labels.forEach((label, i) => {
+        const v = values[i];
+        const pct = v * 100;
 
-    // find which indicator this bar belongs to
-    const l = indicatorLabels[i];
+        const l = indicatorLabels[i];
 
-    // invert NDVI + GA_norm ONLY for color scale
-    let adjustedValue = v;
-    if (l.key === "ndvi" || l.key === "GA_norm") {
-        adjustedValue = 1 - v;
-    }
+        let adjustedValue = v;
+        if (l.key === "ndvi" || l.key === "GA_norm") {
+            adjustedValue = 1 - v;
+        }
 
-    const color = getColor(adjustedValue);
+        const color = getColor(adjustedValue);
 
-    // Bar drawing
-    const barX = 120;
-    const barMaxWidth = width - barX - 20;
-    const barWidth = Math.max(v * barMaxWidth, 5);
+        const barMaxWidth = width - config.barX - 20;
+        const barWidth = Math.max(v * barMaxWidth, 5);
 
-    // Label
-    ctx.fillStyle = "#4b5563";
-    ctx.fillText(label, 10, y + barHeight - 4);
+        // Label text
+        ctx.fillStyle = "#4b5563";
+        ctx.fillText(label, 10, y + config.barHeight - 4);
 
-    // Background bar
-    ctx.fillStyle = "#e5e7eb";
-    roundRect(ctx, barX, y, barMaxWidth, barHeight, 9, true);
+        // Background bar
+        ctx.fillStyle = "#e5e7eb";
+        roundRect(ctx, config.barX, y, barMaxWidth, config.barHeight, config.radius, true);
 
-    // Filled bar (with adjusted inverted color)
-    ctx.fillStyle = color;
-    roundRect(ctx, barX, y, barWidth, barHeight, 9, true);
+        // Filled bar
+        ctx.fillStyle = color;
+        roundRect(ctx, config.barX, y, barWidth, config.barHeight, config.radius, true);
 
-    // Value text
-    ctx.fillStyle = (v > 0.4 ? "#fff" : "#000");
-    ctx.textAlign = "center";
-    ctx.fillText(Math.round(pct), barX + barWidth / 2, y + barHeight - 4);
+        // Value text
+        ctx.fillStyle = (v > 0.4 ? "#fff" : "#000");
+        ctx.textAlign = "center";
+        ctx.fillText(
+            Math.round(pct),
+            config.barX + barWidth / 2,
+            y + config.barHeight - 4
+        );
 
-    ctx.textAlign = "left";
+        ctx.textAlign = "left";
 
-    y += barHeight + spacing;
-});
-
+        y += config.barHeight + config.spacing;
+    });
 	}
 
 
-    function roundRect(ctx, x, y, w, h, r, fill) {
-    ctx.beginPath();
-    ctx.moveTo(x + r, y);
-    ctx.lineTo(x + w - r, y);
-    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-    ctx.lineTo(x + w, y + h - r);
-    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-    ctx.lineTo(x + r, y + h);
-    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-    ctx.lineTo(x, y + r);
-    ctx.quadraticCurveTo(x, y, x + r, y);
-    ctx.closePath();
+	function roundRect(ctx, x, y, w, h, r, fill) {
+		ctx.beginPath();
+		ctx.moveTo(x + r, y);
+		ctx.lineTo(x + w - r, y);
+		ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+		ctx.lineTo(x + w, y + h - r);
+		ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+		ctx.lineTo(x + r, y + h);
+		ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+		ctx.lineTo(x, y + r);
+		ctx.quadraticCurveTo(x, y, x + r, y);
+		ctx.closePath();
 
-    if (fill) ctx.fill();
-    }
+		if (fill) ctx.fill();
+	}
 
   // Utility to compute average overview metrics from geojson features
   function computeOverviewFromFeatures(features) {
