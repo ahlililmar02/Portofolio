@@ -13,14 +13,18 @@ import rasterio
 from rasterio.warp import Resampling
 from typing import List
 from rasterio.warp import reproject, Resampling
-from rasterio.io import MemoryFile
 import base64
 from pydantic import BaseModel
 import json
 import geopandas as gpd
-from sklearn.metrics import r2_score, mean_absolute_error, mean_squared_error
 from google import genai 
 from sklearn.preprocessing import MinMaxScaler
+from psycopg2.pool import SimpleConnectionPool
+from concurrent.futures import ThreadPoolExecutor
+import asyncio
+
+executor = ThreadPoolExecutor(max_workers=4)
+
 
 app = FastAPI()
 
@@ -36,13 +40,21 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+pool = SimpleConnectionPool(
+    minconn=1,
+    maxconn=10,
+    host=os.getenv("DB_HOST"),
+    database=os.getenv("DB_NAME"),
+    user=os.getenv("DB_USER"),
+    password=os.getenv("DB_PASS")
+)
+
 def get_conn():
-    return psycopg2.connect(
-        host=os.getenv("DB_HOST"),
-        database=os.getenv("DB_NAME"),
-        user=os.getenv("DB_USER"),
-        password=os.getenv("DB_PASS"),
-    )
+    return pool.getconn()
+
+def release_conn(conn):
+    pool.putconn(conn)
+
 
 @app.get("/stations")
 def get_stations():
@@ -55,7 +67,7 @@ def get_stations():
                 ORDER BY station, time DESC;
             """)
             rows = cur.fetchall()
-    conn.close()
+    release_conn(conn)
     return [
         {
             "station": row[0],
@@ -92,7 +104,7 @@ def get_all_latest():
             """)
             rows = cur.fetchall()
             columns = [desc[0] for desc in cur.description]
-    conn.close()
+    release_conn(conn)
     return [dict(zip(columns, row)) for row in rows]
 
 
@@ -134,7 +146,7 @@ def get_all_daily():
             grouped_results[station]["daily"].append(daily_data)
 
         result = list(grouped_results.values())
-    conn.close()
+    release_conn(conn)
     return result
 
 
@@ -177,7 +189,7 @@ def get_all_today():
             grouped_results[station_name]["today"].append(data_point)
 
         result = list(grouped_results.values())
-    conn.close()
+    release_conn(conn)
     return result
 
 
@@ -201,7 +213,7 @@ def download_data(start: str = Query(...), end: str = Query(...)):
             for r in rows:
                 stream.write(",".join([str(c) for c in r]) + "\n")
             stream.seek(0)
-        conn.close()
+        release_conn(conn)
     return StreamingResponse(
         stream,
         media_type="text/csv",
@@ -220,38 +232,43 @@ def list_all_files():
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="TIF data directory not found.")
 
-@app.get("/extract-tif")
-def extract_tif(model: str, date: str):
+def process_tif(model: str, date: str):
     import io
     from PIL import Image
     from matplotlib import cm, colors
 
     tif_dir = "tif"
     files = os.listdir(tif_dir)
-
     matched = [f for f in files if f"pm25_{model}_" in f]
 
     if len(matched) == 0:
         raise HTTPException(404, f"No files found for model: {model}")
 
-    if date == "All Dates":
-        raster_stack = []
-        reference_meta = None
-        reference_shape = None
+    reference_meta = None
+    reference_shape = None
+    bounds = None
 
+    # Online mean accumulator
+    mean_img = None
+    count = 0
+
+    if date == "All Dates":
         for i, tif_file in enumerate(matched):
             with rasterio.open(os.path.join(tif_dir, tif_file)) as src:
                 arr = src.read(1).astype(float)
+
                 if src.nodata is not None:
                     arr[arr == src.nodata] = np.nan
 
-                if i == 0:
+                # Set reference grid
+                if reference_meta is None:
                     reference_meta = src.meta.copy()
                     reference_shape = arr.shape
                     bounds = src.bounds
-                    raster_stack.append(arr)
+                    mean_img = arr.copy()
+                    count = 1
                 else:
-                    # Resample to match reference grid
+                    # Resample to reference grid
                     arr_resampled = np.empty(reference_shape, dtype=float)
                     reproject(
                         arr,
@@ -260,49 +277,43 @@ def extract_tif(model: str, date: str):
                         src_crs=src.crs,
                         dst_transform=reference_meta["transform"],
                         dst_crs=reference_meta["crs"],
-                        resampling=Resampling.bilinear
+                        resampling=Resampling.bilinear,
                     )
-                    raster_stack.append(arr_resampled)
 
-        final_img = np.nanmean(raster_stack, axis=0)
+                    # Online average update (constant memory)
+                    count += 1
+                    mean_img = mean_img + (arr_resampled - mean_img) / count
+
+        final_img = mean_img
 
     else:
-        # Pick exact date file
+        # Use single TIFF
         selected = [f for f in matched if date in f]
         if len(selected) == 0:
-            raise HTTPException(404, f"No file found for that date: {date}")
+            raise HTTPException(404, f"No file for date {date}")
 
         file_path = os.path.join(tif_dir, selected[0])
-
         with rasterio.open(file_path) as src:
-            final_img = src.read(1).astype(float)
+            arr = src.read(1).astype(float)
             bounds = src.bounds
             nodata = src.nodata
             if nodata is not None:
-                final_img[final_img == nodata] = np.nan
+                arr[arr == nodata] = np.nan
+            final_img = arr
 
-
-    # Keep NaN as NaN for transparency
-    cleaned = final_img.copy()
-
-    # Turbo colormap between 0–80
+    # Color mapping
     vmin, vmax = 0, 80
     norm = colors.Normalize(vmin=vmin, vmax=vmax)
     cmap = cm.turbo
 
-    # Map values → RGBA
-    rgba = (cmap(norm(cleaned)) * 255).astype(np.uint8)  # H x W x 4
+    rgba = (cmap(norm(final_img)) * 255).astype(np.uint8)
+    rgba[..., 3] = np.where(np.isnan(final_img) | (final_img == 0), 0, 255)
 
-    transparency_mask = np.isnan(cleaned) | (cleaned == 0)
-    rgba[..., 3] = np.where(transparency_mask, 0, 255)
-
-    # Convert RGBA array → PNG
     pil_img = Image.fromarray(rgba, mode="RGBA")
     buffer = io.BytesIO()
     pil_img.save(buffer, format="PNG")
 
     b64 = base64.b64encode(buffer.getvalue()).decode("utf-8")
-
 
     return {
         "image": b64,
@@ -310,9 +321,15 @@ def extract_tif(model: str, date: str):
             "left": bounds.left,
             "right": bounds.right,
             "top": bounds.top,
-            "bottom": bounds.bottom
-        }
+            "bottom": bounds.bottom,
+        },
     }
+
+@app.get("/extract-tif")
+async def extract_tif_route(model: str, date: str):
+    loop = asyncio.get_running_loop()
+    return await loop.run_in_executor(executor, process_tif, model, date)
+
 
 client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
 try:
