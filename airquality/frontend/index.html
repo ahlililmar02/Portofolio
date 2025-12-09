@@ -8,6 +8,7 @@
 
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&family=Material+Symbols+Outlined" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
 
 </head>
 <body>
@@ -23,9 +24,32 @@
         </div>
 
 		<div class="nav-right">
-            <span class="material-symbols-outlined profile-icon">
-                account_circle
-            </span>
+            <div class="profile-dropdown-container">
+                <span class="material-symbols-outlined profile-icon">
+                    account_circle
+                </span>
+
+                <!-- DROPDOWN -->
+            <div class="profile-dropdown" id="profileDropdown">
+                <a 
+                    href="https://linkedin.com" 
+                    target="_blank" 
+                    class="dropdown-item"
+                >
+                    <span class="material-symbols-outlined">work</span>
+                    LinkedIn
+                </a>
+
+                <a 
+                    href="https://github.com" 
+                    target="_blank" 
+                    class="dropdown-item"
+                >
+                    <span class="material-symbols-outlined">code</span>
+                    GitHub
+                </a>
+            </div>
+            </div>
             <span class="material-symbols-outlined menu-toggle">menu</span>
         </div>
     </div>
@@ -36,6 +60,25 @@
         <a href="prediction.html">Estimated PM2.5</a>
         <a href="greenspace.html">Green-space Map</a>
     </div>
+    <script>
+        const profileIcon = document.querySelector(".profile-icon");
+        const profileDropdown = document.getElementById("profileDropdown");
+
+        profileIcon.addEventListener("click", () => {
+            profileDropdown.classList.toggle("active");
+            profileDropdown.style.display =
+                profileDropdown.style.display === "block" ? "none" : "block";
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener("click", (e) => {
+            if (!profileIcon.contains(e.target) &&
+                !profileDropdown.contains(e.target)) {
+                profileDropdown.style.display = "none";
+            }
+        });
+    </script>
+
     <script>
         const menuToggle = document.querySelector(".menu-toggle");
         const mobileMenu = document.getElementById("mobile-menu");
@@ -55,10 +98,123 @@
             }
         });
     </script>
-    <!-- HERO SECTION -->
-    <section class="hero">
-        <h1>Welcome to My Portfolio</h1>
-        <p>Air Quality Analysis and Data Science Projects</p>
-    </section>
+    <div class="hero" id="home">
+        <div class="container">
+        <div class="profile-wrapper">
+            
+            <!-- Profile Image -->
+            <div class="profile-img">
+            <img 
+                src="https://images.unsplash.com/photo-1672685667592-0392f458f46f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=1080"
+                alt="Profile Photo"
+            />
+            </div>
+
+            <!-- Text -->
+            <div class="profile-text">
+            <h1>Ahlil Ilmar Batuparan</h1>
+            <h2>Data Scientist</h2>
+            <p>
+                Data Scientist with a strong foundation in research, programming, and analysis, 
+                with experience in energy and environmental projects. Proficient in Python, SQL, 
+                and machine learning to generate predictive models and meaningful insights. 
+                Good at communicating with different teams and sharing useful findings in 
+                an easy way for everyone to understand.
+            </p>
+            </div>
+        </div>
+
+        <!-- Featured Projects -->
+        <h2 class="section-title">Featured Projects</h2>
+
+        <!-- Project 1 -->
+        <div class="project-card" id="pm25">
+            <div class="project-header">
+            <h3>Real-time Dashboard</h3>
+            <div class="project-links">
+                <a href="https://github.com" target="_blank" class="icon-btn"><i data-lucide="github"></i></a>
+                <a href="https://linkedin.com" target="_blank" class="icon-btn"><i data-lucide="linkedin"></i></a>
+            </div>
+            </div>
+            <p>
+            Extract and process Air Quality Index data from different sources using Python, 
+            automated hourly and stored in PostgreSQL, helping display the latest air quality 
+            update in Jakarta for public awareness.
+            </p>
+        </div>
+
+        <!-- Project 2 -->
+        <div class="project-card">
+            <div class="project-header">
+            <h3>PM2.5 Prediction</h3>
+            <div class="project-links">
+                <a href="https://github.com" target="_blank" class="icon-btn"><i data-lucide="github"></i></a>
+                <a href="https://linkedin.com" target="_blank" class="icon-btn"><i data-lucide="linkedin"></i></a>
+            </div>
+            </div>
+            <p>
+            Integrated machine learning (XGBoost, Random Forest, LightGBM) to predict PM2.5 
+            concentrations for areas without monitoring stations. Processed satellite data with 
+            Google Earth Engine through resampling as input features.
+            </p>
+        </div>
+
+        <!-- Project 3 -->
+        <div class="project-card" id="greenspace">
+            <div class="project-header">
+            <h3>Green-space Map</h3>
+            <div class="project-links">
+                <a href="https://github.com" target="_blank" class="icon-btn"><i data-lucide="github"></i></a>
+                <a href="https://linkedin.com" target="_blank" class="icon-btn"><i data-lucide="linkedin"></i></a>
+            </div>
+            </div>
+            <p>
+            Using PCA-based weighted sum overlay on air quality key indicators to develop a green-space 
+            priority index and identify urgent intervention areas. Developed a K-means clustering 
+            model to classify areas with urgent green-space needs.
+            </p>
+        </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="container footer-grid">
+        
+        <!-- Product -->
+        <div>
+            <h4>Product</h4>
+            <ul>
+            <li><a href="map.html">Dashboard</a></li>
+            <li><a href="prediction.html">PM2.5 Prediction</a></li>
+            <li><a href="greenspace.html">Green-space Map</a></li>
+            </ul>
+        </div>
+
+        <!-- Resources -->
+        <div>
+            <h4>Resources</h4>
+            <ul>
+            <li><a href="https://www.iqair.com" target="_blank">IQAir <i data-lucide="external-link"></i></a></li>
+            <li><a href="https://www.udarajakarta.id" target="_blank">UdaraJakarta <i data-lucide="external-link"></i></a></li>
+            <li><a href="https://www.menlhk.go.id" target="_blank">KLHK <i data-lucide="external-link"></i></a></li>
+            </ul>
+        </div>
+
+        <!-- Social -->
+        <div>
+            <h4>Social</h4>
+            <ul>
+            <li><a href="https://github.com" target="_blank"><i data-lucide="github"></i> Github</a></li>
+            <li><a href="https://linkedin.com" target="_blank"><i data-lucide="linkedin"></i> Linkedin</a></li>
+            </ul>
+        </div>
+
+        </div>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+    </script>
 </body>
 </html>
