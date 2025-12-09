@@ -738,16 +738,6 @@ body {
     }
 }
 
-.hero {
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding-left: 50px;
-    background: url("https://images.unsplash.com/photo-1640094646405-6baea9ed7cb5?auto=format&fit=crop&w=2000&q=80")
-                center/cover no-repeat;    
-    color: white;
-}
 
 .hero h1 {
     font-size: 50px;
