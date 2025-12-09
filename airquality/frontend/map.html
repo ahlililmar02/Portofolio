@@ -12,7 +12,7 @@
 	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />	
 	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 	<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <link rel="stylesheet" href="style.css?v=126">
+    <link rel="stylesheet" href="style.css?v=125">
 
 
 	<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -39,39 +39,80 @@
         </div>
 
 		<div class="nav-right">
-			<span class="material-symbols-outlined profile-icon">
-				account_circle
-			</span>
-			<span class="material-symbols-outlined menu-toggle">menu</span>
+            <div class="profile-dropdown-container">
+                <span class="material-symbols-outlined profile-icon">
+                    account_circle
+                </span>
+
+                <!-- DROPDOWN -->
+            <div class="profile-dropdown" id="profileDropdown">
+                <a 
+                    href="https://linkedin.com" 
+                    target="_blank" 
+                    class="dropdown-item"
+                >
+                    <span class="material-symbols-outlined">work</span>
+                    LinkedIn
+                </a>
+
+                <a 
+                    href="https://github.com" 
+                    target="_blank" 
+                    class="dropdown-item"
+                >
+                    <span class="material-symbols-outlined">code</span>
+                    GitHub
+                </a>
+            </div>
+            </div>
+            <span class="material-symbols-outlined menu-toggle">menu</span>
         </div>
     </div>
 
-    <!-- Sidebar -->
     <div id="mobile-menu" class="mobile-menu">
         <a href="index.html">Home</a>
         <a href="map.html">Dashboard</a>
         <a href="prediction.html">Estimated PM2.5</a>
         <a href="greenspace.html">Green-space Map</a>
     </div>
-	<script>
-		const links = document.querySelectorAll('.nav-center a');
-		const currentPage = window.location.pathname.split("/").pop(); 
+    <script>
+        const profileIcon = document.querySelector(".profile-icon");
+        const profileDropdown = document.getElementById("profileDropdown");
 
-		links.forEach(link => {
-			if (link.getAttribute('href') === currentPage || 
-				(currentPage === '' && link.getAttribute('href') === 'index.html')) {
-				link.classList.add('active');
-			}
-		});
-	</script>
-	<script>
-		const menuToggle = document.querySelector(".menu-toggle");
-		const mobileMenu = document.getElementById("mobile-menu");
+        profileIcon.addEventListener("click", () => {
+            profileDropdown.classList.toggle("active");
+            profileDropdown.style.display =
+                profileDropdown.style.display === "block" ? "none" : "block";
+        });
 
-		menuToggle.addEventListener("click", () => {
-			mobileMenu.classList.toggle("active");
-		});
-	</script>
+        // Close dropdown when clicking outside
+        document.addEventListener("click", (e) => {
+            if (!profileIcon.contains(e.target) &&
+                !profileDropdown.contains(e.target)) {
+                profileDropdown.style.display = "none";
+            }
+        });
+    </script>
+
+    <script>
+        const menuToggle = document.querySelector(".menu-toggle");
+        const mobileMenu = document.getElementById("mobile-menu");
+
+        menuToggle.addEventListener("click", () => {
+            mobileMenu.classList.toggle("active");
+        });
+    </script>
+    <script>
+        const links = document.querySelectorAll('.nav-center a');
+        const currentPage = window.location.pathname.split("/").pop(); // get file name
+
+        links.forEach(link => {
+            if (link.getAttribute('href') === currentPage || 
+                (currentPage === '' && link.getAttribute('href') === 'index.html')) {
+                link.classList.add('active');
+            }
+        });
+    </script>
 	<div class="page-wrapper">
     
 

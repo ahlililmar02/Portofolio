@@ -8,7 +8,7 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&family=Material+Symbols+Outlined" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="style.css?v=124">
+    <link rel="stylesheet" href="style.css?v=125">
 	<script src="https://unpkg.com/geotiff"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/shapefile/0.6.6/shp.min.js"></script>
@@ -29,18 +29,46 @@
 </head>
 <body class="bg-gray-50">
     <div id="navbar">
-        <div class="nav-title">Portfolio</div>
-        <div class="nav-center">
+		<div class="nav-title">Portfolio</div>
+
+		<div class="nav-center">
             <a href="index.html">Home</a>
             <a href="map.html">Dashboard</a>
             <a href="prediction.html">Estimated PM2.5</a>
             <a href="greenspace.html">Green-space Map</a>
         </div>
-        <div class="nav-right">
-            <span class="material-symbols-outlined profile-icon">account_circle</span>
+
+		<div class="nav-right">
+            <div class="profile-dropdown-container">
+                <span class="material-symbols-outlined profile-icon">
+                    account_circle
+                </span>
+
+                <!-- DROPDOWN -->
+            <div class="profile-dropdown" id="profileDropdown">
+                <a 
+                    href="https://linkedin.com" 
+                    target="_blank" 
+                    class="dropdown-item"
+                >
+                    <span class="material-symbols-outlined">work</span>
+                    LinkedIn
+                </a>
+
+                <a 
+                    href="https://github.com" 
+                    target="_blank" 
+                    class="dropdown-item"
+                >
+                    <span class="material-symbols-outlined">code</span>
+                    GitHub
+                </a>
+            </div>
+            </div>
             <span class="material-symbols-outlined menu-toggle">menu</span>
         </div>
     </div>
+
     <div id="mobile-menu" class="mobile-menu">
         <a href="index.html">Home</a>
         <a href="map.html">Dashboard</a>
@@ -48,12 +76,31 @@
         <a href="greenspace.html">Green-space Map</a>
     </div>
     <script>
-            const menuToggle = document.querySelector(".menu-toggle");
-            const mobileMenu = document.getElementById("mobile-menu");
+        const profileIcon = document.querySelector(".profile-icon");
+        const profileDropdown = document.getElementById("profileDropdown");
 
-            menuToggle.addEventListener("click", () => {
-                mobileMenu.classList.toggle("active");
-            });
+        profileIcon.addEventListener("click", () => {
+            profileDropdown.classList.toggle("active");
+            profileDropdown.style.display =
+                profileDropdown.style.display === "block" ? "none" : "block";
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener("click", (e) => {
+            if (!profileIcon.contains(e.target) &&
+                !profileDropdown.contains(e.target)) {
+                profileDropdown.style.display = "none";
+            }
+        });
+    </script>
+
+    <script>
+        const menuToggle = document.querySelector(".menu-toggle");
+        const mobileMenu = document.getElementById("mobile-menu");
+
+        menuToggle.addEventListener("click", () => {
+            mobileMenu.classList.toggle("active");
+        });
     </script>
     <script>
         const links = document.querySelectorAll('.nav-center a');
