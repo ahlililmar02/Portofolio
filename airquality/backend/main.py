@@ -88,23 +88,29 @@ def get_all_latest():
     with conn:
         with conn.cursor() as cur:
             cur.execute("""
-                SELECT DISTINCT ON (aqi.station)
-                    aqi.station,
-                    aqi.time,
-                    ROUND(aqi.aqi) as aqi,
-                    aqi.pm25,
-                    aqi.latitude,
-                    aqi.longitude,
-                    aqi.sourceid
-                FROM aqi,
-                    (SELECT MAX(time) AS max_time FROM aqi) AS latest
-                WHERE aqi.time >= latest.max_time - INTERVAL '5 hours' AND
-                    aqi.latitude != 'NaN' AND
-                    aqi.longitude != 'NaN' AND
-                    aqi.aqi != 'NaN' AND
-                    aqi.aqi !=  0 AND
-                    aqi.pm25 != 'NaN'
-                ORDER BY aqi.station, aqi.time DESC;
+                WITH cleaned AS (
+                    SELECT *
+                    FROM aqi
+                    WHERE pm25 != 'NaN'
+                    AND latitude != 'NaN'
+                    AND longitude != 'NaN'
+                    AND aqi != 'NaN'
+                    AND aqi != 0
+                ),
+                latest AS (
+                    SELECT MAX(time) AS max_time FROM cleaned
+                )
+                SELECT DISTINCT ON (c.station)
+                    c.station,
+                    c.time,
+                    ROUND(c.aqi) AS aqi,
+                    c.pm25,
+                    c.latitude,
+                    c.longitude,
+                    c.sourceid
+                FROM cleaned c, latest
+                WHERE c.time >= latest.max_time - INTERVAL '3 hours'
+                ORDER BY c.station, c.time DESC;
             """)
             rows = cur.fetchall()
             columns = [desc[0] for desc in cur.description]
