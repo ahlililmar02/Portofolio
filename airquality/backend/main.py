@@ -102,6 +102,7 @@ def get_all_latest():
                     aqi.latitude != 'NaN' AND
                     aqi.longitude != 'NaN' AND
                     aqi.aqi != 'NaN' AND
+                    aqi.aqi !=  0
                     aqi.pm25 != 'NaN'
                 ORDER BY aqi.station, aqi.time DESC;
             """)
