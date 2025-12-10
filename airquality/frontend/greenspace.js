@@ -208,7 +208,7 @@ const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 		touchZoom: false,
 		boxZoom: false,
 		keyboard: false,
-		dragging: true,
+		dragging: false,
 	}).setView([-6.25, 106.95], 11);
 
 	L.tileLayer(
