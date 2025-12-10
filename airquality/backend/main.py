@@ -519,19 +519,21 @@ async def analyze_pm25(
         gemini_analysis=gemini_analysis_text
     )
 
+print("Loading greenspace.geojson...")
+
+_gdf = gpd.read_file("greenspace.geojson")
+
+numeric_cols = _gdf.select_dtypes(include=["float", "int"]).columns.tolist()
+if "cluster" in numeric_cols:
+    numeric_cols.remove("cluster")
+
+scaler = MinMaxScaler()
+_gdf[numeric_cols] = scaler.fit_transform(_gdf[numeric_cols])
+
+GREENS_GEOJSON = json.loads(_gdf.to_json())
+
+print("Greenspace loaded into memory.")
+
 @app.get("/greenspace")
 def get_greenspace():
-    gdf = gpd.read_file("greenspace.geojson")
-
-    # Scale numeric columns
-    numeric_cols = gdf.select_dtypes(include=["float", "int"]).columns.tolist()
-    if "cluster" in numeric_cols:
-        numeric_cols.remove("cluster")
-
-    scaler = MinMaxScaler()
-    gdf[numeric_cols] = scaler.fit_transform(gdf[numeric_cols])
-
-    # Convert geometry to standard geojson, but keep structure
-    geojson = json.loads(gdf.to_json())
-
-    return geojson
+    return GREENS_GEOJSON
