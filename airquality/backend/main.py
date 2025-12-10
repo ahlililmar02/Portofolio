@@ -89,17 +89,18 @@ def get_all_latest():
                 SELECT DISTINCT ON (aqi.station)
                     aqi.station,
                     aqi.time,
-                    aqi.aqi,
+                    ROUND(aqi.aqi) as aqi,
                     aqi.pm25,
                     aqi.latitude,
                     aqi.longitude,
                     aqi.sourceid
                 FROM aqi,
                     (SELECT MAX(time) AS max_time FROM aqi) AS latest
-                WHERE aqi.time >= latest.max_time - INTERVAL '3 hours'
-                AND aqi.aqi IS NOT NULL
-                AND aqi.aqi <> 0
-                AND aqi.aqi::text <> 'NaN'
+                WHERE aqi.time >= latest.max_time - INTERVAL '5 hours' AND
+                    aqi.latitude != 'NaN' AND
+                    aqi.longitude != 'NaN' AND
+                    aqi.aqi != 'NaN' AND
+                    aqi.pm25 != 'NaN'
                 ORDER BY aqi.station, aqi.time DESC;
             """)
             rows = cur.fetchall()
@@ -121,8 +122,10 @@ def get_all_daily():
                 WHERE time::date <= (SELECT MAX(time::date) FROM aqi)
                 AND time::date >= (SELECT MAX(time::date) FROM aqi) - INTERVAL '6 days'
                 AND aqi IS NOT NULL
-                AND aqi <> 'NaN'
-                AND aqi <> 0 
+                AND aqi != 'NaN'
+                AND aqi != 0 
+				AND latitude != 'NaN'
+				AND longitude != 'NaN'
                 GROUP BY station, date
                 ORDER BY station, date ASC;
 
@@ -166,8 +169,8 @@ def get_all_today():
                 WHERE 
                     time::date = (SELECT MAX(time::date) FROM aqi)
                     AND aqi IS NOT NULL
-                    AND aqi <> 'NaN'
-                    AND aqi <> 0
+                    AND aqi != 'NaN'
+                    AND aqi != 0
                 ORDER BY station, time ASC; 
             """)
             rows = cur.fetchall()
