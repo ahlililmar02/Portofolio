@@ -64,6 +64,8 @@ def get_stations():
             cur.execute("""
                 SELECT DISTINCT ON (station) station, latitude, longitude, sourceid
                 FROM aqi
+                WHERE latitude != 'NaN' AND
+                      longitude != 'NaN'
                 ORDER BY station, time DESC;
             """)
             rows = cur.fetchall()
