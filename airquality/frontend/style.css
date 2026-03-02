@@ -76,7 +76,7 @@ body {
 
 .filter-container {
   position: absolute;
-  bottom: 40px;
+  bottom: 50px;
   left: 10px;
   background: white;
   border-radius: 8px;
@@ -548,9 +548,9 @@ body {
     position: relative;
     z-index: 2;
 
-    background: #FFB300;
+    background: #f3f3f3;
     border-radius: 0 5px 5px 0;
-    border: none;
+    border: solid 1px #0b0000;
     cursor: pointer;
 }
 
@@ -559,7 +559,7 @@ body {
 
 
 .side-panel {
-    height: 675px; 
+    height: 680px; 
     padding-top: 80px;         
     width: 0;             
     overflow: hidden;
