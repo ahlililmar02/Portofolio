@@ -470,37 +470,14 @@ document.getElementById("downloadBtn").addEventListener("click", () => {
         return;
     }
 
-    // Build URL dynamically
     let url = `${API}/download?start=${start}&end=${end}`;
 
     if (source !== "all") {
         url += `&source=${source}`;
     }
 
-    fetch(url)
-    .then(res => {
-        if (!res.ok) throw new Error("Download failed");
-
-        const contentDisposition = res.headers.get("Content-Disposition");
-
-        let filename = "data.csv"; // fallback
-
-        if (contentDisposition) {
-            const match = contentDisposition.match(/filename="?(.+)"?/);
-            if (match?.[1]) {
-                filename = match[1];
-            }
-        }
-
-        return res.blob().then(blob => ({ blob, filename }));
-    })
-    .then(({ blob, filename }) => {
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = filename;  
-        link.click();
-    })
-    .catch(err => console.error(err));
+    // 🔥 Let browser handle streaming
+    window.location.href = url;
 });
 
 function setupSwitcher(cardA, cardB, prevBtn, nextBtn) {

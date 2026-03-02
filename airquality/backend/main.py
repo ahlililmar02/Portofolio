@@ -208,57 +208,65 @@ def get_all_today():
 
 from fastapi import Query
 from fastapi.responses import StreamingResponse
+import csv
 from io import StringIO
 
 @app.get("/download")
 def download_data(
     start: str = Query(...),
     end: str = Query(...),
-    source: str = Query(None)  # 👈 optional
+    source: str = Query(None)
 ):
     conn = get_conn()
 
-    with conn:
-        with conn.cursor() as cur:
+    def generate():
+        with conn:
+            with conn.cursor(name="stream_cursor") as cur:
 
-            # Base query
-            query = """
-                SELECT *
-                FROM aqi
-                WHERE time >= %s AND time <= %s
-            """
+                query = """
+                    SELECT *
+                    FROM aqi
+                    WHERE time >= %s AND time <= %s
+                """
 
-            params = [start, end]
+                params = [start, end]
 
-            # If source selected (not None and not "all")
-            if source and source.lower() != "all":
-                query += " AND sourceid = %s"
-                params.append(source)
+                if source and source.lower() != "all":
+                    query += " AND sourceid = %s"
+                    params.append(source)
 
-            query += " ORDER BY time;"
+                query += " ORDER BY time;"
 
-            cur.execute(query, tuple(params))
-            rows = cur.fetchall()
-            columns = [desc[0] for desc in cur.description]
+                cur.execute(query, tuple(params))
 
-            stream = StringIO()
-            stream.write(",".join(columns) + "\n")
+                columns = [desc[0] for desc in cur.description]
 
-            for r in rows:
-                stream.write(",".join([str(c) for c in r]) + "\n")
+                buffer = StringIO()
+                writer = csv.writer(buffer)
 
-            stream.seek(0)
+                # write header once
+                writer.writerow(columns)
+                yield buffer.getvalue()
+                buffer.seek(0)
+                buffer.truncate(0)
+
+                # stream rows
+                for row in cur:
+                    writer.writerow(row)
+                    yield buffer.getvalue()
+                    buffer.seek(0)
+                    buffer.truncate(0)
 
         release_conn(conn)
 
-    # ✅ Dynamic filename
+    # filename
     if source and source.lower() != "all":
         filename = f"{source}_{start}_{end}.csv"
     else:
         filename = f"All_{start}_{end}.csv"
 
     return StreamingResponse(
-        stream,
+        generate(),
         media_type="text/csv",
         headers={
             "Content-Disposition": f"attachment; filename={filename}"
