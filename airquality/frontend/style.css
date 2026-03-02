@@ -550,7 +550,16 @@ body {
 
     background: #f3f3f3;
     border-radius: 0 5px 5px 0;
-    border: solid 1px #0b0000;
+
+    /* Border only on top, right, bottom */
+    border-top: 1px solid #0b0000;
+    border-right: 1px solid #0b0000;
+    border-bottom: 1px solid #0b0000;
+    border-left: none;
+
+    /* Shadow only on right side */
+    box-shadow: 4px 0 8px rgba(0,0,0,0.25);
+
     cursor: pointer;
 }
 
