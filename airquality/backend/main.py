@@ -220,45 +220,53 @@ def download_data(
     conn = get_conn()
 
     def generate():
-        with conn:
-            with conn.cursor(name="stream_cursor") as cur:
+        conn = get_conn()
 
-                query = """
-                    SELECT *
-                    FROM aqi
-                    WHERE time >= %s AND time <= %s
-                """
+        try:
+            conn.autocommit = False
 
-                params = [start, end]
+            cur = conn.cursor(name="stream_cursor")
 
-                if source and source.lower() != "all":
-                    query += " AND sourceid = %s"
-                    params.append(source)
+            query = """
+                SELECT *
+                FROM aqi
+                WHERE time >= %s AND time <= %s
+            """
 
-                query += " ORDER BY time;"
+            params = [start, end]
 
-                cur.execute(query, tuple(params))
+            if source and source.lower() != "all":
+                query += " AND sourceid = %s"
+                params.append(source)
 
-                columns = [desc[0] for desc in cur.description]
+            query += " ORDER BY time;"
 
-                buffer = StringIO()
-                writer = csv.writer(buffer)
+            cur.execute(query, tuple(params))
 
-                # write header once
-                writer.writerow(columns)
+            columns = [desc[0] for desc in cur.description]
+
+            buffer = StringIO()
+            writer = csv.writer(buffer)
+
+            # header
+            writer.writerow(columns)
+            yield buffer.getvalue()
+            buffer.seek(0)
+            buffer.truncate(0)
+
+            # stream rows
+            for row in cur:
+                writer.writerow(row)
                 yield buffer.getvalue()
                 buffer.seek(0)
                 buffer.truncate(0)
 
-                # stream rows
-                for row in cur:
-                    writer.writerow(row)
-                    yield buffer.getvalue()
-                    buffer.seek(0)
-                    buffer.truncate(0)
+            cur.close()
+            conn.commit()
 
-        release_conn(conn)
-
+        finally:
+            release_conn(conn)
+            
     # filename
     if source and source.lower() != "all":
         filename = f"{source}_{start}_{end}.csv"
