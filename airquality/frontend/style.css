@@ -74,23 +74,41 @@ body {
 .haz { background: #7e0023; }
 
 
-.filter-box {
+.filter-container {
   position: absolute;
-  bottom: 50px;
-  display: grid;
-  grid-auto-flow: column; 
-  
-  left: 10px;
-  align-items: center; 
-  background:white;
-  padding-top: 20px;
-  padding: 10px;
-  font-size: 12px;
-  border-radius: 6px;
-  opacity: 0.9;
-  box-shadow: 0 0 6px rgba(0,0,0,0.3);
+  bottom: 24px;
+  left: 24px;
+  background: white;
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
   z-index: 1000;
-  gap: 15px; 
+}
+
+.button-group {
+  display: flex;
+  gap: 8px;
+}
+
+.btn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  border: none;
+  cursor: pointer;
+  background: #f3f4f6;
+  color: #374151;
+  transition: 0.2s;
+}
+
+.btn:hover {
+  background: #e5e7eb;
+}
+
+/* ONE active style only */
+.btn.active {
+  background: #6b7280;
+  color: white;
 }
 
 @media (max-width: 768px) {
@@ -530,7 +548,7 @@ body {
     position: relative;
     z-index: 2;
 
-    background: #faf7f1;
+    background: #FFB300;
     border-radius: 0 5px 5px 0;
     border: none;
     cursor: pointer;

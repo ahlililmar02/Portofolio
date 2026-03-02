@@ -11,6 +11,7 @@ let markers = [];
 L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
     attribution: '&copy; <a href="https://www.carto.com/">CARTO</a> &copy; OpenStreetMap contributors',
     subdomains: 'abcd',
+    minZoom: 10,
     maxZoom: 18
 }).addTo(map);
 
@@ -157,77 +158,127 @@ async function loadGlobalAQIBox() {
 
 loadGlobalAQIBox();
 
-document.querySelectorAll(".filter-box input").forEach(cb => {
-  cb.addEventListener("change", loadStations);
+let selectedSource = "all";
+
+const buttons = document.querySelectorAll(".btn");
+
+// Attach click event to buttons
+buttons.forEach(button => {
+  button.addEventListener("click", async () => {
+
+    // Remove active class
+    buttons.forEach(btn => btn.classList.remove("active"));
+    button.classList.add("active");
+
+    selectedSource = button.dataset.source;
+
+    await loadStations();   // 🔥 reload markers
+  });
 });
 
+
+// 🔥 IMPORTANT: Call once when page loads
+document.addEventListener("DOMContentLoaded", loadStations);
+
+
 async function loadStations() {
-    markers.forEach(m => map.removeLayer(m));
+
+    // Remove existing markers safely
+    markers.forEach(m => {
+        if (map.hasLayer(m)) {
+            map.removeLayer(m);
+        }
+    });
     markers = [];
 
-    const selectedSources = [...document.querySelectorAll(".filter-box input:checked")]
-                        .map(cb => cb.value);
+    try {
 
-    const [resStations, resLatest] = await Promise.all([
-        fetch(`${API}/stations`),
-        fetch(`${API}/stations/latest`) 
-    ]);
+        const [resStations, resLatest] = await Promise.all([
+            fetch(`${API}/stations`),
+            fetch(`${API}/stations/latest`)
+        ]);
 
-    if (!resStations.ok || !resLatest.ok) {
-        console.error("Error fetching station or latest data.");
-        return;
-    }
-
-    const stationsList = await resStations.json(); 
-    const latestDataList = await resLatest.json();
-
-    const latestDataMap = new Map();
-    latestDataList.forEach(data => {
-        latestDataMap.set(data.station, data);
-    });
-
-    const filteredStations = stationsList.filter(s => selectedSources.includes(s.sourceid));
-
-    console.log("Filtered stations:", filteredStations);
-
-    for (const s of filteredStations) {
-        const latest = latestDataMap.get(s.station);
-
-        if (!latest || latest.aqi === null || latest.aqi === undefined) {
-             console.warn(`Missing or invalid latest data for station: ${s.station}`);
-            continue;
+        if (!resStations.ok || !resLatest.ok) {
+            console.error("Error fetching data.");
+            return;
         }
-        
 
-        const color = aqiColor(latest.aqi);
-        const timeHHMM = latest.time.substring(11, 16);
+        const stationsList = await resStations.json();
+        const latestDataList = await resLatest.json();
 
-        const marker = L.marker([s.latitude, s.longitude], {
-            icon: L.divIcon({
-                className: "aqi-marker",
-                html: `<div style="background:${color};width:32px;height:32px;border-radius:50%;display:flex;justify-content:center;align-items:center;color:white;font-size:10px;font-weight:light;font-family: 'Open Sans', sans-serif;box-shadow: 0 2px 6px ${color};">${latest.aqi}</div>`,
-                iconSize: [32,32],
-                iconAnchor: [16,16],
-            })
-        }).addTo(map);
-
-        marker.bindPopup(`
-            <b>${s.station}</b><br>
-            AQI: ${latest.aqi}<br>
-            PM2.5: ${latest["pm25"]}<br>
-            Source: ${s.sourceid}<br>
-            Time: ${timeHHMM}
-        `);
-
-        marker.on("click", () => {
-            document.querySelector(".global-wrapper").classList.add("hidden");
-            document.querySelector(".detail-wrapper").classList.remove("hidden");
-
-            showAQICard(s, latest); 
-            loadChart(s.station);
+        const latestDataMap = new Map();
+        latestDataList.forEach(data => {
+            latestDataMap.set(data.station, data);
         });
 
-        markers.push(marker);
+        // ✅ FIXED FILTER LOGIC
+        let filteredStations;
+
+        if (selectedSource === "all") {
+            filteredStations = stationsList;
+        } else {
+            filteredStations = stationsList.filter(
+                s => s.sourceid === selectedSource
+            );
+        }
+
+        console.log("Filtered:", filteredStations);
+
+        for (const s of filteredStations) {
+
+            const latest = latestDataMap.get(s.station);
+
+            if (!latest || latest.aqi == null) continue;
+
+            const color = aqiColor(latest.aqi);
+            const timeHHMM = latest.time?.substring(11, 16) || "-";
+
+            const marker = L.marker([s.latitude, s.longitude], {
+                icon: L.divIcon({
+                    className: "aqi-marker",
+                    html: `
+                        <div style="
+                            background:${color};
+                            width:32px;
+                            height:32px;
+                            border-radius:50%;
+                            display:flex;
+                            justify-content:center;
+                            align-items:center;
+                            color:white;
+                            font-size:10px;
+                            font-family:'Open Sans', sans-serif;
+                            box-shadow: 0 2px 6px ${color};
+                        ">
+                            ${latest.aqi}
+                        </div>
+                    `,
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 16],
+                })
+            }).addTo(map);
+
+            marker.bindPopup(`
+                <b>${s.station}</b><br>
+                AQI: ${latest.aqi}<br>
+                PM2.5: ${latest.pm25}<br>
+                Source: ${s.sourceid}<br>
+                Time: ${timeHHMM}
+            `);
+
+            marker.on("click", () => {
+                document.querySelector(".global-wrapper")?.classList.add("hidden");
+                document.querySelector(".detail-wrapper")?.classList.remove("hidden");
+
+                showAQICard(s, latest);
+                loadChart(s.station);
+            });
+
+            markers.push(marker);
+        }
+
+    } catch (err) {
+        console.error("Load stations error:", err);
     }
 }
 
