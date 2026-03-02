@@ -206,30 +206,63 @@ def get_all_today():
 
 
 
+from fastapi import Query
+from fastapi.responses import StreamingResponse
+from io import StringIO
+
 @app.get("/download")
-def download_data(start: str = Query(...), end: str = Query(...)):
+def download_data(
+    start: str = Query(...),
+    end: str = Query(...),
+    source: str = Query(None)  # 👈 optional
+):
     conn = get_conn()
+
     with conn:
         with conn.cursor() as cur:
-            cur.execute("""
+
+            # Base query
+            query = """
                 SELECT *
                 FROM aqi
                 WHERE time >= %s AND time <= %s
-                ORDER BY time;
-            """, (start, end))
+            """
+
+            params = [start, end]
+
+            # If source selected (not None and not "all")
+            if source and source.lower() != "all":
+                query += " AND sourceid = %s"
+                params.append(source)
+
+            query += " ORDER BY time;"
+
+            cur.execute(query, tuple(params))
             rows = cur.fetchall()
             columns = [desc[0] for desc in cur.description]
 
             stream = StringIO()
             stream.write(",".join(columns) + "\n")
+
             for r in rows:
                 stream.write(",".join([str(c) for c in r]) + "\n")
+
             stream.seek(0)
+
         release_conn(conn)
+
+    # ✅ Dynamic filename
+    if source and source.lower() != "all":
+        filename = f"{source}_{start}_{end}.csv"
+    else:
+        filename = f"All_{start}_{end}.csv"
+
     return StreamingResponse(
         stream,
         media_type="text/csv",
-        headers={"Content-Disposition": "attachment; filename=data.csv"},
+        headers={
+            "Content-Disposition": f"attachment; filename={filename}"
+        },
     )
 
 app.mount("/tif", StaticFiles(directory="tif"), name="tif_files")

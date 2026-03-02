@@ -76,8 +76,8 @@ body {
 
 .filter-container {
   position: absolute;
-  bottom: 24px;
-  left: 24px;
+  bottom: 40px;
+  left: 10px;
   background: white;
   border-radius: 8px;
   padding: 12px;
@@ -594,6 +594,12 @@ body {
 
 #startDateFilter,
 #endDateFilter {
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+
+#sourceFilter {
     padding: 8px;
     border-radius: 6px;
     border: 1px solid #ccc;

@@ -460,29 +460,47 @@ flatpickr("#endDateFilter", {
 
 // Download CSV button
 document.getElementById("downloadBtn").addEventListener("click", () => {
+
     const start = document.getElementById("startDateFilter").value;
     const end = document.getElementById("endDateFilter").value;
+    const source = document.getElementById("sourceFilter").value;
 
     if (!start || !end) {
         alert("Please select both start and end dates.");
         return;
     }
 
-    const url = `${API}/download?start=${start}&end=${end}`;
+    // Build URL dynamically
+    let url = `${API}/download?start=${start}&end=${end}`;
+
+    if (source !== "all") {
+        url += `&source=${source}`;
+    }
 
     fetch(url)
     .then(res => {
         if (!res.ok) throw new Error("Download failed");
-        return res.blob();
+
+        const contentDisposition = res.headers.get("Content-Disposition");
+
+        let filename = "data.csv"; // fallback
+
+        if (contentDisposition) {
+            const match = contentDisposition.match(/filename="?(.+)"?/);
+            if (match?.[1]) {
+                filename = match[1];
+            }
+        }
+
+        return res.blob().then(blob => ({ blob, filename }));
     })
-    .then(blob => {
+    .then(({ blob, filename }) => {
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
-        link.download = "data.csv";
+        link.download = filename;  
         link.click();
     })
     .catch(err => console.error(err));
-
 });
 
 function setupSwitcher(cardA, cardB, prevBtn, nextBtn) {
