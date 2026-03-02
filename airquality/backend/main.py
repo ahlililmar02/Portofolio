@@ -243,6 +243,12 @@ def download_data(
 
             cur.execute(query, tuple(params))
 
+            # Force metadata to load
+            first_row = cur.fetchone()
+
+            if first_row is None:
+                return  # no data
+
             columns = [desc[0] for desc in cur.description]
 
             buffer = StringIO()
